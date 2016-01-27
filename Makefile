@@ -23,14 +23,15 @@ PULSEY  = 70
 STEPS   = 1000
 THREADS = 8
 TYPE    = sse_unaligned
+CC      = clang #gcc
 
 default: compile run
 
 %.elf: $(OBJS)
-	gcc -pthread -lm -o $@ $^
+	$(CC) -pthread -lm -o $@ $^
 
 %.o: %.c
-	gcc -O3 --fast-math -march=native -c -o $@ $<
+	$(CC) -O3 -ffast-math -march=native -c -o $@ $<
 
 compile: $(TARGET)
 
@@ -43,6 +44,9 @@ ascii: compile
 visualize: compile
 	./$(TARGET) --timesteps=$(STEPS) --width=$(WIDTH) --height=$(HEIGHT) --pulseX=$(PULSEX) --pulseY=$(PULSEY) --threads=$(THREADS) --kernel=$(TYPE) --output
 	./ximage_x86 n1=$(HEIGHT) n2=$(WIDTH) hbox=$(HEIGHT) wbox=$(WIDTH) title=visualizer < output.bin
+
+objdump: compile
+	objdump -dS $(TARGET) | less
 
 clean:
 	rm $(TARGET) *.o *.bin -rf

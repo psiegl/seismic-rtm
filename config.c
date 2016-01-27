@@ -109,6 +109,9 @@ unsigned long round_and_get_unit( unsigned long mem, const char ** type ) {
     }
     mem /= 1024;
   }
+
+  *type = types[0];
+  return mem;
 }
 
 void get_config( int argc, char * argv[], config_t * config ) {
@@ -185,7 +188,7 @@ void get_config( int argc, char * argv[], config_t * config ) {
           config->alignment = 0;
           config->vectorwidth = 8 * sizeof(float);
         }
-        else if( ! strcmp( optarg, "avx2_unaligned" ) && (cap & HAS_AVX) ) {
+        else if( ! strcmp( optarg, "avx2_unaligned" ) && (cap & HAS_AVX && cap & HAS_AVX2) ) {
           config->kernel = KERNEL__SIMD_AVX2_UNALIGNED;
           config->alignment = 0;
           config->vectorwidth = 8 * sizeof(float);
@@ -291,7 +294,7 @@ void print_config( config_t * config ) {
            myuts.nodename, myuts.machine );
   }
 
-  unsigned char buffer[10 + 1];
+  char buffer[10 + 1];
   FILE * pipe = popen("grep -ci 'processor' /proc/cpuinfo", "r");
   fgets(buffer, 10, pipe);
   pclose(pipe);
@@ -305,7 +308,8 @@ void print_config( config_t * config ) {
     printf(" SSE");
   if( cap & HAS_AVX )
     printf(" AVX");
-  // AVX2?
+  if( cap & HAS_AVX2 )
+    printf(" AVX2");
 
   printf("\n\n");
 }

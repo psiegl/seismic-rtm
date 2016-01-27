@@ -16,7 +16,6 @@
 #ifndef _CHECK_HW_H_
 #define _CHECK_HW_H_
 
-#include <cpuid.h>
 #include <stdint.h>
 
 #define HAS_SSE   (1 << 0)
@@ -31,42 +30,15 @@
 #define HAS_AVX   (1 << 9)
 #define HAS_AVX2  (1 << 10)
 
-void cpuid(int info[4], int InfoType){
-    __cpuid_count(InfoType, 0, info[0], info[1], info[2], info[3]);
-}
-
 uint32_t check_hw_capabilites( void ) {
   uint32_t cap = 0;
 
-  int info[4];
-  cpuid(info, 0);
-  int nIds = info[0];
-
-  cpuid(info, 0x80000000);
-  unsigned nExIds = info[0];
-
-  if (nIds >= 0x00000001){
-    cpuid(info,0x00000001);
-    cap |= (info[3] & ((int)1 << 25)) ? HAS_SSE : 0;
-    cap |= (info[3] & ((int)1 << 26)) ? HAS_SSE2 : 0;
-    cap |= (info[2] & ((int)1 <<  0)) ? HAS_SSE3 : 0;
-
-    cap |= (info[2] & ((int)1 <<  9)) ? HAS_SSSE3 : 0;
-    cap |= (info[2] & ((int)1 << 19)) ? HAS_SSE41 : 0;
-    cap |= (info[2] & ((int)1 << 20)) ? HAS_SSE42 : 0;
-
-    cap |= (info[2] & ((int)1 << 28)) ? HAS_AVX : 0;
-    cap |= (info[2] & ((int)1 << 12)) ? HAS_FMA3 : 0;
-  }
-  if (nIds >= 0x00000007){
-    cpuid(info,0x00000007);
-    cap |= (info[1] & ((int)1 <<  5)) ? HAS_AVX2 : 0;
-  }
-  if (nExIds >= 0x80000001){
-    cpuid(info,0x80000001);
-    cap |= (info[2] & ((int)1 <<  6)) ? HAS_SSE4a : 0;
-    cap |= (info[2] & ((int)1 << 16)) ? HAS_FMA4 : 0;
-  }
+  if(__builtin_cpu_supports("sse"))
+    cap |= HAS_SSE;
+  if(__builtin_cpu_supports("avx"))
+    cap |= HAS_AVX;
+  if(__builtin_cpu_supports("avx2"))
+    cap |= HAS_AVX2;
 
   return cap;
 }

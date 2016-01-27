@@ -25,7 +25,15 @@ inline __attribute__((always_inline)) void init_shuffle( __m256i * s_shl, __m256
   *s_shr =  _mm256_lddqu_si256( (__m256i const *) &shr[0] );
 }
 
-inline __attribute__((always_inline)) __m256 avx_combine( __m256 a, __m256 b, __m256i s_shl, __m256i s_shr ) {
+/*
+  AVX2 required!
+
+  combines vectors: a) 0.f 1.f 2.f 3.f 4.f 5.f 6.f 7.f
+                    b)         2.f 3.f 4.f 5.f 6.f 7.f 8.f 9.f
+
+  to vector       res)     1.f 2.f 3.f 4.f 5.f 6.f 7.f 8.f
+*/
+inline __attribute__((always_inline)) __m256 avx2_combine( __m256 a, __m256 b, __m256i s_shl, __m256i s_shr ) {
   __m256 a_l = _mm256_permutevar8x32_ps( a, s_shl );
   __m256 b_r = _mm256_permutevar8x32_ps( b, s_shr );
 
@@ -94,9 +102,8 @@ void seismic_exec_avx2_unaligned( void * v )
                 s_above2 = _mm256_loadu_ps( &(data->apf[ r -2]) );
                 s_under2 = _mm256_loadu_ps( &(data->apf[ r +2]) );
 
-                s_above1 = avx_combine( s_above2, s_actual, s_shl, s_shr );
-                s_under1 = avx_combine( s_actual, s_under2, s_shl, s_shr );
-
+                s_above1 = avx2_combine( s_above2, s_actual, s_shl, s_shr );
+                s_under1 = avx2_combine( s_actual, s_under2, s_shl, s_shr );
 
                 // sum up
                 s_sum1 = _mm256_add_ps( s_under1, _mm256_add_ps( s_above1, _mm256_add_ps( s_left1, s_right1)));
@@ -202,11 +209,10 @@ void seismic_exec_avx2_unaligned_pthread(void * v )
 //                s_under1 = _mm256_loadu_ps( &(data->apf[ r +1]) );
 
                 s_above2 = _mm256_loadu_ps( &(data->apf[ r -2]) );
-
                 s_under2 = _mm256_loadu_ps( &(data->apf[ r +2]) );
 
-                s_above1 = avx_combine( s_above2, s_actual, s_shl, s_shr );
-                s_under1 = avx_combine( s_actual, s_under2, s_shl, s_shr );
+                s_above1 = avx2_combine( s_above2, s_actual, s_shl, s_shr );
+                s_under1 = avx2_combine( s_actual, s_under2, s_shl, s_shr );
 
                 // sum up
                 s_sum1 = _mm256_add_ps( s_under1, _mm256_add_ps( s_above1, _mm256_add_ps( s_left1, s_right1)));
