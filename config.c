@@ -33,8 +33,8 @@ unsigned int kgV(unsigned int a, unsigned int b){
 }
 
 void default_values( config_t * config ) {
-  config->height    = 2300;
-  config->width     = 748;
+  config->width     = 2300;
+  config->height    = 748;
   config->timesteps = 100;
   config->pulseY    = config->height / 2;
   config->pulseX    = config->width / 2;
@@ -73,11 +73,20 @@ void print_usage( const char * argv0 ) {
          "  \t plain_c,                         Default: plain_c\n");
 
   uint32_t cap = check_hw_capabilites();
-  if( cap & HAS_SSE )
-    printf("  \t sse_std,\n"
-         "  \t sse_unaligned,\n"
-         "  \t sse_aligned,\n"
-         "  \t sse_aligned_not_grouped\n" );
+  if( cap & HAS_SSE ) {
+    printf("  \t sse_std,\n");
+    if( cap & HAS_FMA )
+      printf("  \t sse_fma_std,\n");
+    printf("  \t sse_unaligned,\n");
+    if( cap & HAS_FMA )
+      printf("  \t sse_fma_unaligned,\n");
+    printf("  \t sse_aligned,\n");
+    if( cap & HAS_FMA )
+      printf("  \t sse_fma_aligned,\n");
+    printf("  \t sse_aligned_not_grouped\n" );
+    if( cap & HAS_FMA )
+      printf("  \t sse_fma_aligned_not_grouped\n");
+  }
   if( cap & HAS_AVX ) {
     printf("  \t avx_unaligned\n");
     if( cap & HAS_FMA )
@@ -175,8 +184,18 @@ void get_config( int argc, char * argv[], config_t * config ) {
           config->alignment = 4 * sizeof(float);
           config->vectorwidth = 4 * sizeof(float);
         }
+        if( ! strcmp( optarg, "sse_fma_std" ) && (cap & HAS_SSE && cap & HAS_FMA) ) {
+          config->kernel = KERNEL__SIMD_SSE_FMA_STD;
+          config->alignment = 4 * sizeof(float);
+          config->vectorwidth = 4 * sizeof(float);
+        }
         else if( ! strcmp( optarg, "sse_unaligned" ) && (cap & HAS_SSE) ) {
           config->kernel = KERNEL__SIMD_SSE_UNALIGNED;
+          config->alignment = 0;
+          config->vectorwidth = 4 * sizeof(float);
+        }
+        else if( ! strcmp( optarg, "sse_fma_unaligned" ) && (cap & HAS_SSE && cap & HAS_FMA) ) {
+          config->kernel = KERNEL__SIMD_SSE_FMA_UNALIGNED;
           config->alignment = 0;
           config->vectorwidth = 4 * sizeof(float);
         }
@@ -185,8 +204,18 @@ void get_config( int argc, char * argv[], config_t * config ) {
           config->alignment = 4 * sizeof(float);
           config->vectorwidth = 4 * sizeof(float);
         }
+        else if( ! strcmp( optarg, "sse_fma_aligned" ) && (cap & HAS_SSE && cap & HAS_FMA) ) {
+          config->kernel = KERNEL__SIMD_SSE_FMA_ALIGNED;
+          config->alignment = 4 * sizeof(float);
+          config->vectorwidth = 4 * sizeof(float);
+        }
         else if( ! strcmp( optarg, "sse_aligned_not_grouped" ) && (cap & HAS_SSE) ) {
-          config->kernel = KERNEL__SIMD_SSE_ALIGNED;
+          config->kernel = KERNEL__SIMD_SSE_ALIGNED_NOT_GROUPED;
+          config->alignment = 4 * sizeof(float);
+          config->vectorwidth = 4 * sizeof(float);
+        }
+        else if( ! strcmp( optarg, "sse_fma_aligned_not_grouped" ) && (cap & HAS_SSE && cap & HAS_FMA) ) {
+          config->kernel = KERNEL__SIMD_SSE_FMA_ALIGNED_NOT_GROUPED;
           config->alignment = 4 * sizeof(float);
           config->vectorwidth = 4 * sizeof(float);
         }
@@ -195,13 +224,13 @@ void get_config( int argc, char * argv[], config_t * config ) {
           config->alignment = 0;
           config->vectorwidth = 8 * sizeof(float);
         }
-        else if( ! strcmp( optarg, "avx2_unaligned" ) && (cap & HAS_AVX && cap & HAS_AVX2) ) {
-          config->kernel = KERNEL__SIMD_AVX2_UNALIGNED;
+        else if( ! strcmp( optarg, "avx_fma_unaligned" ) && (cap & HAS_AVX && cap & HAS_FMA) ) {
+          config->kernel = KERNEL__SIMD_AVX_FMA_UNALIGNED;
           config->alignment = 0;
           config->vectorwidth = 8 * sizeof(float);
         }
-        else if( ! strcmp( optarg, "avx_fma_unaligned" ) && (cap & HAS_AVX && cap & HAS_FMA) ) {
-          config->kernel = KERNEL__SIMD_AVX_FMA_UNALIGNED;
+        else if( ! strcmp( optarg, "avx2_unaligned" ) && (cap & HAS_AVX && cap & HAS_AVX2) ) {
+          config->kernel = KERNEL__SIMD_AVX2_UNALIGNED;
           config->alignment = 0;
           config->vectorwidth = 8 * sizeof(float);
         }
@@ -269,12 +298,16 @@ void print_config( config_t * config ) {
   struct { kernel_t k; const char * n; } kernels[] = {
     { KERNEL__PLAIN_C, "plain_c" },
     { KERNEL__SIMD_SSE_STD, "sse_std" },
+    { KERNEL__SIMD_SSE_FMA_STD, "sse_fma_std" },
     { KERNEL__SIMD_SSE_UNALIGNED, "sse_unaligned" },
+    { KERNEL__SIMD_SSE_FMA_UNALIGNED, "sse_fma_unaligned" },
     { KERNEL__SIMD_SSE_ALIGNED, "sse_aligned" },
+    { KERNEL__SIMD_SSE_FMA_ALIGNED, "sse_fma_aligned" },
     { KERNEL__SIMD_SSE_ALIGNED_NOT_GROUPED, "sse_aligned_not_grouped" },
+    { KERNEL__SIMD_SSE_FMA_ALIGNED_NOT_GROUPED, "sse_fma_aligned_not_grouped" },
     { KERNEL__SIMD_AVX_UNALIGNED, "avx_unaligned" },
-    { KERNEL__SIMD_AVX2_UNALIGNED, "avx2_unaligned" },
     { KERNEL__SIMD_AVX_FMA_UNALIGNED, "avx_fma_unaligned" },
+    { KERNEL__SIMD_AVX2_UNALIGNED, "avx2_unaligned" },
     { KERNEL__SIMD_AVX2_FMA_UNALIGNED, "avx2_fma_unaligned" }
   };
 

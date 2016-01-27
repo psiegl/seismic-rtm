@@ -90,11 +90,25 @@ int main( int argc, char * argv[] ) {
         func = seismic_exec_sse_std_pthread;
       break;
 
+    case KERNEL__SIMD_SSE_FMA_STD:
+      if( config.threads == 1 )
+        func = seismic_exec_sse_fma_std;
+      else
+        func = seismic_exec_sse_fma_std_pthread;
+      break;
+
     case KERNEL__SIMD_SSE_UNALIGNED:
       if( config.threads == 1 )
         func = seismic_exec_sse_unaligned;
       else
         func = seismic_exec_sse_unaligned_pthread;
+      break;
+
+    case KERNEL__SIMD_SSE_FMA_UNALIGNED:
+      if( config.threads == 1 )
+        func = seismic_exec_sse_fma_unaligned;
+      else
+        func = seismic_exec_sse_fma_unaligned_pthread;
       break;
 
     case KERNEL__SIMD_SSE_ALIGNED:
@@ -104,11 +118,25 @@ int main( int argc, char * argv[] ) {
         func = seismic_exec_sse_aligned_pthread;
       break;
 
+    case KERNEL__SIMD_SSE_FMA_ALIGNED:
+      if( config.threads == 1 )
+        func = seismic_exec_sse_fma_aligned;
+      else
+        func = seismic_exec_sse_fma_aligned_pthread;
+      break;
+
     case KERNEL__SIMD_SSE_ALIGNED_NOT_GROUPED:
       if( config.threads == 1 )
         func = seismic_exec_sse_aligned_not_grouped;
       else
         func = seismic_exec_sse_aligned_not_grouped_pthread;
+      break;
+
+    case KERNEL__SIMD_SSE_FMA_ALIGNED_NOT_GROUPED:
+      if( config.threads == 1 )
+        func = seismic_exec_sse_fma_aligned_not_grouped;
+      else
+        func = seismic_exec_sse_fma_aligned_not_grouped_pthread;
       break;
 
     case KERNEL__SIMD_AVX_UNALIGNED:

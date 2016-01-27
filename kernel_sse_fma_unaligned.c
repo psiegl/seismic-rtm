@@ -15,9 +15,10 @@
 
 #include "kernel.h"
 #include <xmmintrin.h>
+#include <immintrin.h>
 
 // function that implements the kernel of the seismic modeling algorithm
-void seismic_exec_sse_unaligned( void * v )
+void seismic_exec_sse_fma_unaligned( void * v )
 {
     stack_t * data = (stack_t*) v;
     int i, j, t;
@@ -79,9 +80,12 @@ void seismic_exec_sse_unaligned( void * v )
                                                  _mm_add_ps( s_left1, s_right1)));
 
                 s_above2 = _mm_add_ps( s_left2, _mm_add_ps( s_right2, _mm_add_ps( s_under2, s_above2)));
-                s_sum1 = _mm_mul_ps( s_sixteen, s_sum1 );
-                s_sum1 = _mm_sub_ps( _mm_sub_ps( s_sum1,  s_above2), _mm_mul_ps( s_sixty, s_actual ) );
-                s_sum1 = _mm_add_ps( _mm_mul_ps( s_vel_aligned, s_sum1), _mm_sub_ps(_mm_mul_ps( s_two, s_actual ), s_ppf_aligned) );
+
+                s_sum1 = _mm_fmsub_ps( s_sixteen, s_sum1,  s_above2);
+
+                s_sum1 = _mm_fnmadd_ps( s_sixty, s_actual, s_sum1 );
+
+                s_sum1 = _mm_fmadd_ps( s_vel_aligned, s_sum1, _mm_fmsub_ps(s_two, s_actual, s_ppf_aligned) );
 
                 _mm_storeu_ps( &(data->nppf[ r ]), s_sum1);
             }
@@ -111,7 +115,7 @@ void seismic_exec_sse_unaligned( void * v )
 
 
 // function that implements the kernel of the seismic modeling algorithm
-void seismic_exec_sse_unaligned_pthread(void * v )
+void seismic_exec_sse_fma_unaligned_pthread(void * v )
 {
     stack_t * data = (stack_t*) v;
 
@@ -186,9 +190,12 @@ void seismic_exec_sse_unaligned_pthread(void * v )
                                                  _mm_add_ps( s_left1, s_right1)));
 
                 s_above2 = _mm_add_ps( s_left2, _mm_add_ps( s_right2, _mm_add_ps( s_under2, s_above2)));
-                s_sum1 = _mm_mul_ps( s_sixteen, s_sum1 );
-                s_sum1 = _mm_sub_ps( _mm_sub_ps( s_sum1,  s_above2), _mm_mul_ps( s_sixty, s_actual ) );
-                s_sum1 = _mm_add_ps( _mm_mul_ps( s_vel_aligned, s_sum1), _mm_sub_ps(_mm_mul_ps( s_two, s_actual ), s_ppf_aligned) );
+
+                s_sum1 = _mm_fmsub_ps( s_sixteen, s_sum1,  s_above2);
+
+                s_sum1 = _mm_fnmadd_ps( s_sixty, s_actual, s_sum1 );
+
+                s_sum1 = _mm_fmadd_ps( s_vel_aligned, s_sum1, _mm_fmsub_ps(s_two, s_actual, s_ppf_aligned) );
 
                 _mm_storeu_ps( &(data->nppf[ r ]), s_sum1);
             }

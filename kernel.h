@@ -56,14 +56,26 @@ void seismic_exec_pthread( void * v );
 void seismic_exec_sse_std( void * v );
 void seismic_exec_sse_std_pthread( void * v );
 
+void seismic_exec_sse_fma_std( void * v );
+void seismic_exec_sse_fma_std_pthread( void * v );
+
 void seismic_exec_sse_unaligned( void * v );
 void seismic_exec_sse_unaligned_pthread( void * v );
+
+void seismic_exec_sse_fma_unaligned( void * v );
+void seismic_exec_sse_fma_unaligned_pthread( void * v );
 
 void seismic_exec_sse_aligned( void * v );
 void seismic_exec_sse_aligned_pthread( void * v );
 
+void seismic_exec_sse_fma_aligned( void * v );
+void seismic_exec_sse_fma_aligned_pthread( void * v );
+
 void seismic_exec_sse_aligned_not_grouped( void * v );
 void seismic_exec_sse_aligned_not_grouped_pthread( void * v );
+
+void seismic_exec_sse_fma_aligned_not_grouped( void * v );
+void seismic_exec_sse_fma_aligned_not_grouped_pthread( void * v );
 
 void seismic_exec_avx_unaligned( void * v );
 void seismic_exec_avx_unaligned_pthread( void * v );
