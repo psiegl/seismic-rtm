@@ -151,6 +151,9 @@ void seismic_exec_avx2_unaligned_pthread(void * v )
     s_sixteen = _mm256_load_ps( (const float *) &sixteen );
     s_sixty = _mm256_load_ps( (const float *) &sixty );
 
+    __m256i s_shl, s_shr;
+    init_shuffle( &s_shl, &s_shr );
+
     int teiler = 10;
     int isSeismicPrivileg = 0;
     if(data->x_start <= data->x_pulse && data->x_pulse < data->x_end){
@@ -195,12 +198,15 @@ void seismic_exec_avx2_unaligned_pthread(void * v )
                 s_left2 = _mm256_loadu_ps( &(data->apf[ r_min2 ]) );
                 s_right2 = _mm256_loadu_ps( &(data->apf[ r_plus2 ]) );
                 s_right1 = _mm256_loadu_ps( &(data->apf[ r_plus1 ]) );
-                s_above1 = _mm256_loadu_ps( &(data->apf[ r -1]) );
-                s_under1 = _mm256_loadu_ps( &(data->apf[ r +1]) );
+//                s_above1 = _mm256_loadu_ps( &(data->apf[ r -1]) );
+//                s_under1 = _mm256_loadu_ps( &(data->apf[ r +1]) );
 
                 s_above2 = _mm256_loadu_ps( &(data->apf[ r -2]) );
 
                 s_under2 = _mm256_loadu_ps( &(data->apf[ r +2]) );
+
+                s_above1 = avx_combine( s_above2, s_actual, s_shl, s_shr );
+                s_under1 = avx_combine( s_actual, s_under2, s_shl, s_shr );
 
                 // sum up
                 s_sum1 = _mm256_add_ps( s_under1, _mm256_add_ps( s_above1, _mm256_add_ps( s_left1, s_right1)));
