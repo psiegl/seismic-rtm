@@ -45,6 +45,8 @@ struct _config_t {
 
   unsigned output;
   unsigned ascii;
+
+  double GFLOP;
 };
 
 void get_config( int argc, char * argv[], config_t * config );

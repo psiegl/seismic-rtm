@@ -69,7 +69,7 @@ void seismic_exec_avx2_fma_unaligned( void * v )
 
     printf("processing...\n");
 
-// measure performance from here
+    gettimeofday(&data->s, NULL);
 
     // time loop
     for (t = 0; t < data->timesteps; t++)
@@ -135,7 +135,7 @@ void seismic_exec_avx2_fma_unaligned( void * v )
         }
     }
 
-// until here
+    gettimeofday(&data->e, NULL);
 
     printf("\nend process!\n");
     fflush(stdout);
@@ -181,7 +181,8 @@ void seismic_exec_avx2_fma_unaligned_pthread(void * v )
         exit( EXIT_FAILURE );
     }
 */
-// measure performance from here
+
+    gettimeofday(&data->s, NULL);
   
     // time loop
     unsigned i, j, t;
@@ -256,7 +257,7 @@ void seismic_exec_avx2_fma_unaligned_pthread(void * v )
         }*/
     }
 
-// until here
+    gettimeofday(&data->e, NULL);
 
     if( data->x_start != 2 )
       pthread_exit( NULL );

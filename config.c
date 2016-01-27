@@ -261,6 +261,8 @@ void get_config( int argc, char * argv[], config_t * config ) {
     config->pulseY = config->height / 2;
   if( config->threads < 1 )
     config->threads = 1;
+
+  config->GFLOP = ((double)((double)(config->width - 4) * (double)(config->height - 4) * 15.0 + 1.0) * (double)config->timesteps)/1000000.0;
 }
 
 void print_config( config_t * config ) {
@@ -303,6 +305,7 @@ void print_config( config_t * config ) {
   const char * type;
   mem = round_and_get_unit( mem, &type );
   printf("(ID=0Z): mem    = %ld %s\n", mem, type );
+  printf("(ID=0Z): GFLOP  = %.2f\n", config->GFLOP );
 
   printf("=== Running environment:\n");
 
@@ -321,7 +324,7 @@ void print_config( config_t * config ) {
   printf( "(ID=0Z): CORES  = %d", atoi(buffer) );
 
   uint32_t cap = check_hw_capabilites();
-  if( cap & (HAS_SSE | HAS_AVX) )
+  if( cap & (HAS_SSE | HAS_AVX | HAS_AVX2 | HAS_FMA) )
     printf(" inc.");
   if( cap & HAS_SSE )
     printf(" SSE");

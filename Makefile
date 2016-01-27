@@ -14,7 +14,13 @@
 #  along with seismic.  If not, see <http://www.gnu.org/licenses/>.
 
 TARGET := seismic.elf
-OBJS   := kernel_avx_unaligned.o kernel_avx_fma_unaligned.o kernel_avx2_unaligned.o kernel_avx2_fma_unaligned.o kernel_sse_unaligned.o kernel_sse_aligned_not_grouped.o kernel_sse_aligned.o kernel_sse_std.o kernel_plain.o config.o main.o visualize.o
+OBJS   := kernel_plain.o config.o main.o visualize.o
+
+SSE    := kernel_sse_unaligned.o kernel_sse_aligned_not_grouped.o kernel_sse_aligned.o kernel_sse_std.o
+AVX    := kernel_avx_unaligned.o kernel_avx_fma_unaligned.o kernel_avx2_unaligned.o kernel_avx2_fma_unaligned.o
+AVX2   := kernel_avx2_unaligned.o kernel_avx2_fma_unaligned.o
+FMA    := kernel_avx_fma_unaligned.o kernel_avx2_fma_unaligned.o
+
 
 WIDTH   = 1000
 HEIGHT  = 516
@@ -24,40 +30,23 @@ STEPS   = 1000
 THREADS = 8
 TYPE    = sse_unaligned
 
-CC      = clang #gcc
+CC      = gcc # clang
 CFLAGS  = -O3 -ffast-math -ffp-contract=fast #-march=native
+
+$(AVX):  CFLAGS += -mavx
+$(AVX2): CFLAGS += -mavx2
+$(FMA):  CFLAGS += -mfma
+$(SSE):  CFLAGS += -msse
 
 default: compile run
 
-%.elf: $(OBJS)
+%.elf: $(OBJS) $(AVX) $(SSE)
 	$(CC) -pthread -lm -o $@ $^
 
+.INTERMEDIATE: $(OBJS) $(AVX) $(SSE)
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-kernel_avx_unaligned.o: kernel_avx_unaligned.c
-	$(CC) $(CFLAGS) -mavx -c -o $@ $<
-
-kernel_avx_fma_unaligned.o: kernel_avx_fma_unaligned.c
-	$(CC) $(CFLAGS) -mavx -mfma -c -o $@ $<
-
-kernel_avx2_unaligned.o: kernel_avx2_unaligned.c
-	$(CC) $(CFLAGS) -mavx -mavx2 -c -o $@ $<
-
-kernel_avx2_fma_unaligned.o: kernel_avx2_fma_unaligned.c
-	$(CC) $(CFLAGS) -mavx -mavx2 -mfma -c -o $@ $<
-
-kernel_sse_unaligned.o: kernel_sse_unaligned.c
-	$(CC) $(CFLAGS) -msse -c -o $@ $<
-
-kernel_sse_aligned_not_grouped.o: kernel_sse_aligned_not_grouped.c
-	$(CC) $(CFLAGS) -msse -c -o $@ $<
-
-kernel_sse_aligned.o: kernel_sse_aligned.c
-	$(CC) $(CFLAGS) -msse -c -o $@ $<
-
-kernel_sse_std.o: kernel_sse_std.c
-	$(CC) $(CFLAGS) -msse -c -o $@ $<
 
 
 compile: $(TARGET)

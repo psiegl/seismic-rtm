@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <sys/time.h>
 #include "barrier/barrier.h"
 
 typedef struct _stack_t stack_t;
@@ -44,6 +45,9 @@ struct _stack_t {
   unsigned y_pulse;
 
   unsigned set_pulse;
+
+  struct timeval s;
+  struct timeval e;
 };
 
 void seismic_exec_plain( void * v );

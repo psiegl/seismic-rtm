@@ -36,6 +36,9 @@ int main( int argc, char * argv[] ) {
   init_seismic_buffers( config.width, config.height, config.timesteps, VEL, APF, NPPF, pulsevector );
 
 
+  struct timeval t1, t2;
+  gettimeofday(&t1, NULL);
+
   BARRIER_TYPE barrier;
   BARRIER_INIT( &barrier, config.threads );
 
@@ -72,6 +75,7 @@ int main( int argc, char * argv[] ) {
 
   void (* func)(void *) = NULL;
   switch( config.kernel ) {
+    default:
     case KERNEL__PLAIN_C:
       if( config.threads == 1 )
         func = seismic_exec_plain;
@@ -134,9 +138,6 @@ int main( int argc, char * argv[] ) {
       else
         func = seismic_exec_avx2_fma_unaligned_pthread;
       break;
-      
-    default:
-      break;
   }
 
   if( func == NULL ) {
@@ -150,6 +151,7 @@ int main( int argc, char * argv[] ) {
 //  pthread_attr_setdetachstate( &attr, PTHREAD_CREATE_JOINABLE );
 
   pthread_t * threads = (pthread_t*) malloc ( sizeof(pthread_t) * (config.threads) );
+
   unsigned i;
   for( i = 0; i < config.threads - 1; i++ ) {
     if( pthread_create( &threads[i], NULL, (void * (*)(void *))func, (void*) &data[i + 1] ) ) {
@@ -173,6 +175,14 @@ int main( int argc, char * argv[] ) {
     }
   }
 
+  gettimeofday(&t2, NULL);
+
+  double elapsedTimeOuter = (t2.tv_sec - t1.tv_sec) * 1000.0 + (t2.tv_usec - t1.tv_usec) / 1000.0; // ms
+  double elapsedTimeInner = (data[0].e.tv_sec - data[0].s.tv_sec) * 1000.0 + (data[0].e.tv_usec - data[0].s.tv_usec) / 1000.0; // ms
+
+  printf("\n");
+  printf("(ID=0Z): OUTER  = %.2f (GFLOPS: %.2f)\n", elapsedTimeOuter, config.GFLOP/elapsedTimeOuter );
+  printf("(ID=0Z): INNER  = %.2f (GFLOPS: %.2f)\n", elapsedTimeInner, config.GFLOP/elapsedTimeInner );
 
   if( config.ascii ) {
     show_ascii( &config, config.ascii, APF, NPPF );
@@ -181,14 +191,15 @@ int main( int argc, char * argv[] ) {
     write_matrice( &config, APF, NPPF );
   }
 
-/*
+/* // aligned version!
   free( APF );
   free( NPPF );
   free( VEL );
+*/
   free( pulsevector );
   free( data );
   free( threads );
-*/
+
   return 0;
 }
 
