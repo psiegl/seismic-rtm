@@ -30,8 +30,9 @@ default: compile run
 %.elf: $(OBJS)
 	$(CC) -pthread -lm -o $@ $^
 
+# we could use -march=native, but we would always compile out not supported ISA features, which means we would need to recompile for any processor...
 %.o: %.c
-	$(CC) -O3 -ffast-math -march=native -c -o $@ $<
+	$(CC) -O3 -ffast-math -msse -mavx -mavx2 -mfma -c -o $@ $<
 
 compile: $(TARGET)
 
