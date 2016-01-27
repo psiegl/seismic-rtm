@@ -23,16 +23,42 @@ PULSEY  = 70
 STEPS   = 1000
 THREADS = 8
 TYPE    = sse_unaligned
+
 CC      = clang #gcc
+CFLAGS  = -O3 -ffast-math -ffp-contract=fast #-march=native
 
 default: compile run
 
 %.elf: $(OBJS)
 	$(CC) -pthread -lm -o $@ $^
 
-# we could use -march=native, but we would always compile out not supported ISA features, which means we would need to recompile for any processor...
 %.o: %.c
-	$(CC) -O3 -ffast-math -ffp-contract=fast -msse -mavx -mavx2 -mfma -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+kernel_avx_unaligned.o: kernel_avx_unaligned.c
+	$(CC) $(CFLAGS) -mavx -c -o $@ $<
+
+kernel_avx_fma_unaligned.o: kernel_avx_fma_unaligned.c
+	$(CC) $(CFLAGS) -mavx -mfma -c -o $@ $<
+
+kernel_avx2_unaligned.o: kernel_avx2_unaligned.c
+	$(CC) $(CFLAGS) -mavx -mavx2 -c -o $@ $<
+
+kernel_avx2_fma_unaligned.o: kernel_avx2_fma_unaligned.c
+	$(CC) $(CFLAGS) -mavx -mavx2 -mfma -c -o $@ $<
+
+kernel_sse_unaligned.o: kernel_sse_unaligned.c
+	$(CC) $(CFLAGS) -msse -c -o $@ $<
+
+kernel_sse_aligned_not_grouped.o: kernel_sse_aligned_not_grouped.c
+	$(CC) $(CFLAGS) -msse -c -o $@ $<
+
+kernel_sse_aligned.o: kernel_sse_aligned.c
+	$(CC) $(CFLAGS) -msse -c -o $@ $<
+
+kernel_sse_std.o: kernel_sse_std.c
+	$(CC) $(CFLAGS) -msse -c -o $@ $<
+
 
 compile: $(TARGET)
 
