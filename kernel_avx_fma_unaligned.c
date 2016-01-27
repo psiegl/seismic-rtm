@@ -26,14 +26,14 @@ void seismic_exec_avx_fma_unaligned( void * v )
     __m256 s_ppf_aligned, s_vel_aligned, s_actual, s_above1, s_left1, s_under1, s_right1, s_sum1;
     __m256 s_above2, s_under2, s_left2, s_right2;
 
-    float two[8] = {2.0f, 2.0f, 2.0f, 2.0f,2.0f, 2.0f, 2.0f, 2.0f};
-    float sixteen[8] = {16.0f,16.0f,16.0f,16.0f,16.0f,16.0f,16.0f,16.0f};
-    float sixty[8] = {60.0f,60.0f,60.0f,60.0f,60.0f,60.0f,60.0f,60.0f};
-
     // preload register with const. values.
-    s_two = _mm256_loadu_ps( (const float *) &two );
-    s_sixteen = _mm256_loadu_ps( (const float *) &sixteen );
-    s_sixty = _mm256_loadu_ps( (const float *) &sixty );
+    float two = 2.0f;
+    float sixteen = 16.0f;
+    float sixty = 60.0f;
+
+    s_two = _mm256_broadcast_ss( (const float*) &two );
+    s_sixteen = _mm256_broadcast_ss( (const float*) &sixteen );
+    s_sixty = _mm256_broadcast_ss( (const float*) &sixty );
 
     int teiler = 10;
     if(data->timesteps < teiler)
@@ -119,14 +119,14 @@ void seismic_exec_avx_fma_unaligned_pthread(void * v )
     __m256 s_ppf_aligned, s_vel_aligned, s_actual, s_above1, s_left1, s_under1, s_right1, s_sum1;
     __m256 s_above2, s_under2, s_left2, s_right2;
 
-    float two[8] = {2.0f, 2.0f, 2.0f, 2.0f,2.0f, 2.0f, 2.0f, 2.0f};
-    float sixteen[8] = {16.0f,16.0f,16.0f,16.0f,16.0f,16.0f,16.0f,16.0f};
-    float sixty[8] = {60.0f,60.0f,60.0f,60.0f,60.0f,60.0f,60.0f,60.0f};
-
     // preload register with const. values.
-    s_two = _mm256_loadu_ps( (const float *) &two );
-    s_sixteen = _mm256_loadu_ps( (const float *) &sixteen );
-    s_sixty = _mm256_loadu_ps( (const float *) &sixty );
+    float two = 2.0f;
+    float sixteen = 16.0f;
+    float sixty = 60.0f;
+
+    s_two = _mm256_broadcast_ss( (const float*) &two );
+    s_sixteen = _mm256_broadcast_ss( (const float*) &sixteen );
+    s_sixty = _mm256_broadcast_ss( (const float*) &sixty );
 
     int teiler = 10;
     int isSeismicPrivileg = data->set_pulse;
