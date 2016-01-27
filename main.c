@@ -111,6 +111,13 @@ int main( int argc, char * argv[] ) {
       else
         func = seismic_exec_avx_unaligned_pthread;
       break;
+
+    case KERNEL__SIMD_AVX2_UNALIGNED:
+      if( config.threads == 1 )
+        func = seismic_exec_avx2_unaligned;
+      else
+        func = seismic_exec_avx2_unaligned_pthread;
+      break;
       
     default:
       break;

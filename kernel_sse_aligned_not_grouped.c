@@ -32,9 +32,9 @@ void seismic_exec_sse_aligned_not_grouped( void * v )
     float sixty[4] = {60.0f,60.0f,60.0f,60.0f};
 
     // preload register with const. values.
-    s_two = _mm_load_ps( (const float *) &two );
-    s_sixteen = _mm_load_ps( (const float *) &sixteen );
-    s_sixty = _mm_load_ps( (const float *) &sixty );
+    s_two = _mm_loadu_ps( (const float *) &two );
+    s_sixteen = _mm_loadu_ps( (const float *) &sixteen );
+    s_sixty = _mm_loadu_ps( (const float *) &sixty );
 
     int teiler = 10;
     if(data->timesteps < teiler)

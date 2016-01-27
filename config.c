@@ -79,7 +79,8 @@ void print_usage( const char * argv0 ) {
          "  \t sse_aligned,\n"
          "  \t sse_aligned_not_grouped\n" );
   if( cap & HAS_AVX )
-    printf("  \t avx_unaligned,\n");
+    printf("  \t avx_unaligned,\n"
+           "  \t avx2_unaligned\n");
 
   printf("\n"
          "  --threads \t( -p )\n"
@@ -184,6 +185,11 @@ void get_config( int argc, char * argv[], config_t * config ) {
           config->alignment = 0;
           config->vectorwidth = 8 * sizeof(float);
         }
+        else if( ! strcmp( optarg, "avx2_unaligned" ) && (cap & HAS_AVX) ) {
+          config->kernel = KERNEL__SIMD_AVX2_UNALIGNED;
+          config->alignment = 0;
+          config->vectorwidth = 8 * sizeof(float);
+        }
         else if( ! strcmp( optarg, "plain_c" ) ) {
         }
         else {
@@ -244,7 +250,8 @@ void print_config( config_t * config ) {
     { KERNEL__SIMD_SSE_UNALIGNED, "sse_unaligned" },
     { KERNEL__SIMD_SSE_ALIGNED, "sse_aligned" },
     { KERNEL__SIMD_SSE_ALIGNED_NOT_GROUPED, "sse_aligned_not_grouped" },
-    { KERNEL__SIMD_AVX_UNALIGNED, "avx_unaligned" }
+    { KERNEL__SIMD_AVX_UNALIGNED, "avx_unaligned" },
+    { KERNEL__SIMD_AVX2_UNALIGNED, "avx2_unaligned" }
   };
 
   unsigned i;
@@ -298,6 +305,7 @@ void print_config( config_t * config ) {
     printf(" SSE");
   if( cap & HAS_AVX )
     printf(" AVX");
+  // AVX2?
 
   printf("\n\n");
 }
