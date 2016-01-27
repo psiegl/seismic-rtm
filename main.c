@@ -191,11 +191,11 @@ int main( int argc, char * argv[] ) {
     write_matrice( &config, APF, NPPF );
   }
 
-/* // aligned version!
-  free( APF );
-  free( NPPF );
-  free( VEL );
-*/
+ // aligned version!
+  free( ((void*)APF) - (config.alignment ? (config.alignment - 2 * sizeof(float)) : 0) );
+  free( ((void*)NPPF) - (config.alignment ? (config.alignment - 2 * sizeof(float)) : 0)  );
+  free( ((void*)VEL) - (config.alignment ? (config.alignment - 2 * sizeof(float)) : 0) );
+
   free( pulsevector );
   free( data );
   free( threads );
