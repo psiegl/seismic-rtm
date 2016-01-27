@@ -62,7 +62,13 @@ void seismic_exec_sse_aligned_not_grouped_pthread( void * v );
 void seismic_exec_avx_unaligned( void * v );
 void seismic_exec_avx_unaligned_pthread( void * v );
 
+void seismic_exec_avx_fma_unaligned( void * v );
+void seismic_exec_avx_fma_unaligned_pthread( void * v );
+
 void seismic_exec_avx2_unaligned( void * v );
 void seismic_exec_avx2_unaligned_pthread( void * v );
+
+void seismic_exec_avx2_fma_unaligned( void * v );
+void seismic_exec_avx2_fma_unaligned_pthread( void * v );
 
 #endif /* #ifndef _KERNEL_H_ */

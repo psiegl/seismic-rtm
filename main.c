@@ -112,11 +112,25 @@ int main( int argc, char * argv[] ) {
         func = seismic_exec_avx_unaligned_pthread;
       break;
 
+    case KERNEL__SIMD_AVX_FMA_UNALIGNED:
+      if( config.threads == 1 )
+        func = seismic_exec_avx_fma_unaligned;
+      else
+        func = seismic_exec_avx_fma_unaligned_pthread;
+      break;
+
     case KERNEL__SIMD_AVX2_UNALIGNED:
       if( config.threads == 1 )
         func = seismic_exec_avx2_unaligned;
       else
         func = seismic_exec_avx2_unaligned_pthread;
+      break;
+
+    case KERNEL__SIMD_AVX2_FMA_UNALIGNED:
+      if( config.threads == 1 )
+        func = seismic_exec_avx2_fma_unaligned;
+      else
+        func = seismic_exec_avx2_fma_unaligned_pthread;
       break;
       
     default:

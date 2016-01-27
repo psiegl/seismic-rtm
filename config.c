@@ -78,9 +78,16 @@ void print_usage( const char * argv0 ) {
          "  \t sse_unaligned,\n"
          "  \t sse_aligned,\n"
          "  \t sse_aligned_not_grouped\n" );
-  if( cap & HAS_AVX )
-    printf("  \t avx_unaligned,\n"
-           "  \t avx2_unaligned\n");
+  if( cap & HAS_AVX ) {
+    printf("  \t avx_unaligned\n");
+    if( cap & HAS_FMA )
+      printf("  \t avx_fma_unaligned\n"); // most likely only the case if AVX2 available (HASWELL)
+  }
+  if( cap & HAS_AVX2 ) {
+    printf("  \t avx2_unaligned\n");
+    if( cap & HAS_FMA )
+      printf("  \t avx2_fma_unaligned\n");
+  }
 
   printf("\n"
          "  --threads \t( -p )\n"
@@ -143,23 +150,23 @@ void get_config( int argc, char * argv[], config_t * config ) {
 
     switch (opt) {
       case 'x':
-	      config->height = atoi( optarg );
+        config->height = atoi( optarg );
         break;
 
       case 'y':
-	      config->width = atoi( optarg );
+        config->width = atoi( optarg );
         break;
 
       case 'i':
-	      config->pulseY = atoi( optarg );
+        config->pulseY = atoi( optarg );
         break;
 
       case 'j':
-		    config->pulseX = atoi( optarg );
+        config->pulseX = atoi( optarg );
         break;
 
       case 't':
-		    config->timesteps = atoi( optarg );
+        config->timesteps = atoi( optarg );
         break;
 
       case 'k':
@@ -190,6 +197,16 @@ void get_config( int argc, char * argv[], config_t * config ) {
         }
         else if( ! strcmp( optarg, "avx2_unaligned" ) && (cap & HAS_AVX && cap & HAS_AVX2) ) {
           config->kernel = KERNEL__SIMD_AVX2_UNALIGNED;
+          config->alignment = 0;
+          config->vectorwidth = 8 * sizeof(float);
+        }
+        else if( ! strcmp( optarg, "avx_fma_unaligned" ) && (cap & HAS_AVX && cap & HAS_FMA) ) {
+          config->kernel = KERNEL__SIMD_AVX_FMA_UNALIGNED;
+          config->alignment = 0;
+          config->vectorwidth = 8 * sizeof(float);
+        }
+        else if( ! strcmp( optarg, "avx2_fma_unaligned" ) && (cap & HAS_AVX && cap & HAS_AVX2 && cap & HAS_FMA) ) {
+          config->kernel = KERNEL__SIMD_AVX2_FMA_UNALIGNED;
           config->alignment = 0;
           config->vectorwidth = 8 * sizeof(float);
         }
@@ -254,7 +271,9 @@ void print_config( config_t * config ) {
     { KERNEL__SIMD_SSE_ALIGNED, "sse_aligned" },
     { KERNEL__SIMD_SSE_ALIGNED_NOT_GROUPED, "sse_aligned_not_grouped" },
     { KERNEL__SIMD_AVX_UNALIGNED, "avx_unaligned" },
-    { KERNEL__SIMD_AVX2_UNALIGNED, "avx2_unaligned" }
+    { KERNEL__SIMD_AVX2_UNALIGNED, "avx2_unaligned" },
+    { KERNEL__SIMD_AVX_FMA_UNALIGNED, "avx_fma_unaligned" },
+    { KERNEL__SIMD_AVX2_FMA_UNALIGNED, "avx2_fma_unaligned" }
   };
 
   unsigned i;
@@ -310,6 +329,8 @@ void print_config( config_t * config ) {
     printf(" AVX");
   if( cap & HAS_AVX2 )
     printf(" AVX2");
+  if( cap & HAS_FMA )
+    printf(" FMA");
 
   printf("\n\n");
 }

@@ -14,7 +14,7 @@
 #  along with seismic.  If not, see <http://www.gnu.org/licenses/>.
 
 TARGET := seismic.elf
-OBJS   := kernel_avx_unaligned.o kernel_avx2_unaligned.o kernel_sse_unaligned.o kernel_sse_aligned_not_grouped.o kernel_sse_aligned.o kernel_sse_std.o kernel_plain.o config.o main.o visualize.o
+OBJS   := kernel_avx_unaligned.o kernel_avx_fma_unaligned.o kernel_avx2_unaligned.o kernel_avx2_fma_unaligned.o kernel_sse_unaligned.o kernel_sse_aligned_not_grouped.o kernel_sse_aligned.o kernel_sse_std.o kernel_plain.o config.o main.o visualize.o
 
 WIDTH   = 1000
 HEIGHT  = 516

@@ -25,7 +25,7 @@
 #define HAS_SSE41 (1 << 4)
 #define HAS_SSE42 (1 << 5)
 #define HAS_SSE4a (1 << 6)
-#define HAS_FMA3  (1 << 7)
+#define HAS_FMA   (1 << 7)
 #define HAS_FMA4  (1 << 8)
 #define HAS_AVX   (1 << 9)
 #define HAS_AVX2  (1 << 10)
@@ -39,6 +39,8 @@ uint32_t check_hw_capabilites( void ) {
     cap |= HAS_AVX;
   if(__builtin_cpu_supports("avx2"))
     cap |= HAS_AVX2;
+  if(__builtin_cpu_supports("fma"))
+    cap |= HAS_FMA;
 
   return cap;
 }
