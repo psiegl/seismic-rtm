@@ -124,9 +124,9 @@ void seismic_exec_avx_fma_unaligned_pthread(void * v )
     float sixty[8] = {60.0f,60.0f,60.0f,60.0f,60.0f,60.0f,60.0f,60.0f};
 
     // preload register with const. values.
-    s_two = _mm256_load_ps( (const float *) &two );
-    s_sixteen = _mm256_load_ps( (const float *) &sixteen );
-    s_sixty = _mm256_load_ps( (const float *) &sixty );
+    s_two = _mm256_loadu_ps( (const float *) &two );
+    s_sixteen = _mm256_loadu_ps( (const float *) &sixteen );
+    s_sixty = _mm256_loadu_ps( (const float *) &sixty );
 
     int teiler = 10;
     int isSeismicPrivileg = data->set_pulse;
