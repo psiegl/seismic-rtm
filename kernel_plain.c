@@ -78,14 +78,12 @@ void seismic_exec_pthread( void * v )
     stack_t * data = (stack_t*) v;
 
     int teiler = 10;
-    int isSeismicPrivileg = 0;
-    if(data->x_start <= data->x_pulse && data->x_pulse < data->x_end){
-        isSeismicPrivileg = 1;
+    int isSeismicPrivileg = data->set_pulse;
+    if( isSeismicPrivileg ) {
+      if(data->timesteps < teiler)
+         teiler = data->timesteps;
 
-        if(data->timesteps < teiler)
-           teiler = data->timesteps;
-
-        printf("processing...\n");
+      printf("processing...\n");
     }
 
     // start everything in parallel

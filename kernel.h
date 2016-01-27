@@ -42,6 +42,8 @@ struct _stack_t {
 
   unsigned x_pulse;
   unsigned y_pulse;
+
+  unsigned set_pulse;
 };
 
 void seismic_exec_plain( void * v );

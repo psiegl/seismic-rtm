@@ -66,6 +66,8 @@ int main( int argc, char * argv[] ) {
 
     data[t_id].y_start = 2;
     data[t_id].y_end = config.height - 2;
+
+    data[t_id].set_pulse = (data[t_id].x_start <= data[t_id].x_pulse && data[t_id].x_pulse < data[t_id].x_end);
   }
 
   void (* func)(void *) = NULL;
