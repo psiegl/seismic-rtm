@@ -48,9 +48,13 @@ void seismic_exec_sse_partial_aligned( void * v )
     {
         // spatial loop in x
         for (i=2; i<data->width - 2; i++){
+
+            unsigned r = i * data->height + 2;
+            s_above2 = _mm_loadu_ps( &(data->apf[ r -2]) );
+
             // spatial loop in y
             for (j=2; j<data->height - 2; j+=4) {
-                unsigned r = i * data->height + j;
+                r = i * data->height + j;
                 unsigned r_min1 = r - data->height;
                 unsigned r_min2 = r - (data->height * 2);
                 unsigned r_plus1 = r + data->height;
@@ -65,7 +69,6 @@ void seismic_exec_sse_partial_aligned( void * v )
                 s_right2 = _mm_load_ps( &(data->apf[ r_plus2 ]) );
                 s_right1 = _mm_load_ps( &(data->apf[ r_plus1 ]) );
 
-                s_above2 = _mm_loadu_ps( &(data->apf[ r -2]) );
                 s_under2 = _mm_loadu_ps( &(data->apf[ r +2]) );
 
                 s_actual = _mm_shuffle_ps( s_above2, s_under2, _MM_SHUFFLE( 1, 0, 3, 2 ) ); // 3 4 5 6
@@ -83,6 +86,8 @@ void seismic_exec_sse_partial_aligned( void * v )
                 s_sum1 = _mm_add_ps( _mm_mul_ps( s_vel_aligned, s_sum1), _mm_sub_ps(_mm_mul_ps( s_two, s_actual ), s_ppf_aligned) );
 
                 _mm_store_ps( &(data->nppf[ r ]), s_sum1);
+                
+                s_above2 = s_under2;
             }
         }
 
@@ -139,12 +144,6 @@ void seismic_exec_sse_partial_aligned_pthread( void * v )
 
     // start everything in parallel
     BARRIER( data->barrier, data->id );
-/*    unsigned ret = pthread_barrier_wait( data->barrier );
-    if( ret && ret != PTHREAD_BARRIER_SERIAL_THREAD ) {
-        fprintf(stderr, "ERROR: Couldn't sync on barrier!!\nExiting...\n");
-        exit( EXIT_FAILURE );
-    }
-*/
 
     gettimeofday(&data->s, NULL);
   
@@ -154,9 +153,13 @@ void seismic_exec_sse_partial_aligned_pthread( void * v )
     {
         // spatial loop in x
         for (i=data->x_start; i<data->x_end; i++) {
+
+            unsigned r = i * data->height + data->y_start;
+            s_above2 = _mm_loadu_ps( &(data->apf[ r -2]) );
+
             // spatial loop in y
             for (j=data->y_start; j<data->y_end; j+=4) {
-                unsigned r = i * data->height + j;
+                r = i * data->height + j;
                 unsigned r_min1 = r - data->height;
                 unsigned r_min2 = r - (data->height * 2);
                 unsigned r_plus1 = r + data->height;
@@ -171,7 +174,6 @@ void seismic_exec_sse_partial_aligned_pthread( void * v )
                 s_right2 = _mm_load_ps( &(data->apf[ r_plus2 ]) );
                 s_right1 = _mm_load_ps( &(data->apf[ r_plus1 ]) );
 
-                s_above2 = _mm_loadu_ps( &(data->apf[ r -2]) );
                 s_under2 = _mm_loadu_ps( &(data->apf[ r +2]) );
 
                 s_actual = _mm_shuffle_ps( s_above2, s_under2, _MM_SHUFFLE( 1, 0, 3, 2 ) ); // 3 4 5 6
@@ -189,6 +191,8 @@ void seismic_exec_sse_partial_aligned_pthread( void * v )
                 s_sum1 = _mm_add_ps( _mm_mul_ps( s_vel_aligned, s_sum1), _mm_sub_ps(_mm_mul_ps( s_two, s_actual ), s_ppf_aligned) );
 
                 _mm_store_ps( &(data->nppf[ r ]), s_sum1);
+                
+                s_above2 = s_under2;
             }
         }
 
@@ -212,11 +216,6 @@ void seismic_exec_sse_partial_aligned_pthread( void * v )
         }
 
         BARRIER( data->barrier, data->id );
-        /*ret = pthread_barrier_wait( data->barrier );
-        if( ret && ret != PTHREAD_BARRIER_SERIAL_THREAD ) {
-            fprintf(stderr, "ERROR: Couldn't sync on barrier!!\nExiting...\n");
-            exit( EXIT_FAILURE );
-        }*/
     }
 
     gettimeofday(&data->e, NULL);

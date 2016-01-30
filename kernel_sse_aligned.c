@@ -145,12 +145,6 @@ void seismic_exec_sse_aligned_pthread( void * v )
 
     // start everything in parallel
     BARRIER( data->barrier, data->id );
-/*    unsigned ret = pthread_barrier_wait( data->barrier );
-    if( ret && ret != PTHREAD_BARRIER_SERIAL_THREAD ) {
-        fprintf(stderr, "ERROR: Couldn't sync on barrier!!\nExiting...\n");
-        exit( EXIT_FAILURE );
-    }
-*/
 
     gettimeofday(&data->s, NULL);
   
@@ -224,11 +218,6 @@ void seismic_exec_sse_aligned_pthread( void * v )
         }
 
         BARRIER( data->barrier, data->id );
-        /*ret = pthread_barrier_wait( data->barrier );
-        if( ret && ret != PTHREAD_BARRIER_SERIAL_THREAD ) {
-            fprintf(stderr, "ERROR: Couldn't sync on barrier!!\nExiting...\n");
-            exit( EXIT_FAILURE );
-        }*/
     }
 
     gettimeofday(&data->e, NULL);
