@@ -84,6 +84,8 @@ void print_usage( const char * argv0 ) {
     if( cap & HAS_FMA )
       printf("  \t sse_fma_aligned,\n");
     printf("  \t sse_partial_aligned,\n");
+    if( cap & HAS_FMA )
+      printf("  \t sse_fma_partial_aligned,\n");
     printf("  \t sse_aligned_not_grouped\n" );
     if( cap & HAS_FMA )
       printf("  \t sse_fma_aligned_not_grouped\n");
@@ -215,6 +217,11 @@ void get_config( int argc, char * argv[], config_t * config ) {
           config->alignment = 4 * sizeof(float);
           config->vectorwidth = 4 * sizeof(float);
         }
+        else if( ! strcmp( optarg, "sse_fma_partial_aligned" ) && (cap & HAS_SSE) ) {
+          config->kernel = KERNEL__SIMD_SSE_FMA_PARTIAL_ALIGNED;
+          config->alignment = 4 * sizeof(float);
+          config->vectorwidth = 4 * sizeof(float);
+        }
         else if( ! strcmp( optarg, "sse_aligned_not_grouped" ) && (cap & HAS_SSE) ) {
           config->kernel = KERNEL__SIMD_SSE_ALIGNED_NOT_GROUPED;
           config->alignment = 4 * sizeof(float);
@@ -310,6 +317,7 @@ void print_config( config_t * config ) {
     { KERNEL__SIMD_SSE_ALIGNED, "sse_aligned" },
     { KERNEL__SIMD_SSE_FMA_ALIGNED, "sse_fma_aligned" },
     { KERNEL__SIMD_SSE_PARTIAL_ALIGNED, "sse_partial_aligned" },
+    { KERNEL__SIMD_SSE_FMA_PARTIAL_ALIGNED, "sse_fma_partial_aligned" },
     { KERNEL__SIMD_SSE_ALIGNED_NOT_GROUPED, "sse_aligned_not_grouped" },
     { KERNEL__SIMD_SSE_FMA_ALIGNED_NOT_GROUPED, "sse_fma_aligned_not_grouped" },
     { KERNEL__SIMD_AVX_UNALIGNED, "avx_unaligned" },
