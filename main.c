@@ -125,6 +125,13 @@ int main( int argc, char * argv[] ) {
         func = seismic_exec_sse_fma_aligned_pthread;
       break;
 
+    case KERNEL__SIMD_SSE_PARTIAL_ALIGNED:
+      if( config.threads == 1 )
+        func = seismic_exec_sse_partial_aligned;
+      else
+        func = seismic_exec_sse_partial_aligned_pthread;
+      break;
+
     case KERNEL__SIMD_SSE_ALIGNED_NOT_GROUPED:
       if( config.threads == 1 )
         func = seismic_exec_sse_aligned_not_grouped;

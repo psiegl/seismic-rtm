@@ -71,6 +71,9 @@ void seismic_exec_sse_aligned_pthread( void * v );
 void seismic_exec_sse_fma_aligned( void * v );
 void seismic_exec_sse_fma_aligned_pthread( void * v );
 
+void seismic_exec_sse_partial_aligned( void * v );
+void seismic_exec_sse_partial_aligned_pthread( void * v );
+
 void seismic_exec_sse_aligned_not_grouped( void * v );
 void seismic_exec_sse_aligned_not_grouped_pthread( void * v );
 
