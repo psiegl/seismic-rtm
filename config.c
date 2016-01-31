@@ -33,15 +33,15 @@ variant_t variants[] = {
   { "sse_std",                      HAS_SSE,                      seismic_exec_sse_std,                     seismic_exec_sse_std_pthread,                     4 * sizeof(float), 4 * sizeof(float) },
   { "sse_unaligned",                HAS_SSE,                      seismic_exec_sse_unaligned,               seismic_exec_sse_unaligned_pthread,               0,                 4 * sizeof(float) },
   { "sse_aligned",                  HAS_SSE,                      seismic_exec_sse_aligned,                 seismic_exec_sse_aligned_pthread,                 4 * sizeof(float), 4 * sizeof(float) },
-  { "sse_partial_aligned",          HAS_SSE,                      seismic_exec_sse_partial_aligned,         seismic_exec_sse_partial_aligned_pthread,         4 * sizeof(float), 4 * sizeof(float) },
   { "sse_aligned_not_grouped",      HAS_SSE,                      seismic_exec_sse_aligned_not_grouped,     seismic_exec_sse_aligned_not_grouped_pthread,     4 * sizeof(float), 4 * sizeof(float) },
+  { "sse_partial_aligned",          HAS_SSE,                      seismic_exec_sse_partial_aligned,         seismic_exec_sse_partial_aligned_pthread,         4 * sizeof(float), 4 * sizeof(float) },
   { "avx_unaligned",                HAS_AVX,                      seismic_exec_avx_unaligned,               seismic_exec_avx_unaligned_pthread,               0,                 8 * sizeof(float) },
   { "avx2_unaligned",               HAS_AVX | HAS_AVX2,           seismic_exec_avx2_unaligned,              seismic_exec_avx2_unaligned_pthread,              0,                 8 * sizeof(float) },
   { "fma_sse_std",                  HAS_SSE | HAS_FMA,            seismic_exec_fma_sse_std,                 seismic_exec_fma_sse_std_pthread,                 4 * sizeof(float), 4 * sizeof(float) },
   { "fma_sse_unaligned",            HAS_SSE | HAS_FMA,            seismic_exec_fma_sse_unaligned,           seismic_exec_fma_sse_unaligned_pthread,           0,                 4 * sizeof(float) },
   { "fma_sse_aligned",              HAS_SSE | HAS_FMA,            seismic_exec_fma_sse_aligned,             seismic_exec_fma_sse_aligned_pthread,             4 * sizeof(float), 4 * sizeof(float) },
-  { "fma_sse_partial_aligned",      HAS_SSE | HAS_FMA,            seismic_exec_fma_sse_partial_aligned,     seismic_exec_fma_sse_partial_aligned_pthread,     4 * sizeof(float), 4 * sizeof(float) },
   { "fma_sse_aligned_not_grouped",  HAS_SSE | HAS_FMA,            seismic_exec_fma_sse_aligned_not_grouped, seismic_exec_fma_sse_aligned_not_grouped_pthread, 4 * sizeof(float), 4 * sizeof(float) },
+  { "fma_sse_partial_aligned",      HAS_SSE | HAS_FMA,            seismic_exec_fma_sse_partial_aligned,     seismic_exec_fma_sse_partial_aligned_pthread,     4 * sizeof(float), 4 * sizeof(float) },
   { "fma_avx_unaligned",            HAS_AVX | HAS_FMA,            seismic_exec_fma_avx_unaligned,           seismic_exec_fma_avx_unaligned_pthread,           0,                 8 * sizeof(float) },
   { "fma_avx2_unaligned",           HAS_AVX | HAS_AVX2 | HAS_FMA, seismic_exec_fma_avx2_unaligned,          seismic_exec_fma_avx2_unaligned_pthread,          0,                 8 * sizeof(float) },
 };
@@ -98,7 +98,7 @@ void print_usage( const char * argv0 ) {
   uint32_t cap = check_hw_capabilites();
   unsigned i;
   for( i = 0; i < sizeof(variants)/sizeof(variants[0]); i++ )
-    if( ! (variants[i].cap & (~cap)) )
+    if( ! (variants[i].cap & ~cap) )
       printf("  \t %s\n", variants[i].type );
 
   printf("\n"

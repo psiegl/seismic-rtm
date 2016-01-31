@@ -123,8 +123,8 @@ int main( int argc, char * argv[] ) {
   double elapsedTimeInner = (data[0].e.tv_sec - data[0].s.tv_sec) * 1000.0 + (data[0].e.tv_usec - data[0].s.tv_usec) / 1000.0; // ms
 
   printf("\n");
-  printf("(ID=0Z): OUTER  = %.2f (GFLOPS: %.2f)\n", elapsedTimeOuter, config.GFLOP/elapsedTimeOuter );
-  printf("(ID=0Z): INNER  = %.2f (GFLOPS: %.2f)\n", elapsedTimeInner, config.GFLOP/elapsedTimeInner );
+  printf("(ID=0Z): OUTER  = %.2f ms (GFLOPS: %.2f)\n", elapsedTimeOuter, config.GFLOP/elapsedTimeOuter );
+  printf("(ID=0Z): INNER  = %.2f ms (GFLOPS: %.2f)\n", elapsedTimeInner, config.GFLOP/elapsedTimeInner );
 
   if( config.ascii ) {
     show_ascii( &config, config.ascii, APF, NPPF );
