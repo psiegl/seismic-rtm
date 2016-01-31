@@ -192,7 +192,9 @@ int main( int argc, char * argv[] ) {
 //  pthread_attr_init( &attr );
 //  pthread_attr_setdetachstate( &attr, PTHREAD_CREATE_JOINABLE );
 
-  pthread_t * threads = (pthread_t*) malloc ( sizeof(pthread_t) * (config.threads) );
+  printf("processing...\n");
+
+  pthread_t * threads = (pthread_t*) malloc ( sizeof(pthread_t) * (config.threads - 1) );
 
   unsigned i;
   for( i = 0; i < config.threads - 1; i++ ) {
@@ -218,6 +220,9 @@ int main( int argc, char * argv[] ) {
   }
 
   gettimeofday(&t2, NULL);
+
+  printf("\nend process!\n");
+  fflush(stdout);
 
   double elapsedTimeOuter = (t2.tv_sec - t1.tv_sec) * 1000.0 + (t2.tv_usec - t1.tv_usec) / 1000.0; // ms
   double elapsedTimeInner = (data[0].e.tv_sec - data[0].s.tv_sec) * 1000.0 + (data[0].e.tv_usec - data[0].s.tv_usec) / 1000.0; // ms

@@ -39,8 +39,6 @@ void seismic_exec_sse_unaligned( void * v )
     if(data->timesteps < teiler)
        teiler = data->timesteps;
 
-    printf("processing...\n");
-
     gettimeofday(&data->s, NULL);
 
     // time loop
@@ -104,9 +102,6 @@ void seismic_exec_sse_unaligned( void * v )
     }
 
     gettimeofday(&data->e, NULL);
-
-    printf("\nend process!\n");
-    fflush(stdout);
 }
 
 
@@ -131,18 +126,14 @@ void seismic_exec_sse_unaligned_pthread(void * v )
 
     int teiler = 10;
     int isSeismicPrivileg = data->set_pulse;
-    if( isSeismicPrivileg ) {
-      if(data->timesteps < teiler)
-         teiler = data->timesteps;
-
-      printf("processing...\n");
-    }
+    if( isSeismicPrivileg && data->timesteps < teiler)
+      teiler = data->timesteps;
 
     // start everything in parallel
     BARRIER( data->barrier, data->id );
 
     gettimeofday(&data->s, NULL);
-  
+
     // time loop
     unsigned i, j, t;
     for (t = 0; t < data->timesteps; t++)
@@ -212,10 +203,6 @@ void seismic_exec_sse_unaligned_pthread(void * v )
 
     gettimeofday(&data->e, NULL);
 
-    if( data->x_start != 2 )
+    if( data->id )
       pthread_exit( NULL );
-    else {
-      printf("\nend process!\n");
-      fflush(stdout);
-    }
 }
