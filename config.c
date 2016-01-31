@@ -21,6 +21,7 @@
 #include <string.h>         /* for strcmp */
 #include "config.h"
 #include "check_hw.h"
+#include "kernel.h"
 
 unsigned int ggT(unsigned int a, unsigned int b){
   if(b == 0)
@@ -73,32 +74,30 @@ void print_usage( const char * argv0 ) {
          "  \t plain_c,                         Default: plain_c\n");
 
   uint32_t cap = check_hw_capabilites();
-  if( cap & HAS_SSE ) {
-    printf("  \t sse_std,\n");
-    if( cap & HAS_FMA )
-      printf("  \t sse_fma_std,\n");
-    printf("  \t sse_unaligned,\n");
-    if( cap & HAS_FMA )
-      printf("  \t sse_fma_unaligned,\n");
-    printf("  \t sse_aligned,\n");
-    if( cap & HAS_FMA )
-      printf("  \t sse_fma_aligned,\n");
-    printf("  \t sse_partial_aligned,\n");
-    if( cap & HAS_FMA )
-      printf("  \t sse_fma_partial_aligned,\n");
-    printf("  \t sse_aligned_not_grouped\n" );
-    if( cap & HAS_FMA )
-      printf("  \t sse_fma_aligned_not_grouped\n");
-  }
-  if( cap & HAS_AVX ) {
+  if( cap & HAS_SSE )
+    printf("  \t sse_std,\n"
+           "  \t sse_unaligned,\n"
+           "  \t sse_aligned,\n"
+           "  \t sse_partial_aligned,\n"
+           "  \t sse_aligned_not_grouped\n" );
+
+  if( cap & HAS_AVX )
     printf("  \t avx_unaligned\n");
-    if( cap & HAS_FMA )
-      printf("  \t avx_fma_unaligned\n"); // most likely only the case if AVX2 available (HASWELL)
-  }
-  if( cap & HAS_AVX2 ) {
+
+  if( cap & HAS_AVX2 )
     printf("  \t avx2_unaligned\n");
-    if( cap & HAS_FMA )
-      printf("  \t avx2_fma_unaligned\n");
+
+  if( cap & HAS_FMA ) {
+    if( cap & HAS_SSE )
+      printf("  \t fma_sse_std,\n"
+             "  \t fma_sse_unaligned,\n"
+             "  \t fma_sse_aligned,\n"
+             "  \t fma_sse_partial_aligned,\n"
+             "  \t fma_sse_aligned_not_grouped\n");
+    if( cap & HAS_AVX )
+      printf("  \t fma_avx_unaligned\n"); // most likely only the case if AVX2 available (HASWELL)
+    if( cap & HAS_AVX2 )
+      printf("  \t fma_avx2_unaligned\n");
   }
 
   printf("\n"
@@ -184,75 +183,105 @@ void get_config( int argc, char * argv[], config_t * config ) {
       case 'k':
         if( ! strcmp( optarg, "sse_std" ) && (cap & HAS_SSE) ) {
           config->kernel = KERNEL__SIMD_SSE_STD;
+          config->f_sequential = seismic_exec_sse_std;
+          config->f_parallel = seismic_exec_sse_std_pthread;
           config->alignment = 4 * sizeof(float);
           config->vectorwidth = 4 * sizeof(float);
         }
-        if( ! strcmp( optarg, "sse_fma_std" ) && (cap & HAS_SSE && cap & HAS_FMA) ) {
-          config->kernel = KERNEL__SIMD_SSE_FMA_STD;
+        if( ! strcmp( optarg, "fma_sse_std" ) && (cap & HAS_SSE && cap & HAS_FMA) ) {
+          config->kernel = KERNEL__SIMD_FMA_SSE_STD;
+          config->f_sequential = seismic_exec_fma_sse_std;
+          config->f_parallel = seismic_exec_fma_sse_std_pthread;
           config->alignment = 4 * sizeof(float);
           config->vectorwidth = 4 * sizeof(float);
         }
         else if( ! strcmp( optarg, "sse_unaligned" ) && (cap & HAS_SSE) ) {
           config->kernel = KERNEL__SIMD_SSE_UNALIGNED;
+          config->f_sequential = seismic_exec_sse_unaligned;
+          config->f_parallel = seismic_exec_sse_unaligned_pthread;
           config->alignment = 0;
           config->vectorwidth = 4 * sizeof(float);
         }
-        else if( ! strcmp( optarg, "sse_fma_unaligned" ) && (cap & HAS_SSE && cap & HAS_FMA) ) {
-          config->kernel = KERNEL__SIMD_SSE_FMA_UNALIGNED;
+        else if( ! strcmp( optarg, "fma_sse_unaligned" ) && (cap & HAS_SSE && cap & HAS_FMA) ) {
+          config->kernel = KERNEL__SIMD_FMA_SSE_UNALIGNED;
+          config->f_sequential = seismic_exec_fma_sse_unaligned;
+          config->f_parallel = seismic_exec_fma_sse_unaligned_pthread;
           config->alignment = 0;
           config->vectorwidth = 4 * sizeof(float);
         }
         else if( ! strcmp( optarg, "sse_aligned" ) && (cap & HAS_SSE) ) {
           config->kernel = KERNEL__SIMD_SSE_ALIGNED;
+          config->f_sequential = seismic_exec_sse_aligned;
+          config->f_parallel = seismic_exec_sse_aligned_pthread;
           config->alignment = 4 * sizeof(float);
           config->vectorwidth = 4 * sizeof(float);
         }
-        else if( ! strcmp( optarg, "sse_fma_aligned" ) && (cap & HAS_SSE && cap & HAS_FMA) ) {
-          config->kernel = KERNEL__SIMD_SSE_FMA_ALIGNED;
+        else if( ! strcmp( optarg, "fma_sse_aligned" ) && (cap & HAS_SSE && cap & HAS_FMA) ) {
+          config->kernel = KERNEL__SIMD_FMA_SSE_ALIGNED;
+          config->f_sequential = seismic_exec_fma_sse_aligned;
+          config->f_parallel = seismic_exec_fma_sse_aligned_pthread;
           config->alignment = 4 * sizeof(float);
           config->vectorwidth = 4 * sizeof(float);
         }
         else if( ! strcmp( optarg, "sse_partial_aligned" ) && (cap & HAS_SSE) ) {
           config->kernel = KERNEL__SIMD_SSE_PARTIAL_ALIGNED;
+          config->f_sequential = seismic_exec_sse_partial_aligned;
+          config->f_parallel = seismic_exec_sse_partial_aligned_pthread;
           config->alignment = 4 * sizeof(float);
           config->vectorwidth = 4 * sizeof(float);
         }
-        else if( ! strcmp( optarg, "sse_fma_partial_aligned" ) && (cap & HAS_SSE) ) {
-          config->kernel = KERNEL__SIMD_SSE_FMA_PARTIAL_ALIGNED;
+        else if( ! strcmp( optarg, "fma_sse_partial_aligned" ) && (cap & HAS_SSE) ) {
+          config->kernel = KERNEL__SIMD_FMA_SSE_PARTIAL_ALIGNED;
+          config->f_sequential = seismic_exec_fma_sse_partial_aligned;
+          config->f_parallel = seismic_exec_fma_sse_partial_aligned_pthread;
           config->alignment = 4 * sizeof(float);
           config->vectorwidth = 4 * sizeof(float);
         }
         else if( ! strcmp( optarg, "sse_aligned_not_grouped" ) && (cap & HAS_SSE) ) {
           config->kernel = KERNEL__SIMD_SSE_ALIGNED_NOT_GROUPED;
+          config->f_sequential = seismic_exec_sse_aligned_not_grouped;
+          config->f_parallel = seismic_exec_sse_aligned_not_grouped_pthread;
           config->alignment = 4 * sizeof(float);
           config->vectorwidth = 4 * sizeof(float);
         }
-        else if( ! strcmp( optarg, "sse_fma_aligned_not_grouped" ) && (cap & HAS_SSE && cap & HAS_FMA) ) {
-          config->kernel = KERNEL__SIMD_SSE_FMA_ALIGNED_NOT_GROUPED;
+        else if( ! strcmp( optarg, "fma_sse_aligned_not_grouped" ) && (cap & HAS_SSE && cap & HAS_FMA) ) {
+          config->kernel = KERNEL__SIMD_FMA_SSE_ALIGNED_NOT_GROUPED;
+          config->f_sequential = seismic_exec_fma_sse_aligned_not_grouped;
+          config->f_parallel = seismic_exec_fma_sse_aligned_not_grouped_pthread;
           config->alignment = 4 * sizeof(float);
           config->vectorwidth = 4 * sizeof(float);
         }
         else if( ! strcmp( optarg, "avx_unaligned" ) && (cap & HAS_AVX) ) {
           config->kernel = KERNEL__SIMD_AVX_UNALIGNED;
+          config->f_sequential = seismic_exec_avx_unaligned;
+          config->f_parallel = seismic_exec_avx_unaligned_pthread;
           config->alignment = 0;
           config->vectorwidth = 8 * sizeof(float);
         }
-        else if( ! strcmp( optarg, "avx_fma_unaligned" ) && (cap & HAS_AVX && cap & HAS_FMA) ) {
-          config->kernel = KERNEL__SIMD_AVX_FMA_UNALIGNED;
+        else if( ! strcmp( optarg, "fma_avx_unaligned" ) && (cap & HAS_AVX && cap & HAS_FMA) ) {
+          config->kernel = KERNEL__SIMD_FMA_AVX_UNALIGNED;
+          config->f_sequential = seismic_exec_fma_avx_unaligned;
+          config->f_parallel = seismic_exec_fma_avx_unaligned_pthread;
           config->alignment = 0;
           config->vectorwidth = 8 * sizeof(float);
         }
         else if( ! strcmp( optarg, "avx2_unaligned" ) && (cap & HAS_AVX && cap & HAS_AVX2) ) {
           config->kernel = KERNEL__SIMD_AVX2_UNALIGNED;
+          config->f_sequential = seismic_exec_avx2_unaligned;
+          config->f_parallel = seismic_exec_avx2_unaligned_pthread;
           config->alignment = 0;
           config->vectorwidth = 8 * sizeof(float);
         }
-        else if( ! strcmp( optarg, "avx2_fma_unaligned" ) && (cap & HAS_AVX && cap & HAS_AVX2 && cap & HAS_FMA) ) {
-          config->kernel = KERNEL__SIMD_AVX2_FMA_UNALIGNED;
+        else if( ! strcmp( optarg, "fma_avx2_unaligned" ) && (cap & HAS_AVX && cap & HAS_AVX2 && cap & HAS_FMA) ) {
+          config->kernel = KERNEL__SIMD_FMA_AVX2_UNALIGNED;
+          config->f_sequential = seismic_exec_fma_avx2_unaligned;
+          config->f_parallel = seismic_exec_fma_avx2_unaligned_pthread;
           config->alignment = 0;
           config->vectorwidth = 8 * sizeof(float);
         }
         else if( ! strcmp( optarg, "plain_c" ) ) {
+          config->f_sequential = seismic_exec_plain;
+          config->f_parallel = seismic_exec_pthread;
         }
         else {
           printf("\n\tNo supported version given! '%s' \n\n", optarg );
@@ -311,19 +340,19 @@ void print_config( config_t * config ) {
   struct { kernel_t k; const char * n; } kernels[] = {
     { KERNEL__PLAIN_C, "plain_c" },
     { KERNEL__SIMD_SSE_STD, "sse_std" },
-    { KERNEL__SIMD_SSE_FMA_STD, "sse_fma_std" },
     { KERNEL__SIMD_SSE_UNALIGNED, "sse_unaligned" },
-    { KERNEL__SIMD_SSE_FMA_UNALIGNED, "sse_fma_unaligned" },
     { KERNEL__SIMD_SSE_ALIGNED, "sse_aligned" },
-    { KERNEL__SIMD_SSE_FMA_ALIGNED, "sse_fma_aligned" },
     { KERNEL__SIMD_SSE_PARTIAL_ALIGNED, "sse_partial_aligned" },
-    { KERNEL__SIMD_SSE_FMA_PARTIAL_ALIGNED, "sse_fma_partial_aligned" },
     { KERNEL__SIMD_SSE_ALIGNED_NOT_GROUPED, "sse_aligned_not_grouped" },
-    { KERNEL__SIMD_SSE_FMA_ALIGNED_NOT_GROUPED, "sse_fma_aligned_not_grouped" },
     { KERNEL__SIMD_AVX_UNALIGNED, "avx_unaligned" },
-    { KERNEL__SIMD_AVX_FMA_UNALIGNED, "avx_fma_unaligned" },
     { KERNEL__SIMD_AVX2_UNALIGNED, "avx2_unaligned" },
-    { KERNEL__SIMD_AVX2_FMA_UNALIGNED, "avx2_fma_unaligned" }
+    { KERNEL__SIMD_FMA_SSE_STD, "fma_sse_std" },
+    { KERNEL__SIMD_FMA_SSE_UNALIGNED, "fma_sse_unaligned" },
+    { KERNEL__SIMD_FMA_SSE_ALIGNED, "fma_sse_aligned" },
+    { KERNEL__SIMD_FMA_SSE_PARTIAL_ALIGNED, "fma_sse_partial_aligned" },
+    { KERNEL__SIMD_FMA_SSE_ALIGNED_NOT_GROUPED, "fma_sse_aligned_not_grouped" },
+    { KERNEL__SIMD_FMA_AVX_UNALIGNED, "fma_avx_unaligned" },
+    { KERNEL__SIMD_FMA_AVX2_UNALIGNED, "fma_avx2_unaligned" }
   };
 
   unsigned i;

@@ -18,7 +18,7 @@
 #include <immintrin.h>
 
 // function that implements the kernel of the seismic modeling algorithm
-void seismic_exec_sse_fma_unaligned( void * v )
+void seismic_exec_fma_sse_std( void * v )
 {
     stack_t * data = (stack_t*) v;
     int i, j, t;
@@ -54,23 +54,24 @@ void seismic_exec_sse_fma_unaligned( void * v )
                 unsigned r_min2 = r - (data->height * 2);
                 unsigned r_plus1 = r + data->height;
                 unsigned r_plus2 = r + (data->height * 2);
-                
+
                 // calculates the pressure field t+1
-                s_ppf_aligned = _mm_loadu_ps( &(data->nppf[ r ]) ); // align it to get _load_ps
-                s_vel_aligned= _mm_loadu_ps( &(data->vel[ r ]) );
+                s_ppf_aligned = _mm_load_ps( &(data->nppf[ r ]) ); // align it to get _load_ps
+                s_vel_aligned = _mm_load_ps( &(data->vel[ r ]) );
+                s_actual = _mm_load_ps( &(data->apf[ r ]) );
 
-                s_above2 = _mm_loadu_ps( &(data->apf[ r - 2]) );
-                s_under2 = _mm_loadu_ps( &(data->apf[ r + 2]) );
+                s_left1 = _mm_load_ps( &(data->apf[r_min1]) );
+                s_left2 = _mm_load_ps( &(data->apf[r_min2]) );
+                s_right2 = _mm_load_ps( &(data->apf[r_plus2]) );
+                s_right1 = _mm_load_ps( &(data->apf[r_plus1]) );
+                s_above1 = _mm_loadu_ps( &(data->apf[ r -1]) );
+                s_under1 = _mm_loadu_ps( &(data->apf[ r +1]) );
 
-                s_left1 = _mm_loadu_ps( &(data->apf[ r_min1 ]) );
-                s_left2 = _mm_loadu_ps( &(data->apf[ r_min2 ]) );
-                s_right2 = _mm_loadu_ps( &(data->apf[ r_plus2 ]) );
-                s_right1 = _mm_loadu_ps( &(data->apf[ r_plus1 ]) );
+                s_above2 = _mm_loadl_pi( _mm_shuffle_ps(s_actual, s_actual, _MM_SHUFFLE(1, 0, 0, 0)),
+                                         (__m64 const*)&(data->apf[ r -2]));
 
-                s_actual = _mm_shuffle_ps( s_above2, s_under2, _MM_SHUFFLE(1,0,3,2) );
-
-                s_above1 = _mm_shuffle_ps( s_above2, s_actual, _MM_SHUFFLE(2,1,2,1) );
-                s_under1 = _mm_shuffle_ps( s_actual, s_under2, _MM_SHUFFLE(2,1,2,1) );
+                s_under2 = _mm_loadh_pi( _mm_shuffle_ps(s_actual, s_actual, _MM_SHUFFLE(0, 0, 3, 2)),
+                                         (__m64 const*)&(data->apf[ r +4]));
 
                 // sum up
                 s_sum1 = _mm_add_ps( s_under1,
@@ -85,7 +86,7 @@ void seismic_exec_sse_fma_unaligned( void * v )
 
                 s_sum1 = _mm_fmadd_ps( s_vel_aligned, s_sum1, _mm_fmsub_ps(s_two, s_actual, s_ppf_aligned) );
 
-                _mm_storeu_ps( &(data->nppf[ r ]), s_sum1);
+                _mm_store_ps( &(data->nppf[ r ]), s_sum1);
             }
         }
 
@@ -110,7 +111,7 @@ void seismic_exec_sse_fma_unaligned( void * v )
 
 
 // function that implements the kernel of the seismic modeling algorithm
-void seismic_exec_sse_fma_unaligned_pthread(void * v )
+void seismic_exec_fma_sse_std_pthread( void * v )
 {
     stack_t * data = (stack_t*) v;
 
@@ -153,21 +154,22 @@ void seismic_exec_sse_fma_unaligned_pthread(void * v )
                 unsigned r_plus2 = r + (data->height * 2);
                 
                 // calculates the pressure field t+1
-                s_ppf_aligned = _mm_loadu_ps( &(data->nppf[ r ]) ); // align it to get _load_ps
-                s_vel_aligned= _mm_loadu_ps( &(data->vel[ r ]) );
+                s_ppf_aligned = _mm_load_ps( &(data->nppf[ r ]) ); // align it to get _load_ps
+                s_vel_aligned = _mm_load_ps( &(data->vel[ r ]) );
+                s_actual = _mm_load_ps( &(data->apf[ r ]) );
 
-                s_above2 = _mm_loadu_ps( &(data->apf[ r - 2]) );
-                s_under2 = _mm_loadu_ps( &(data->apf[ r + 2]) );
+                s_left1 = _mm_load_ps( &(data->apf[r_min1]) );
+                s_left2 = _mm_load_ps( &(data->apf[r_min2]) );
+                s_right2 = _mm_load_ps( &(data->apf[r_plus2]) );
+                s_right1 = _mm_load_ps( &(data->apf[r_plus1]) );
+                s_above1 = _mm_loadu_ps( &(data->apf[ r -1]) );
+                s_under1 = _mm_loadu_ps( &(data->apf[ r +1]) );
 
-                s_left1 = _mm_loadu_ps( &(data->apf[ r_min1 ]) );
-                s_left2 = _mm_loadu_ps( &(data->apf[ r_min2 ]) );
-                s_right2 = _mm_loadu_ps( &(data->apf[ r_plus2 ]) );
-                s_right1 = _mm_loadu_ps( &(data->apf[ r_plus1 ]) );
+                s_above2 = _mm_loadl_pi( _mm_shuffle_ps(s_actual, s_actual, _MM_SHUFFLE(1, 0, 0, 0)),
+                                         (__m64 const*)&(data->apf[ r -2]));
 
-                s_actual = _mm_shuffle_ps( s_above2, s_under2, _MM_SHUFFLE(1,0,3,2) );
-
-                s_above1 = _mm_shuffle_ps( s_above2, s_actual, _MM_SHUFFLE(2,1,2,1) );
-                s_under1 = _mm_shuffle_ps( s_actual, s_under2, _MM_SHUFFLE(2,1,2,1) );
+                s_under2 = _mm_loadh_pi( _mm_shuffle_ps(s_actual, s_actual, _MM_SHUFFLE(0, 0, 3, 2)),
+                                         (__m64 const*)&(data->apf[ r +4]));
 
                 // sum up
                 s_sum1 = _mm_add_ps( s_under1,
@@ -182,7 +184,7 @@ void seismic_exec_sse_fma_unaligned_pthread(void * v )
 
                 s_sum1 = _mm_fmadd_ps( s_vel_aligned, s_sum1, _mm_fmsub_ps(s_two, s_actual, s_ppf_aligned) );
 
-                _mm_storeu_ps( &(data->nppf[ r ]), s_sum1);
+                _mm_store_ps( &(data->nppf[ r ]), s_sum1);
             }
         }
 

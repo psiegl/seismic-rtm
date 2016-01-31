@@ -18,7 +18,7 @@
 #include <immintrin.h>
 
 // function that implements the kernel of the seismic modeling algorithm
-void seismic_exec_sse_fma_partial_aligned( void * v )
+void seismic_exec_fma_sse_partial_aligned( void * v )
 {
     stack_t * data = (stack_t*) v;
     int i, j, t;
@@ -114,7 +114,7 @@ void seismic_exec_sse_fma_partial_aligned( void * v )
 
 
 // function that implements the kernel of the seismic modeling algorithm
-void seismic_exec_sse_fma_partial_aligned_pthread( void * v )
+void seismic_exec_fma_sse_partial_aligned_pthread( void * v )
 {
     stack_t * data = (stack_t*) v;
 

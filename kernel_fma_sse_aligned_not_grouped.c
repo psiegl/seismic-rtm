@@ -18,9 +18,10 @@
 #include <immintrin.h>
 
 // function that implements the kernel of the seismic modeling algorithm
-void seismic_exec_sse_fma_aligned( void * v )
+void seismic_exec_fma_sse_aligned_not_grouped( void * v )
 {
     stack_t * data = (stack_t*) v;
+
     int i, j, t;
     // sse vars... just like the OpenCL kernel
     __m128 s_two, s_sixteen, s_sixty;
@@ -56,33 +57,34 @@ void seismic_exec_sse_fma_aligned( void * v )
                 unsigned r_plus2 = r + (data->height * 2);
 
                 // calculates the pressure field t+1
-                s_ppf_aligned = _mm_load_ps( &(data->nppf[ r ]) ); // align it to get _load_ps
-                s_vel_aligned = _mm_load_ps( &(data->vel[ r ]) );
+//   _mm_prefetch( (const char*) &(data->apf[ r -4])  , _MM_HINT_T2); 
                 s_actual = _mm_load_ps( &(data->apf[ r ]) );
-
-                s_left1 = _mm_load_ps( &(data->apf[ r_min1 ]) );
+                s_under1 = _mm_load_ps( &(data->apf[ r +4]) );
+                s_above1 = _mm_load_ps( &(data->apf[ r -4]) );
                 s_left2 = _mm_load_ps( &(data->apf[ r_min2 ]) );
                 s_right2 = _mm_load_ps( &(data->apf[ r_plus2 ]) );
-                s_right1 = _mm_load_ps( &(data->apf[ r_plus1 ]) );
-                s_above1 = _mm_load_ps( &(data->apf[ r -4]) );
-                s_under1 = _mm_load_ps( &(data->apf[ r +4]) );
 
-                // see _mm_shuffle_ps and _mm_move_ss in intel's manual for explanation
                 s_under2 = _mm_movelh_ps( _mm_shuffle_ps(s_actual, s_actual, _MM_SHUFFLE(0, 0, 3, 2)),
                                           s_under1);
-                s_under1 = _mm_move_ss( s_actual, s_under1 );
-                s_under1 = _mm_shuffle_ps( s_under1, s_under1, _MM_SHUFFLE(0, 3, 2, 1) );
-
                 s_above2 = _mm_movelh_ps( _mm_movehl_ps( s_above1, s_above1), s_actual );
+  
+                s_above2 = _mm_add_ps( s_left2, _mm_add_ps( s_right2, _mm_add_ps( s_under2, s_above2)));
+
+                s_under1 = _mm_move_ss( s_actual, s_under1 );
                 s_above1 = _mm_move_ss( _mm_shuffle_ps( s_actual, s_actual, _MM_SHUFFLE(2, 1, 0, 3)),
                                         _mm_shuffle_ps( s_above1, s_above1, _MM_SHUFFLE(0, 1, 2, 3)) );
 
+                s_left1 = _mm_load_ps( &(data->apf[ r_min1 ]) );
+                s_right1 = _mm_load_ps( &(data->apf[ r_plus1 ]) );
+
+                s_under1 = _mm_shuffle_ps( s_under1, s_under1, _MM_SHUFFLE(0, 3, 2, 1) );
                 // sum up
                 s_sum1 = _mm_add_ps( s_under1,
                                      _mm_add_ps( s_above1,
                                                  _mm_add_ps( s_left1, s_right1)));
 
-                s_above2 = _mm_add_ps( s_left2, _mm_add_ps( s_right2, _mm_add_ps( s_under2, s_above2)));
+                s_ppf_aligned = _mm_load_ps( &(data->nppf[ r ]) ); // align it to get _load_ps
+                s_vel_aligned = _mm_load_ps( &(data->vel[ r ]) );
 
                 s_sum1 = _mm_fmsub_ps( s_sixteen, s_sum1,  s_above2);
 
@@ -115,7 +117,7 @@ void seismic_exec_sse_fma_aligned( void * v )
 
 
 // function that implements the kernel of the seismic modeling algorithm
-void seismic_exec_sse_fma_aligned_pthread( void * v )
+void seismic_exec_fma_sse_aligned_not_grouped_pthread( void * v )
 {
     stack_t * data = (stack_t*) v;
 
@@ -158,33 +160,34 @@ void seismic_exec_sse_fma_aligned_pthread( void * v )
                 unsigned r_plus2 = r + (data->height * 2);
                 
                 // calculates the pressure field t+1
-                s_ppf_aligned = _mm_load_ps( &(data->nppf[ r ]) ); // align it to get _load_ps
-                s_vel_aligned = _mm_load_ps( &(data->vel[ r ]) );
+//   _mm_prefetch( (const char*) &(data->apf[ r -4])  , _MM_HINT_T2); 
                 s_actual = _mm_load_ps( &(data->apf[ r ]) );
-
-                s_left1 = _mm_load_ps( &(data->apf[ r_min1 ]) );
+                s_under1 = _mm_load_ps( &(data->apf[ r +4]) );
+                s_above1 = _mm_load_ps( &(data->apf[ r -4]) );
                 s_left2 = _mm_load_ps( &(data->apf[ r_min2 ]) );
                 s_right2 = _mm_load_ps( &(data->apf[ r_plus2 ]) );
-                s_right1 = _mm_load_ps( &(data->apf[ r_plus1 ]) );
-                s_above1 = _mm_load_ps( &(data->apf[ r -4]) );
-                s_under1 = _mm_load_ps( &(data->apf[ r +4]) );
 
-                // see _mm_shuffle_ps and _mm_move_ss in intel's manual for explanation
                 s_under2 = _mm_movelh_ps( _mm_shuffle_ps(s_actual, s_actual, _MM_SHUFFLE(0, 0, 3, 2)),
                                           s_under1);
-                s_under1 = _mm_move_ss( s_actual, s_under1 );
-                s_under1 = _mm_shuffle_ps( s_under1, s_under1, _MM_SHUFFLE(0, 3, 2, 1) );
-
                 s_above2 = _mm_movelh_ps( _mm_movehl_ps( s_above1, s_above1), s_actual );
+
+                s_above2 = _mm_add_ps( s_left2, _mm_add_ps( s_right2, _mm_add_ps( s_under2, s_above2)));
+
+                s_under1 = _mm_move_ss( s_actual, s_under1 );
                 s_above1 = _mm_move_ss( _mm_shuffle_ps( s_actual, s_actual, _MM_SHUFFLE(2, 1, 0, 3)),
                                         _mm_shuffle_ps( s_above1, s_above1, _MM_SHUFFLE(0, 1, 2, 3)) );
 
+                s_left1 = _mm_load_ps( &(data->apf[ r_min1 ]) );
+                s_right1 = _mm_load_ps( &(data->apf[ r_plus1 ]) );
+
+                s_under1 = _mm_shuffle_ps( s_under1, s_under1, _MM_SHUFFLE(0, 3, 2, 1) );
                 // sum up
                 s_sum1 = _mm_add_ps( s_under1,
                                      _mm_add_ps( s_above1,
                                                  _mm_add_ps( s_left1, s_right1)));
 
-                s_above2 = _mm_add_ps( s_left2, _mm_add_ps( s_right2, _mm_add_ps( s_under2, s_above2)));
+                s_ppf_aligned = _mm_load_ps( &(data->nppf[ r ]) ); // align it to get _load_ps
+                s_vel_aligned = _mm_load_ps( &(data->vel[ r ]) );
 
                 s_sum1 = _mm_fmsub_ps( s_sixteen, s_sum1,  s_above2);
 

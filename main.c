@@ -16,8 +16,8 @@
 #include <stdio.h>
 #include <pthread.h>
 #include "config.h"
-#include "seismic.h"
 #include "kernel.h"
+#include "seismic.h"
 #include "visualize.h"
 #include "barrier/barrier.h"
 
@@ -73,114 +73,9 @@ int main( int argc, char * argv[] ) {
     data[t_id].set_pulse = (data[t_id].x_start <= data[t_id].x_pulse && data[t_id].x_pulse < data[t_id].x_end);
   }
 
-  void (* func)(void *) = NULL;
-  switch( config.kernel ) {
-    default:
-    case KERNEL__PLAIN_C:
-      if( config.threads == 1 )
-        func = seismic_exec_plain;
-      else
-        func = seismic_exec_pthread;
-      break;
-
-    case KERNEL__SIMD_SSE_STD:
-      if( config.threads == 1 )
-        func = seismic_exec_sse_std;
-      else
-        func = seismic_exec_sse_std_pthread;
-      break;
-
-    case KERNEL__SIMD_SSE_FMA_STD:
-      if( config.threads == 1 )
-        func = seismic_exec_sse_fma_std;
-      else
-        func = seismic_exec_sse_fma_std_pthread;
-      break;
-
-    case KERNEL__SIMD_SSE_UNALIGNED:
-      if( config.threads == 1 )
-        func = seismic_exec_sse_unaligned;
-      else
-        func = seismic_exec_sse_unaligned_pthread;
-      break;
-
-    case KERNEL__SIMD_SSE_FMA_UNALIGNED:
-      if( config.threads == 1 )
-        func = seismic_exec_sse_fma_unaligned;
-      else
-        func = seismic_exec_sse_fma_unaligned_pthread;
-      break;
-
-    case KERNEL__SIMD_SSE_ALIGNED:
-      if( config.threads == 1 )
-        func = seismic_exec_sse_aligned;
-      else
-        func = seismic_exec_sse_aligned_pthread;
-      break;
-
-    case KERNEL__SIMD_SSE_FMA_ALIGNED:
-      if( config.threads == 1 )
-        func = seismic_exec_sse_fma_aligned;
-      else
-        func = seismic_exec_sse_fma_aligned_pthread;
-      break;
-
-    case KERNEL__SIMD_SSE_PARTIAL_ALIGNED:
-      if( config.threads == 1 )
-        func = seismic_exec_sse_partial_aligned;
-      else
-        func = seismic_exec_sse_partial_aligned_pthread;
-      break;
-
-    case KERNEL__SIMD_SSE_FMA_PARTIAL_ALIGNED:
-      if( config.threads == 1 )
-        func = seismic_exec_sse_fma_partial_aligned;
-      else
-        func = seismic_exec_sse_fma_partial_aligned_pthread;
-      break;
-
-    case KERNEL__SIMD_SSE_ALIGNED_NOT_GROUPED:
-      if( config.threads == 1 )
-        func = seismic_exec_sse_aligned_not_grouped;
-      else
-        func = seismic_exec_sse_aligned_not_grouped_pthread;
-      break;
-
-    case KERNEL__SIMD_SSE_FMA_ALIGNED_NOT_GROUPED:
-      if( config.threads == 1 )
-        func = seismic_exec_sse_fma_aligned_not_grouped;
-      else
-        func = seismic_exec_sse_fma_aligned_not_grouped_pthread;
-      break;
-
-    case KERNEL__SIMD_AVX_UNALIGNED:
-      if( config.threads == 1 )
-        func = seismic_exec_avx_unaligned;
-      else
-        func = seismic_exec_avx_unaligned_pthread;
-      break;
-
-    case KERNEL__SIMD_AVX_FMA_UNALIGNED:
-      if( config.threads == 1 )
-        func = seismic_exec_avx_fma_unaligned;
-      else
-        func = seismic_exec_avx_fma_unaligned_pthread;
-      break;
-
-    case KERNEL__SIMD_AVX2_UNALIGNED:
-      if( config.threads == 1 )
-        func = seismic_exec_avx2_unaligned;
-      else
-        func = seismic_exec_avx2_unaligned_pthread;
-      break;
-
-    case KERNEL__SIMD_AVX2_FMA_UNALIGNED:
-      if( config.threads == 1 )
-        func = seismic_exec_avx2_fma_unaligned;
-      else
-        func = seismic_exec_avx2_fma_unaligned_pthread;
-      break;
-  }
+  void (* func)(void *) = config.f_sequential;
+  if( config.threads != 1 )
+    func = config.f_parallel;
 
   if( func == NULL ) {
     printf("no function ptr. found!\n");
