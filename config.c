@@ -23,6 +23,25 @@
 #include "check_hw.h"
 #include "kernel.h"
 
+variant_t variants[] = {
+  { "plain_c",                      0,                            seismic_exec_plain,                       seismic_exec_pthread,                             0,                 1 * sizeof(float) },
+  { "sse_std",                      HAS_SSE,                      seismic_exec_sse_std,                     seismic_exec_sse_std_pthread,                     4 * sizeof(float), 4 * sizeof(float) },
+  { "sse_unaligned",                HAS_SSE,                      seismic_exec_sse_unaligned,               seismic_exec_sse_unaligned_pthread,               0,                 4 * sizeof(float) },
+  { "sse_aligned",                  HAS_SSE,                      seismic_exec_sse_aligned,                 seismic_exec_sse_aligned_pthread,                 4 * sizeof(float), 4 * sizeof(float) },
+  { "sse_partial_aligned",          HAS_SSE,                      seismic_exec_sse_partial_aligned,         seismic_exec_sse_partial_aligned_pthread,         4 * sizeof(float), 4 * sizeof(float) },
+  { "sse_aligned_not_grouped",      HAS_SSE,                      seismic_exec_sse_aligned_not_grouped,     seismic_exec_sse_aligned_not_grouped_pthread,     4 * sizeof(float), 4 * sizeof(float) },
+  { "avx_unaligned",                HAS_AVX,                      seismic_exec_avx_unaligned,               seismic_exec_avx_unaligned_pthread,               0,                 8 * sizeof(float) },
+  { "avx2_unaligned",               HAS_AVX | HAS_AVX2,           seismic_exec_avx2_unaligned,              seismic_exec_avx2_unaligned_pthread,              0,                 8 * sizeof(float) },
+  { "fma_sse_std",                  HAS_SSE | HAS_FMA,            seismic_exec_fma_sse_std,                 seismic_exec_fma_sse_std_pthread,                 4 * sizeof(float), 4 * sizeof(float) },
+  { "fma_sse_unaligned",            HAS_SSE | HAS_FMA,            seismic_exec_fma_sse_unaligned,           seismic_exec_fma_sse_unaligned_pthread,           0,                 4 * sizeof(float) },
+  { "fma_sse_aligned",              HAS_SSE | HAS_FMA,            seismic_exec_fma_sse_aligned,             seismic_exec_fma_sse_aligned_pthread,             4 * sizeof(float), 4 * sizeof(float) },
+  { "fma_sse_partial_aligned",      HAS_SSE | HAS_FMA,            seismic_exec_fma_sse_partial_aligned,     seismic_exec_fma_sse_partial_aligned_pthread,     4 * sizeof(float), 4 * sizeof(float) },
+  { "fma_sse_aligned_not_grouped",  HAS_SSE | HAS_FMA,            seismic_exec_fma_sse_aligned_not_grouped, seismic_exec_fma_sse_aligned_not_grouped_pthread, 4 * sizeof(float), 4 * sizeof(float) },
+  { "fma_avx_unaligned",            HAS_AVX | HAS_FMA,            seismic_exec_fma_avx_unaligned,           seismic_exec_fma_avx_unaligned_pthread,           0,                 8 * sizeof(float) },
+  { "fma_avx2_unaligned",           HAS_AVX | HAS_AVX2 | HAS_FMA, seismic_exec_fma_avx2_unaligned,          seismic_exec_fma_avx2_unaligned_pthread,          0,                 8 * sizeof(float) },
+};
+
+
 unsigned int ggT(unsigned int a, unsigned int b){
   if(b == 0)
     return a;
@@ -39,11 +58,7 @@ void default_values( config_t * config ) {
   config->timesteps = 100;
   config->pulseY    = config->height / 2;
   config->pulseX    = config->width / 2;
-  config->kernel    = KERNEL__PLAIN_C;
-  config->f_sequential = seismic_exec_plain;
-  config->f_parallel = seismic_exec_pthread;
-  config->alignment = 0;
-  config->vectorwidth = 1 * sizeof(float);
+  config->variant   = variants[0]; // plain_c
   config->threads   = 1;
 
   config->output    = 0;
@@ -55,67 +70,46 @@ void print_usage( const char * argv0 ) {
   default_values( &c );
 
   printf("\n"
-         "usage: %s [options] \n", argv0 );
-  printf("\n"
-         "  --height \t( -x )\n"
-         "  \t Define horizontal matrix size.   Default: %d\n", c.height );
-  printf("\n"
-         "  --width \t( -y )\n"
-         "  \t Define vertical matrix size.     Default: %d\n", c.width );
-  printf("\n"
-         "  --pulseY \t( -i )\n"
-         "  \t y coordinate of pulse offset.    Default: %d\n", c.pulseY );
-  printf("\n"
-         "  --pulseX \t( -j )\n"
-         "  \t x coordinate of pulse offset.    Default: %d\n", c.pulseX );
-  printf("\n"
-         "  --timesteps \t( -t )\n"
-         "  \t Determine number of timesteps.   Default: %d\n", c.timesteps );
-  printf("\n"
-         "  --kernel \t( -k )\n"
-         "  \t plain_c,                         Default: plain_c\n");
+         "usage: %s [options] \n"
+         "\n"
+         "  --width \t( -y )                    Default: %d\n"
+         "  \t Define vertical matrix size.\n"
+         "\n"
+         "  --height \t( -x )                    Default: %d\n"
+         "  \t Define horizontal matrix size.\n"
+         "\n"
+         "  --pulseY \t( -i )                    Default: %d\n"
+         "  \t y coordinate of pulse offset.\n"
+         "\n"
+         "  --pulseX \t( -j )                    Default: %d\n"
+         "  \t x coordinate of pulse offset.\n"
+         "\n"
+         "  --timesteps \t( -t )                    Default: %d\n"
+         "  \t Determine number of timesteps.\n"
+         "\n"
+         "  --kernel \t( -k )                    Default: plain_c\n",
+          argv0, c.height, c.width, c.pulseY, c.pulseX, c.timesteps );
 
   uint32_t cap = check_hw_capabilites();
-  if( cap & HAS_SSE )
-    printf("  \t sse_std,\n"
-           "  \t sse_unaligned,\n"
-           "  \t sse_aligned,\n"
-           "  \t sse_partial_aligned,\n"
-           "  \t sse_aligned_not_grouped\n" );
-
-  if( cap & HAS_AVX )
-    printf("  \t avx_unaligned\n");
-
-  if( cap & HAS_AVX2 )
-    printf("  \t avx2_unaligned\n");
-
-  if( cap & HAS_FMA ) {
-    if( cap & HAS_SSE )
-      printf("  \t fma_sse_std,\n"
-             "  \t fma_sse_unaligned,\n"
-             "  \t fma_sse_aligned,\n"
-             "  \t fma_sse_partial_aligned,\n"
-             "  \t fma_sse_aligned_not_grouped\n");
-    if( cap & HAS_AVX )
-      printf("  \t fma_avx_unaligned\n"); // most likely only the case if AVX2 available (HASWELL)
-    if( cap & HAS_AVX2 )
-      printf("  \t fma_avx2_unaligned\n");
-  }
+  unsigned i;
+  for( i = 0; i < sizeof(variants)/sizeof(variants[0]); i++ )
+    if( ! (variants[i].cap & (~cap)) )
+      printf("  \t %s\n", variants[i].type );
 
   printf("\n"
-         "  --threads \t( -p )\n"
-         "  \t Number of threads.               Default: %d\n", c.threads);
-  printf("\n"
-         "  --output \t( -o )\n"
-         "  \t Write output to file 'file'.     Default: \"output.bin\"\n"
+         "  --threads \t( -p )                    Default: %d\n"
+         "  \t Number of threads.\n"
          "\n"
-         "  --ascii\t( -a ) <scale>\n"
-         "  \t Print an ascii image.            Default: %d\n", c.ascii);
-  printf("  \t Parameter will be used as scale.\n"
+         "  --output \t( -o )                    Default: \"output.bin\"\n"
+         "  \t Write output to file 'file'.\n"
+         "\n"
+         "  --ascii\t( -a ) <scale>            Default: %d\n"
+         "  \t Print an ascii image.\n"
+         "  \t Parameter will be used as scale.\n"
          "\n"
          "  --help \t( -h )\n"
          "  \t Show this help page.\n"
-         "\n");
+         "\n", c.threads, c.ascii );
 }
 
 unsigned long round_and_get_unit( unsigned long mem, const char ** type ) {
@@ -183,112 +177,21 @@ void get_config( int argc, char * argv[], config_t * config ) {
         break;
 
       case 'k':
-        if( ! strcmp( optarg, "sse_std" ) && (cap & HAS_SSE) ) {
-          config->kernel = KERNEL__SIMD_SSE_STD;
-          config->f_sequential = seismic_exec_sse_std;
-          config->f_parallel = seismic_exec_sse_std_pthread;
-          config->alignment = 4 * sizeof(float);
-          config->vectorwidth = 4 * sizeof(float);
-        }
-        if( ! strcmp( optarg, "fma_sse_std" ) && (cap & HAS_SSE && cap & HAS_FMA) ) {
-          config->kernel = KERNEL__SIMD_FMA_SSE_STD;
-          config->f_sequential = seismic_exec_fma_sse_std;
-          config->f_parallel = seismic_exec_fma_sse_std_pthread;
-          config->alignment = 4 * sizeof(float);
-          config->vectorwidth = 4 * sizeof(float);
-        }
-        else if( ! strcmp( optarg, "sse_unaligned" ) && (cap & HAS_SSE) ) {
-          config->kernel = KERNEL__SIMD_SSE_UNALIGNED;
-          config->f_sequential = seismic_exec_sse_unaligned;
-          config->f_parallel = seismic_exec_sse_unaligned_pthread;
-          config->alignment = 0;
-          config->vectorwidth = 4 * sizeof(float);
-        }
-        else if( ! strcmp( optarg, "fma_sse_unaligned" ) && (cap & HAS_SSE && cap & HAS_FMA) ) {
-          config->kernel = KERNEL__SIMD_FMA_SSE_UNALIGNED;
-          config->f_sequential = seismic_exec_fma_sse_unaligned;
-          config->f_parallel = seismic_exec_fma_sse_unaligned_pthread;
-          config->alignment = 0;
-          config->vectorwidth = 4 * sizeof(float);
-        }
-        else if( ! strcmp( optarg, "sse_aligned" ) && (cap & HAS_SSE) ) {
-          config->kernel = KERNEL__SIMD_SSE_ALIGNED;
-          config->f_sequential = seismic_exec_sse_aligned;
-          config->f_parallel = seismic_exec_sse_aligned_pthread;
-          config->alignment = 4 * sizeof(float);
-          config->vectorwidth = 4 * sizeof(float);
-        }
-        else if( ! strcmp( optarg, "fma_sse_aligned" ) && (cap & HAS_SSE && cap & HAS_FMA) ) {
-          config->kernel = KERNEL__SIMD_FMA_SSE_ALIGNED;
-          config->f_sequential = seismic_exec_fma_sse_aligned;
-          config->f_parallel = seismic_exec_fma_sse_aligned_pthread;
-          config->alignment = 4 * sizeof(float);
-          config->vectorwidth = 4 * sizeof(float);
-        }
-        else if( ! strcmp( optarg, "sse_partial_aligned" ) && (cap & HAS_SSE) ) {
-          config->kernel = KERNEL__SIMD_SSE_PARTIAL_ALIGNED;
-          config->f_sequential = seismic_exec_sse_partial_aligned;
-          config->f_parallel = seismic_exec_sse_partial_aligned_pthread;
-          config->alignment = 4 * sizeof(float);
-          config->vectorwidth = 4 * sizeof(float);
-        }
-        else if( ! strcmp( optarg, "fma_sse_partial_aligned" ) && (cap & HAS_SSE) ) {
-          config->kernel = KERNEL__SIMD_FMA_SSE_PARTIAL_ALIGNED;
-          config->f_sequential = seismic_exec_fma_sse_partial_aligned;
-          config->f_parallel = seismic_exec_fma_sse_partial_aligned_pthread;
-          config->alignment = 4 * sizeof(float);
-          config->vectorwidth = 4 * sizeof(float);
-        }
-        else if( ! strcmp( optarg, "sse_aligned_not_grouped" ) && (cap & HAS_SSE) ) {
-          config->kernel = KERNEL__SIMD_SSE_ALIGNED_NOT_GROUPED;
-          config->f_sequential = seismic_exec_sse_aligned_not_grouped;
-          config->f_parallel = seismic_exec_sse_aligned_not_grouped_pthread;
-          config->alignment = 4 * sizeof(float);
-          config->vectorwidth = 4 * sizeof(float);
-        }
-        else if( ! strcmp( optarg, "fma_sse_aligned_not_grouped" ) && (cap & HAS_SSE && cap & HAS_FMA) ) {
-          config->kernel = KERNEL__SIMD_FMA_SSE_ALIGNED_NOT_GROUPED;
-          config->f_sequential = seismic_exec_fma_sse_aligned_not_grouped;
-          config->f_parallel = seismic_exec_fma_sse_aligned_not_grouped_pthread;
-          config->alignment = 4 * sizeof(float);
-          config->vectorwidth = 4 * sizeof(float);
-        }
-        else if( ! strcmp( optarg, "avx_unaligned" ) && (cap & HAS_AVX) ) {
-          config->kernel = KERNEL__SIMD_AVX_UNALIGNED;
-          config->f_sequential = seismic_exec_avx_unaligned;
-          config->f_parallel = seismic_exec_avx_unaligned_pthread;
-          config->alignment = 0;
-          config->vectorwidth = 8 * sizeof(float);
-        }
-        else if( ! strcmp( optarg, "fma_avx_unaligned" ) && (cap & HAS_AVX && cap & HAS_FMA) ) {
-          config->kernel = KERNEL__SIMD_FMA_AVX_UNALIGNED;
-          config->f_sequential = seismic_exec_fma_avx_unaligned;
-          config->f_parallel = seismic_exec_fma_avx_unaligned_pthread;
-          config->alignment = 0;
-          config->vectorwidth = 8 * sizeof(float);
-        }
-        else if( ! strcmp( optarg, "avx2_unaligned" ) && (cap & HAS_AVX && cap & HAS_AVX2) ) {
-          config->kernel = KERNEL__SIMD_AVX2_UNALIGNED;
-          config->f_sequential = seismic_exec_avx2_unaligned;
-          config->f_parallel = seismic_exec_avx2_unaligned_pthread;
-          config->alignment = 0;
-          config->vectorwidth = 8 * sizeof(float);
-        }
-        else if( ! strcmp( optarg, "fma_avx2_unaligned" ) && (cap & HAS_AVX && cap & HAS_AVX2 && cap & HAS_FMA) ) {
-          config->kernel = KERNEL__SIMD_FMA_AVX2_UNALIGNED;
-          config->f_sequential = seismic_exec_fma_avx2_unaligned;
-          config->f_parallel = seismic_exec_fma_avx2_unaligned_pthread;
-          config->alignment = 0;
-          config->vectorwidth = 8 * sizeof(float);
-        }
-        else if( ! strcmp( optarg, "plain_c" ) ) {
-          config->f_sequential = seismic_exec_plain;
-          config->f_parallel = seismic_exec_pthread;
-        }
-        else {
-          printf("\n\tNo supported version given! '%s' \n\n", optarg );
-          print_usage( argv[0] );
-          exit(EXIT_FAILURE);
+        {
+          unsigned i, found = 0;
+          for( i = 0; i < sizeof(variants)/sizeof(variants[0]); i++ ) {
+            if( ! strcmp( optarg, variants[i].type ) && (cap & variants[i].cap) == variants[i].cap ) {
+              config->variant = variants[i];
+              found = 1;
+              break;
+            }
+          }
+
+          if( ! found ) {
+            printf("\n\tNo supported version given! '%s' \n\n", optarg );
+            print_usage( argv[0] );
+            exit(EXIT_FAILURE);
+          }
         }
         break;
 
@@ -322,8 +225,8 @@ void get_config( int argc, char * argv[], config_t * config ) {
   }
 
 // validation checks!
-  if( (config->vectorwidth || config->threads) &&
-      ((config->height - 4) * sizeof(float)) % (config->vectorwidth * config->threads) ) {
+  if( (config->variant.vectorwidth || config->threads) &&
+      ((config->height - 4) * sizeof(float)) % (config->variant.vectorwidth * config->threads) ) {
     printf("The height needs to be: (X * simd * threads) + 4!\n");
     exit(EXIT_FAILURE);
   }
@@ -339,33 +242,6 @@ void get_config( int argc, char * argv[], config_t * config ) {
 }
 
 void print_config( config_t * config ) {
-  struct { kernel_t k; const char * n; } kernels[] = {
-    { KERNEL__PLAIN_C, "plain_c" },
-    { KERNEL__SIMD_SSE_STD, "sse_std" },
-    { KERNEL__SIMD_SSE_UNALIGNED, "sse_unaligned" },
-    { KERNEL__SIMD_SSE_ALIGNED, "sse_aligned" },
-    { KERNEL__SIMD_SSE_PARTIAL_ALIGNED, "sse_partial_aligned" },
-    { KERNEL__SIMD_SSE_ALIGNED_NOT_GROUPED, "sse_aligned_not_grouped" },
-    { KERNEL__SIMD_AVX_UNALIGNED, "avx_unaligned" },
-    { KERNEL__SIMD_AVX2_UNALIGNED, "avx2_unaligned" },
-    { KERNEL__SIMD_FMA_SSE_STD, "fma_sse_std" },
-    { KERNEL__SIMD_FMA_SSE_UNALIGNED, "fma_sse_unaligned" },
-    { KERNEL__SIMD_FMA_SSE_ALIGNED, "fma_sse_aligned" },
-    { KERNEL__SIMD_FMA_SSE_PARTIAL_ALIGNED, "fma_sse_partial_aligned" },
-    { KERNEL__SIMD_FMA_SSE_ALIGNED_NOT_GROUPED, "fma_sse_aligned_not_grouped" },
-    { KERNEL__SIMD_FMA_AVX_UNALIGNED, "fma_avx_unaligned" },
-    { KERNEL__SIMD_FMA_AVX2_UNALIGNED, "fma_avx2_unaligned" }
-  };
-
-  unsigned i;
-  const char * name = "?!?";
-  for( i = 0; i < sizeof(kernels)/sizeof(kernels[0]); i++ ) {
-    if( kernels[i].k == config->kernel ) {
-      name = kernels[i].n;
-      break;
-    }
-  }
-    
   printf("-=-=-=-=-=-\n"
          "=== Running configuration:\n"
          "(ID=0Z): res    = %dx%d\n"
@@ -376,10 +252,10 @@ void print_config( config_t * config ) {
          config->width, config->height,
          config->timesteps,
          config->pulseX, config->pulseY,
-         name,
+         config->variant.type,
          config->threads );
 
-  unsigned long mem = config->height * (config->width + config->alignment) * sizeof(float) * 3 /* APF, NPPF, VEL */
+  unsigned long mem = config->height * (config->width + config->variant.alignment) * sizeof(float) * 3 /* APF, NPPF, VEL */
                       + config->timesteps * sizeof(float) /* pulsevector */;
   const char * type;
   mem = round_and_get_unit( mem, &type );

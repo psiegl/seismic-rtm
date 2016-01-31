@@ -16,25 +16,15 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
-enum _kernel_t {
-  KERNEL__PLAIN_C,
-  KERNEL__SIMD_SSE_STD,
-  KERNEL__SIMD_SSE_UNALIGNED,
-  KERNEL__SIMD_SSE_ALIGNED,
-  KERNEL__SIMD_SSE_PARTIAL_ALIGNED,
-  KERNEL__SIMD_SSE_ALIGNED_NOT_GROUPED,
-  KERNEL__SIMD_AVX_UNALIGNED,
-  KERNEL__SIMD_AVX2_UNALIGNED,
-  KERNEL__SIMD_FMA_SSE_STD,
-  KERNEL__SIMD_FMA_SSE_UNALIGNED,
-  KERNEL__SIMD_FMA_SSE_ALIGNED,
-  KERNEL__SIMD_FMA_SSE_PARTIAL_ALIGNED,
-  KERNEL__SIMD_FMA_SSE_ALIGNED_NOT_GROUPED,
-  KERNEL__SIMD_FMA_AVX_UNALIGNED,
-  KERNEL__SIMD_FMA_AVX2_UNALIGNED
+typedef struct _variant_t variant_t;
+struct _variant_t {
+  const char * type;
+  unsigned cap;
+  void (* f_sequential)(void *);
+  void (* f_parallel)(void *);
+  unsigned alignment;
+  unsigned vectorwidth;
 };
-typedef enum _kernel_t kernel_t;
-
 
 typedef struct _config_t config_t;
 struct _config_t {
@@ -44,11 +34,8 @@ struct _config_t {
   unsigned pulseY;
   unsigned pulseX;
 
-  kernel_t kernel;
-  void (* f_sequential)(void *);
-  void (* f_parallel)(void *);
-  unsigned alignment; // in Byte
-  unsigned vectorwidth;
+  variant_t variant;
+
   unsigned threads;
 
   unsigned output;
