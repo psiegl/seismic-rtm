@@ -40,6 +40,8 @@ void default_values( config_t * config ) {
   config->pulseY    = config->height / 2;
   config->pulseX    = config->width / 2;
   config->kernel    = KERNEL__PLAIN_C;
+  config->f_sequential = seismic_exec_plain;
+  config->f_parallel = seismic_exec_pthread;
   config->alignment = 0;
   config->vectorwidth = 1 * sizeof(float);
   config->threads   = 1;
