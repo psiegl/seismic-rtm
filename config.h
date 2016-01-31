@@ -28,8 +28,8 @@ struct _variant_t {
 
 typedef struct _config_t config_t;
 struct _config_t {
-  unsigned height; // num. of floats
   unsigned width; // num. of floats
+  unsigned height; // num. of floats
   unsigned timesteps;
   unsigned pulseY;
   unsigned pulseX;

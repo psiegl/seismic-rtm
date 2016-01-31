@@ -13,6 +13,10 @@
 //  You should have received a copy of the GNU General Public License
 //  along with seismic.  If not, see <http://www.gnu.org/licenses/>.
 
+#if MACOS
+#  include <sys/param.h>
+#  include <sys/sysctl.h>
+#endif
 #include <sys/utsname.h>    /* for uname */
 #include <unistd.h>         /* for getopt */
 #include <getopt.h>         /* for getopt_long; standard getopt is in unistd.h */
@@ -22,6 +26,7 @@
 #include "config.h"
 #include "check_hw.h"
 #include "kernel.h"
+
 
 variant_t variants[] = {
   { "plain_c",                      0,                            seismic_exec_plain,                       seismic_exec_pthread,                             0,                 1 * sizeof(float) },
@@ -156,12 +161,12 @@ void get_config( int argc, char * argv[], config_t * config ) {
       break;
 
     switch (opt) {
-      case 'x':
-        config->height = atoi( optarg );
-        break;
-
       case 'y':
         config->width = atoi( optarg );
+        break;
+
+      case 'x':
+        config->height = atoi( optarg );
         break;
 
       case 'i':
@@ -241,28 +246,49 @@ void get_config( int argc, char * argv[], config_t * config ) {
   config->GFLOP = ((double)((double)(config->width - 4) * (double)(config->height - 4) * 15.0 + 1.0) * (double)config->timesteps)/1000000.0;
 }
 
+unsigned getNumCores( void ) {
+#if MACOS
+    unsigned nm[2];
+    size_t len = 4;
+    uint32_t count;
+
+    nm[0] = CTL_HW; nm[1] = HW_AVAILCPU;
+    sysctl(nm, 2, &count, &len, NULL, 0);
+
+    if(count < 1) {
+        nm[1] = HW_NCPU;
+        sysctl(nm, 2, &count, &len, NULL, 0);
+        if(count < 1) { count = 1; }
+    }
+    return count;
+#else
+    return sysconf(_SC_NPROCESSORS_ONLN);
+#endif
+}
+
 void print_config( config_t * config ) {
+
+  unsigned long mem = config->height * (config->width + config->variant.alignment) * sizeof(float) * 3 /* APF, NPPF, VEL */
+                      + config->timesteps * sizeof(float) /* pulsevector */;
+  const char * type;
+  mem = round_and_get_unit( mem, &type );
+
   printf("-=-=-=-=-=-\n"
          "=== Running configuration:\n"
          "(ID=0Z): res    = %dx%d\n"
          "(ID=0Z): time   = %d\n"
          "(ID=0Z): pulse  = %d,%d\n"
          "(ID=0Z): kernel = %s\n"
-         "(ID=0Z): thrds  = %d\n",
+         "(ID=0Z): thrds  = %d\n"
+         "(ID=0Z): mem    = %ld %s\n"
+         "(ID=0Z): GFLOP  = %.2f\n"
+         "=== Running environment:\n",
          config->width, config->height,
          config->timesteps,
          config->pulseX, config->pulseY,
          config->variant.type,
-         config->threads );
-
-  unsigned long mem = config->height * (config->width + config->variant.alignment) * sizeof(float) * 3 /* APF, NPPF, VEL */
-                      + config->timesteps * sizeof(float) /* pulsevector */;
-  const char * type;
-  mem = round_and_get_unit( mem, &type );
-  printf("(ID=0Z): mem    = %ld %s\n", mem, type );
-  printf("(ID=0Z): GFLOP  = %.2f\n", config->GFLOP );
-
-  printf("=== Running environment:\n");
+         config->threads,
+         mem, type, config->GFLOP );
 
   struct utsname myuts;
   if( ! uname( &myuts ) ) {
@@ -271,22 +297,18 @@ void print_config( config_t * config ) {
            myuts.nodename, myuts.machine );
   }
 
-  char buffer[10 + 1];
-  FILE * pipe = popen("grep -ci 'processor' /proc/cpuinfo", "r");
-  fgets(buffer, 10, pipe);
-  pclose(pipe);
-
-  printf( "(ID=0Z): CORES  = %d", atoi(buffer) );
+  printf( "(ID=0Z): CORES  = %d", getNumCores() );
 
   uint32_t cap = check_hw_capabilites();
   if( cap & (HAS_SSE | HAS_AVX | HAS_AVX2 | HAS_FMA) )
     printf(" inc.");
   if( cap & HAS_SSE )
     printf(" SSE");
-  if( cap & HAS_AVX )
+  if( cap & HAS_AVX ) {
     printf(" AVX");
-  if( cap & HAS_AVX2 )
-    printf(" AVX2");
+    if( cap & HAS_AVX2 )
+      printf(" AVX2");
+  }
   if( cap & HAS_FMA )
     printf(" FMA");
 
