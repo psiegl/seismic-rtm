@@ -55,6 +55,7 @@ inline __attribute__((always_inline)) void kernel_sse_std( stack_t * data, __m12
                                              _mm_add_ps( s_left1, s_right1)));
 
             s_above2 = _mm_add_ps( s_left2, _mm_add_ps( s_right2, _mm_add_ps( s_under2, s_above2)));
+
             s_sum1 = _mm_mul_ps( s_sixteen, s_sum1 );
             s_sum1 = _mm_sub_ps( _mm_sub_ps( s_sum1,  s_above2), _mm_mul_ps( s_sixty, s_actual ) );
             s_sum1 = _mm_add_ps( _mm_mul_ps( s_vel_aligned, s_sum1), _mm_sub_ps(_mm_mul_ps( s_two, s_actual ), s_ppf_aligned) );
@@ -112,6 +113,7 @@ inline __attribute__((always_inline)) void kernel_sse_aligned( stack_t * data, _
                                              _mm_add_ps( s_left1, s_right1)));
 
             s_above2 = _mm_add_ps( s_left2, _mm_add_ps( s_right2, _mm_add_ps( s_under2, s_above2)));
+
             s_sum1 = _mm_mul_ps( s_sixteen, s_sum1 );
             s_sum1 = _mm_sub_ps( _mm_sub_ps( s_sum1,  s_above2), _mm_mul_ps( s_sixty, s_actual ) );
             s_sum1 = _mm_add_ps( _mm_mul_ps( s_vel_aligned, s_sum1), _mm_sub_ps(_mm_mul_ps( s_two, s_actual ), s_ppf_aligned) );
@@ -223,6 +225,7 @@ inline __attribute__((always_inline)) void kernel_sse_unaligned( stack_t * data,
                                              _mm_add_ps( s_left1, s_right1)));
 
             s_above2 = _mm_add_ps( s_left2, _mm_add_ps( s_right2, _mm_add_ps( s_under2, s_above2)));
+
             s_sum1 = _mm_mul_ps( s_sixteen, s_sum1 );
             s_sum1 = _mm_sub_ps( _mm_sub_ps( s_sum1,  s_above2), _mm_mul_ps( s_sixty, s_actual ) );
             s_sum1 = _mm_add_ps( _mm_mul_ps( s_vel_aligned, s_sum1), _mm_sub_ps(_mm_mul_ps( s_two, s_actual ), s_ppf_aligned) );
@@ -277,6 +280,7 @@ inline __attribute__((always_inline)) void kernel_sse_partial_aligned( stack_t *
                                              _mm_add_ps( s_left1, s_right1)));
 
             s_above2 = _mm_add_ps( s_left2, _mm_add_ps( s_right2, _mm_add_ps( s_under2, s_above2)));
+
             s_sum1 = _mm_mul_ps( s_sixteen, s_sum1 );
             s_sum1 = _mm_sub_ps( _mm_sub_ps( s_sum1,  s_above2), _mm_mul_ps( s_sixty, s_actual ) );
             s_sum1 = _mm_add_ps( _mm_mul_ps( s_vel_aligned, s_sum1), _mm_sub_ps(_mm_mul_ps( s_two, s_actual ), s_ppf_aligned) );
