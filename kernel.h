@@ -74,8 +74,8 @@ void seismic_exec_sse_fma_aligned_pthread( void * v );
 void seismic_exec_sse_partial_aligned( void * v );
 void seismic_exec_sse_partial_aligned_pthread( void * v );
 
-void seismic_exec_fma_sse_avx_partial_aligned( void * v );
-void seismic_exec_fma_sse_avx_partial_aligned_pthread( void * v );
+void seismic_exec_sse_avx_fma_partial_aligned( void * v );
+void seismic_exec_sse_avx_fma_partial_aligned_pthread( void * v );
 
 void seismic_exec_sse_fma_partial_aligned( void * v );
 void seismic_exec_sse_fma_partial_aligned_pthread( void * v );
