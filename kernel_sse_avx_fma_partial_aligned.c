@@ -20,7 +20,7 @@ inline __attribute__((always_inline)) void kernel_sse_avx_fma_partial_aligned( s
 {
     __m128 s_ppf_aligned, s_vel_aligned, s_actual, s_above1, s_left1, s_under1, s_right1, s_sum1;
     __m128 s_above2, s_under2, s_left2, s_right2;
-    
+
     unsigned i, j;
     // spatial loop in x
     for (i=data->x_start; i<data->x_end; i++) {
@@ -57,9 +57,7 @@ inline __attribute__((always_inline)) void kernel_sse_avx_fma_partial_aligned( s
             s_above2 = _mm_add_ps( s_left2, _mm_add_ps( s_right2, _mm_add_ps( s_under2, s_above2)));
 
             s_sum1 = _mm_fmsub_ps( s_sixteen, s_sum1,  s_above2);
-
             s_sum1 = _mm_fnmadd_ps( s_sixty, s_actual, s_sum1 );
-
             s_sum1 = _mm_fmadd_ps( s_vel_aligned, s_sum1, _mm_fmsub_ps(s_two, s_actual, s_ppf_aligned) );
 
             _mm_store_ps( &(data->nppf[ r ]), s_sum1);
