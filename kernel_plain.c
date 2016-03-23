@@ -20,9 +20,7 @@ void seismic_exec_plain( void * v )
 {
     stack_t * data = (stack_t*) v;
 
-    int teiler = 10;
-    if(data->timesteps < teiler)
-       teiler = data->timesteps;
+    data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[0];
 
     gettimeofday(&data->s, NULL);
 
@@ -57,7 +55,7 @@ void seismic_exec_plain( void * v )
         data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t+1];
 
         // shows one # at each 10% of the total processing time
-        if ( ! (t % (data->timesteps/teiler)) )
+        if ( ! (t % (data->timesteps/10 + 1)) )
         {
             printf("#");
             fflush(stdout);
@@ -73,10 +71,10 @@ void seismic_exec_pthread( void * v )
 {
     stack_t * data = (stack_t*) v;
 
-    int teiler = 10;
     int isSeismicPrivileg = data->set_pulse;
-    if( isSeismicPrivileg && data->timesteps < teiler)
-        teiler = data->timesteps;
+
+    if( data->set_pulse )
+        data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[0];
 
     // start everything in parallel
     BARRIER( data->barrier, data->id );
@@ -85,50 +83,76 @@ void seismic_exec_pthread( void * v )
 
     // time loop
     unsigned i, j, t;
-    for (t = 0; t < data->timesteps; t++)
-    {
-        // spatial loop in x
-        for (i=data->x_start; i<data->x_end; i++){
-          // spatial loop in y
-          for (j=data->y_start; j<data->y_end; j++) {
-                unsigned r = i * data->height + j;
-                unsigned r_min1 = r - data->height;
-                unsigned r_min2 = r - (data->height * 2);
-                unsigned r_plus1 = r + data->height;
-                unsigned r_plus2 = r + (data->height * 2);
-
-                // calculates the pressure field t+1
-                data->nppf[ r ] = 2.0f*data->apf[ r ] - data->nppf[ r ] + data->vel[ r ] 
-                    *(16.0f*(data->apf[ r -1]+data->apf[ r +1]+data->apf[ r_min1 ]+data->apf[ r_plus1 ] )
-                      - (data->apf[ r -2]+data->apf[ r +2]+data->apf[ r_min2 ]+data->apf[ r_plus2 ] )
-                      -60.0f*data->apf[ r ]);
-            }
-        }
-
-        // switch pointers instead of copying data
-        float * tmp = data->nppf;
-        data->nppf = data->apf;
-        data->apf = tmp;
-
-        // + 1 because we add the pulse for the _next_ time step
-        if( isSeismicPrivileg )
+    if( data->set_pulse )
+        for (t = 0; t < data->timesteps; t++)
         {
+            // spatial loop in x
+            for (i=data->x_start; i<data->x_end; i++){
+              // spatial loop in y
+              for (j=data->y_start; j<data->y_end; j++) {
+                    unsigned r = i * data->height + j;
+                    unsigned r_min1 = r - data->height;
+                    unsigned r_min2 = r - (data->height * 2);
+                    unsigned r_plus1 = r + data->height;
+                    unsigned r_plus2 = r + (data->height * 2);
+
+                    // calculates the pressure field t+1
+                    data->nppf[ r ] = 2.0f*data->apf[ r ] - data->nppf[ r ] + data->vel[ r ] 
+                        *(16.0f*(data->apf[ r -1]+data->apf[ r +1]+data->apf[ r_min1 ]+data->apf[ r_plus1 ] )
+                          - (data->apf[ r -2]+data->apf[ r +2]+data->apf[ r_min2 ]+data->apf[ r_plus2 ] )
+                          -60.0f*data->apf[ r ]);
+                }
+            }
+
+            // switch pointers instead of copying data
+            float * tmp = data->nppf;
+            data->nppf = data->apf;
+            data->apf = tmp;
+
+            // + 1 because we add the pulse for the _next_ time step
             // inserts the seismic pulse value in the desired position
             data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t+1];
 
             // shows one # at each 10% of the total processing time
-            if ( ! (t % (data->timesteps/teiler)) )
+            if ( ! (t % (data->timesteps/10 + 1)) )
             {
                 printf("#");
                 fflush(stdout);
             }
-        }
 
-        BARRIER( data->barrier, data->id );
-    }
+            BARRIER( data->barrier, data->id );
+        }
+    else
+        for (t = 0; t < data->timesteps; t++)
+        {
+            // spatial loop in x
+            for (i=data->x_start; i<data->x_end; i++){
+              // spatial loop in y
+              for (j=data->y_start; j<data->y_end; j++) {
+                    unsigned r = i * data->height + j;
+                    unsigned r_min1 = r - data->height;
+                    unsigned r_min2 = r - (data->height * 2);
+                    unsigned r_plus1 = r + data->height;
+                    unsigned r_plus2 = r + (data->height * 2);
+
+                    // calculates the pressure field t+1
+                    data->nppf[ r ] = 2.0f*data->apf[ r ] - data->nppf[ r ] + data->vel[ r ] 
+                        *(16.0f*(data->apf[ r -1]+data->apf[ r +1]+data->apf[ r_min1 ]+data->apf[ r_plus1 ] )
+                          - (data->apf[ r -2]+data->apf[ r +2]+data->apf[ r_min2 ]+data->apf[ r_plus2 ] )
+                          -60.0f*data->apf[ r ]);
+                }
+            }
+
+            // switch pointers instead of copying data
+            float * tmp = data->nppf;
+            data->nppf = data->apf;
+            data->apf = tmp;
+
+            BARRIER( data->barrier, data->id );
+        }
 
     gettimeofday(&data->e, NULL);
 
     if( data->id )
-      pthread_exit( NULL );
+        pthread_exit( NULL );
 }
