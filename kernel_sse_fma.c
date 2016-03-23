@@ -14,8 +14,9 @@
 //  along with seismic.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "kernel_sse.h"
+#include <immintrin.h>
 
-inline __attribute__((always_inline)) void kernel_sse_std( stack_t * data, __m128 s_two, __m128 s_sixteen, __m128 s_sixty  )
+inline __attribute__((always_inline)) void kernel_sse_fma_std( stack_t * data, __m128 s_two, __m128 s_sixteen, __m128 s_sixty  )
 {
     __m128 s_ppf_aligned, s_vel_aligned, s_actual, s_above1, s_left1, s_under1, s_right1, s_sum1;
     __m128 s_above2, s_under2, s_left2, s_right2;
@@ -55,20 +56,23 @@ inline __attribute__((always_inline)) void kernel_sse_std( stack_t * data, __m12
                                              _mm_add_ps( s_left1, s_right1)));
 
             s_above2 = _mm_add_ps( s_left2, _mm_add_ps( s_right2, _mm_add_ps( s_under2, s_above2)));
-            s_sum1 = _mm_mul_ps( s_sixteen, s_sum1 );
-            s_sum1 = _mm_sub_ps( _mm_sub_ps( s_sum1,  s_above2), _mm_mul_ps( s_sixty, s_actual ) );
-            s_sum1 = _mm_add_ps( _mm_mul_ps( s_vel_aligned, s_sum1), _mm_sub_ps(_mm_mul_ps( s_two, s_actual ), s_ppf_aligned) );
+
+            s_sum1 = _mm_fmsub_ps( s_sixteen, s_sum1,  s_above2);
+
+            s_sum1 = _mm_fnmadd_ps( s_sixty, s_actual, s_sum1 );
+
+            s_sum1 = _mm_fmadd_ps( s_vel_aligned, s_sum1, _mm_fmsub_ps(s_two, s_actual, s_ppf_aligned) );
 
             _mm_store_ps( &(data->nppf[ r ]), s_sum1);
         }
     }
 }
 
-SEISMIC_EXEC_SSE_FCT( std );
+SEISMIC_EXEC_SSE_FCT( fma_std );
 
 
 
-inline __attribute__((always_inline)) void kernel_sse_aligned( stack_t * data, __m128 s_two, __m128 s_sixteen, __m128 s_sixty  )
+inline __attribute__((always_inline)) void kernel_sse_fma_aligned( stack_t * data, __m128 s_two, __m128 s_sixteen, __m128 s_sixty  )
 {
     __m128 s_ppf_aligned, s_vel_aligned, s_actual, s_above1, s_left1, s_under1, s_right1, s_sum1;
     __m128 s_above2, s_under2, s_left2, s_right2;
@@ -112,20 +116,23 @@ inline __attribute__((always_inline)) void kernel_sse_aligned( stack_t * data, _
                                              _mm_add_ps( s_left1, s_right1)));
 
             s_above2 = _mm_add_ps( s_left2, _mm_add_ps( s_right2, _mm_add_ps( s_under2, s_above2)));
-            s_sum1 = _mm_mul_ps( s_sixteen, s_sum1 );
-            s_sum1 = _mm_sub_ps( _mm_sub_ps( s_sum1,  s_above2), _mm_mul_ps( s_sixty, s_actual ) );
-            s_sum1 = _mm_add_ps( _mm_mul_ps( s_vel_aligned, s_sum1), _mm_sub_ps(_mm_mul_ps( s_two, s_actual ), s_ppf_aligned) );
+
+            s_sum1 = _mm_fmsub_ps( s_sixteen, s_sum1,  s_above2);
+
+            s_sum1 = _mm_fnmadd_ps( s_sixty, s_actual, s_sum1 );
+
+            s_sum1 = _mm_fmadd_ps( s_vel_aligned, s_sum1, _mm_fmsub_ps(s_two, s_actual, s_ppf_aligned) );
 
             _mm_store_ps( &(data->nppf[ r ]), s_sum1);
         }
     }
 }
 
-SEISMIC_EXEC_SSE_FCT( aligned );
+SEISMIC_EXEC_SSE_FCT( fma_aligned );
 
 
 
-inline __attribute__((always_inline)) void kernel_sse_aligned_not_grouped( stack_t * data, __m128 s_two, __m128 s_sixteen, __m128 s_sixty  )
+inline __attribute__((always_inline)) void kernel_sse_fma_aligned_not_grouped( stack_t * data, __m128 s_two, __m128 s_sixteen, __m128 s_sixty  )
 {
     __m128 s_ppf_aligned, s_vel_aligned, s_actual, s_above1, s_left1, s_under1, s_right1, s_sum1;
     __m128 s_above2, s_under2, s_left2, s_right2;
@@ -171,20 +178,22 @@ inline __attribute__((always_inline)) void kernel_sse_aligned_not_grouped( stack
             s_ppf_aligned = _mm_load_ps( &(data->nppf[ r ]) ); // align it to get _load_ps
             s_vel_aligned = _mm_load_ps( &(data->vel[ r ]) );
 
-            s_sum1 = _mm_mul_ps( s_sixteen, s_sum1 );
-            s_sum1 = _mm_sub_ps( _mm_sub_ps( s_sum1,  s_above2), _mm_mul_ps( s_sixty, s_actual ) );
-            s_sum1 = _mm_add_ps( _mm_mul_ps( s_vel_aligned, s_sum1), _mm_sub_ps(_mm_mul_ps( s_two, s_actual ), s_ppf_aligned) );
+            s_sum1 = _mm_fmsub_ps( s_sixteen, s_sum1,  s_above2);
+
+            s_sum1 = _mm_fnmadd_ps( s_sixty, s_actual, s_sum1 );
+
+            s_sum1 = _mm_fmadd_ps( s_vel_aligned, s_sum1, _mm_fmsub_ps(s_two, s_actual, s_ppf_aligned) );
 
             _mm_store_ps( &(data->nppf[ r ]), s_sum1);
         }
     }
 }
 
-SEISMIC_EXEC_SSE_FCT( aligned_not_grouped );
+SEISMIC_EXEC_SSE_FCT( fma_aligned_not_grouped );
 
 
 
-inline __attribute__((always_inline)) void kernel_sse_unaligned( stack_t * data, __m128 s_two, __m128 s_sixteen, __m128 s_sixty  )
+inline __attribute__((always_inline)) void kernel_sse_fma_unaligned( stack_t * data, __m128 s_two, __m128 s_sixteen, __m128 s_sixty  )
 {
     __m128 s_ppf_aligned, s_vel_aligned, s_actual, s_above1, s_left1, s_under1, s_right1, s_sum1;
     __m128 s_above2, s_under2, s_left2, s_right2;
@@ -223,20 +232,23 @@ inline __attribute__((always_inline)) void kernel_sse_unaligned( stack_t * data,
                                              _mm_add_ps( s_left1, s_right1)));
 
             s_above2 = _mm_add_ps( s_left2, _mm_add_ps( s_right2, _mm_add_ps( s_under2, s_above2)));
-            s_sum1 = _mm_mul_ps( s_sixteen, s_sum1 );
-            s_sum1 = _mm_sub_ps( _mm_sub_ps( s_sum1,  s_above2), _mm_mul_ps( s_sixty, s_actual ) );
-            s_sum1 = _mm_add_ps( _mm_mul_ps( s_vel_aligned, s_sum1), _mm_sub_ps(_mm_mul_ps( s_two, s_actual ), s_ppf_aligned) );
+
+            s_sum1 = _mm_fmsub_ps( s_sixteen, s_sum1,  s_above2);
+
+            s_sum1 = _mm_fnmadd_ps( s_sixty, s_actual, s_sum1 );
+
+            s_sum1 = _mm_fmadd_ps( s_vel_aligned, s_sum1, _mm_fmsub_ps(s_two, s_actual, s_ppf_aligned) );
 
             _mm_storeu_ps( &(data->nppf[ r ]), s_sum1);
         }
     }
 }
 
-SEISMIC_EXEC_SSE_FCT( unaligned );
+SEISMIC_EXEC_SSE_FCT( fma_unaligned );
 
 
 
-inline __attribute__((always_inline)) void kernel_sse_partial_aligned( stack_t * data, __m128 s_two, __m128 s_sixteen, __m128 s_sixty  )
+inline __attribute__((always_inline)) void kernel_sse_fma_partial_aligned( stack_t * data, __m128 s_two, __m128 s_sixteen, __m128 s_sixty  )
 {
     __m128 s_ppf_aligned, s_vel_aligned, s_actual, s_above1, s_left1, s_under1, s_right1, s_sum1;
     __m128 s_above2, s_under2, s_left2, s_right2;
@@ -277,9 +289,12 @@ inline __attribute__((always_inline)) void kernel_sse_partial_aligned( stack_t *
                                              _mm_add_ps( s_left1, s_right1)));
 
             s_above2 = _mm_add_ps( s_left2, _mm_add_ps( s_right2, _mm_add_ps( s_under2, s_above2)));
-            s_sum1 = _mm_mul_ps( s_sixteen, s_sum1 );
-            s_sum1 = _mm_sub_ps( _mm_sub_ps( s_sum1,  s_above2), _mm_mul_ps( s_sixty, s_actual ) );
-            s_sum1 = _mm_add_ps( _mm_mul_ps( s_vel_aligned, s_sum1), _mm_sub_ps(_mm_mul_ps( s_two, s_actual ), s_ppf_aligned) );
+
+            s_sum1 = _mm_fmsub_ps( s_sixteen, s_sum1,  s_above2);
+
+            s_sum1 = _mm_fnmadd_ps( s_sixty, s_actual, s_sum1 );
+
+            s_sum1 = _mm_fmadd_ps( s_vel_aligned, s_sum1, _mm_fmsub_ps(s_two, s_actual, s_ppf_aligned) );
 
             _mm_store_ps( &(data->nppf[ r ]), s_sum1);
             
@@ -288,4 +303,4 @@ inline __attribute__((always_inline)) void kernel_sse_partial_aligned( stack_t *
     }
 }
 
-SEISMIC_EXEC_SSE_FCT( partial_aligned );
+SEISMIC_EXEC_SSE_FCT( fma_partial_aligned );

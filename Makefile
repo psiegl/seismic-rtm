@@ -16,10 +16,10 @@
 TARGET := seismic.elf
 OBJS   := kernel_plain.o config.o main.o visualize.o
 
-SSE    := kernel_sse.o kernel_fma_sse_unaligned.o kernel_fma_sse_aligned_not_grouped.o kernel_fma_sse_aligned.o kernel_fma_sse_std.o kernel_sse_partial_aligned.o kernel_fma_sse_partial_aligned.o kernel_fma_sse_avx_partial_aligned.o
+SSE    := kernel_sse.o kernel_sse_fma.o kernel_fma_sse_avx_partial_aligned.o
 AVX    := kernel_avx_unaligned.o kernel_fma_avx_unaligned.o kernel_avx2_unaligned.o kernel_fma_avx2_unaligned.o kernel_fma_sse_avx_partial_aligned.o
 AVX2   := kernel_avx2_unaligned.o kernel_fma_avx2_unaligned.o
-FMA    := kernel_fma_sse_unaligned.o kernel_fma_sse_aligned_not_grouped.o kernel_fma_sse_aligned.o kernel_fma_avx_unaligned.o kernel_fma_sse_std.o kernel_fma_avx2_unaligned.o kernel_fma_sse_partial_aligned.o kernel_fma_sse_avx_partial_aligned.o
+FMA    := kernel_fma_avx_unaligned.o kernel_sse_fma.o kernel_fma_avx2_unaligned.o kernel_fma_sse_avx_partial_aligned.o
 
 
 WIDTH   = 1000
