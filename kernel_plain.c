@@ -15,6 +15,76 @@
 
 #include "kernel.h"
 
+inline __attribute__((always_inline)) void kernel_plain( stack_t * data )
+{
+  float coeff_middle = 2.0f;
+  float coeff_inner = 16.0f;
+  float coeff_middle2 = 60.0f;
+  float coeff_outer = 1.0f;
+
+  unsigned r = data->x_start * data->height + data->y_start;
+  float * NPPF = &data->nppf[ r ];
+  float * VEL = &data->vel[ r ];
+  float * APF = &data->apf[ r ];
+  float * APF_pl1 = &data->apf[ r + data->height ];
+  float * APF_pl2 = &data->apf[ r + (data->height * 2) ];
+  float * APF_min1 = &data->apf[ r - data->height ];
+  float * APF_min2 = &data->apf[ r - (data->height * 2) ];
+  unsigned len_x = data->x_end - data->x_start;
+  unsigned len_y = data->y_end - data->y_start;
+  coeff_middle2 *= -1;
+  coeff_outer *= -1;
+
+  if( ! len_y || ! len_x ) // move out of timeloop
+    return;
+
+  // spatial loop in x
+  unsigned i = len_x;
+  do
+  {
+    // spatial loop in y
+    unsigned j = len_y;
+    do
+    {
+      // calculates the pressure field t+1
+      //float v_IN = 0;
+      //float v_OUT = 0;
+      float v_OUT = *(APF-2);
+      v_OUT += *(APF+2);
+      float v_IN = *(APF-1);
+      v_IN += *(APF+1);
+      float v_APF = *(APF++);
+      v_IN += *(APF_min1++);
+      v_OUT += *(APF_min2++);
+      v_IN += *(APF_pl1++);
+      v_OUT += *(APF_pl2++);
+      float v_SUM = coeff_middle2 * v_APF;
+      v_SUM += coeff_inner * v_IN;
+      v_SUM += coeff_outer * v_OUT;
+
+//      (*NPPF) = coeff_middle * v_APF - (*NPPF) + (*VEL) * v_SUM;
+      (*NPPF) *= -1;
+      (*NPPF) += coeff_middle * v_APF;
+      (*NPPF) += (*(VEL++)) * v_SUM;
+
+      NPPF++;
+      j--;
+    }
+    while( j > 0 );
+    APF+=4;
+    NPPF+=4;
+    VEL+=4;
+    APF_min1+=4;
+    APF_min2+=4;
+    APF_pl1+=4;
+    APF_pl2+=4;
+    i--;
+  }
+  while( i > 0 );
+}
+
+
+
 // function that implements the kernel of the seismic modeling algorithm
 void seismic_exec_plain( void * v )
 {
@@ -28,23 +98,7 @@ void seismic_exec_plain( void * v )
     unsigned i, j, t;
     for (t = 0; t < data->timesteps; t++)
     {
-        // spatial loop in x
-        for (i=2; i<data->width - 2; i++){
-            // spatial loop in y
-            for (j=2; j<data->height - 2; j++) {
-                unsigned r = i * data->height + j;
-                unsigned r_min1 = r - data->height;
-                unsigned r_min2 = r - (data->height * 2);
-                unsigned r_plus1 = r + data->height;
-                unsigned r_plus2 = r + (data->height * 2);
-                
-                // calculates the pressure field t+1
-                data->nppf[ r ] = 2.0f*data->apf[ r ] - data->nppf[ r ] + data->vel[ r ] 
-                    *(16.0f*(data->apf[ r -1]+data->apf[ r +1]+data->apf[ r_min1 ]+data->apf[ r_plus1 ] )
-                      - (data->apf[ r -2]+data->apf[ r +2]+data->apf[ r_min2 ]+data->apf[ r_plus2 ] )
-                      -60.0f*data->apf[ r ]);
-            }
-        }
+        kernel_plain( data );
 
         // switch pointers instead of copying data
         float * tmp = data->nppf;
@@ -82,27 +136,11 @@ void seismic_exec_pthread( void * v )
     gettimeofday(&data->s, NULL);
 
     // time loop
-    unsigned i, j, t;
+    unsigned t;
     if( data->set_pulse )
         for (t = 0; t < data->timesteps; t++)
         {
-            // spatial loop in x
-            for (i=data->x_start; i<data->x_end; i++){
-              // spatial loop in y
-              for (j=data->y_start; j<data->y_end; j++) {
-                    unsigned r = i * data->height + j;
-                    unsigned r_min1 = r - data->height;
-                    unsigned r_min2 = r - (data->height * 2);
-                    unsigned r_plus1 = r + data->height;
-                    unsigned r_plus2 = r + (data->height * 2);
-
-                    // calculates the pressure field t+1
-                    data->nppf[ r ] = 2.0f*data->apf[ r ] - data->nppf[ r ] + data->vel[ r ] 
-                        *(16.0f*(data->apf[ r -1]+data->apf[ r +1]+data->apf[ r_min1 ]+data->apf[ r_plus1 ] )
-                          - (data->apf[ r -2]+data->apf[ r +2]+data->apf[ r_min2 ]+data->apf[ r_plus2 ] )
-                          -60.0f*data->apf[ r ]);
-                }
-            }
+            kernel_plain( data );
 
             // switch pointers instead of copying data
             float * tmp = data->nppf;
@@ -125,23 +163,7 @@ void seismic_exec_pthread( void * v )
     else
         for (t = 0; t < data->timesteps; t++)
         {
-            // spatial loop in x
-            for (i=data->x_start; i<data->x_end; i++){
-              // spatial loop in y
-              for (j=data->y_start; j<data->y_end; j++) {
-                    unsigned r = i * data->height + j;
-                    unsigned r_min1 = r - data->height;
-                    unsigned r_min2 = r - (data->height * 2);
-                    unsigned r_plus1 = r + data->height;
-                    unsigned r_plus2 = r + (data->height * 2);
-
-                    // calculates the pressure field t+1
-                    data->nppf[ r ] = 2.0f*data->apf[ r ] - data->nppf[ r ] + data->vel[ r ] 
-                        *(16.0f*(data->apf[ r -1]+data->apf[ r +1]+data->apf[ r_min1 ]+data->apf[ r_plus1 ] )
-                          - (data->apf[ r -2]+data->apf[ r +2]+data->apf[ r_min2 ]+data->apf[ r_plus2 ] )
-                          -60.0f*data->apf[ r ]);
-                }
-            }
+            kernel_plain( data );
 
             // switch pointers instead of copying data
             float * tmp = data->nppf;
