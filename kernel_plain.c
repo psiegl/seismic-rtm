@@ -129,24 +129,22 @@ void seismic_exec_pthread( void * v )
 {
     stack_t * data = (stack_t*) v;
 
-    int isSeismicPrivileg = data->set_pulse;
-
     if( data->set_pulse )
         data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[0];
+
+    unsigned num_div = data->timesteps / 10;
+    unsigned num_mod = data->timesteps - (num_div * 10);
 
     // start everything in parallel
     BARRIER( data->barrier, data->id );
 
     gettimeofday(&data->s, NULL);
 
-    unsigned num_div = data->timesteps / 10;
-    unsigned num_mod = data->timesteps - (num_div * 10);
-
     // time loop
-    unsigned t, r;
+    unsigned t;
     if( data->set_pulse )
     {
-        unsigned t_tmp = 0;
+        unsigned r, t_tmp = 0;
         for( r = 0; r < 10; r++ ) {
             for (t = 0; t < num_div; t++)
             {
