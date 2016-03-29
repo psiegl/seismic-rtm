@@ -35,8 +35,8 @@ inline __attribute__((always_inline)) void kernel_plain( stack_t * data )
   coeff_middle2 *= -1;
   coeff_outer *= -1;
 
-  if( ! len_y || ! len_x ) // move out of timeloop
-    return;
+//  if( ! len_y || ! len_x ) // checked in main!
+//    return;
 
   // spatial loop in x
   unsigned i = len_x;
@@ -98,9 +98,9 @@ void seismic_exec_plain( void * v )
     gettimeofday(&data->s, NULL);
 
     // time loop
-    unsigned i, j, t, r, t_tmp = 0;
+    unsigned t, r, t_tmp = 0;
     for( r = 0; r < 10; r++ ) {
-        for (t = 0; t < num_div; t++)
+        for (t = 0; t < num_div; t++, t_tmp++)
         {
             kernel_plain( data );
 
@@ -112,7 +112,6 @@ void seismic_exec_plain( void * v )
             // + 1 because we add the pulse for the _next_ time step
             // inserts the seismic pulse value in the desired position
             data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t_tmp+1];
-            t_tmp++;
         }
 
         // shows one # at each 10% of the total processing time
@@ -132,8 +131,7 @@ void seismic_exec_plain( void * v )
 
         // + 1 because we add the pulse for the _next_ time step
         // inserts the seismic pulse value in the desired position
-        data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t_tmp+1];
-        t_tmp++;
+        data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t_tmp+t+1];
     }
 
     gettimeofday(&data->e, NULL);
@@ -166,7 +164,7 @@ void seismic_exec_pthread( void * v )
     {
         unsigned r, t_tmp = 0;
         for( r = 0; r < 10; r++ ) {
-            for (t = 0; t < num_div; t++)
+            for (t = 0; t < num_div; t++, t_tmp++)
             {
                 kernel_plain( data );
 
@@ -178,7 +176,6 @@ void seismic_exec_pthread( void * v )
                 // + 1 because we add the pulse for the _next_ time step
                 // inserts the seismic pulse value in the desired position
                 data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t_tmp+1];
-                t_tmp++;
 
                 BARRIER( data->barrier, data->id );
             }
@@ -200,8 +197,7 @@ void seismic_exec_pthread( void * v )
 
             // + 1 because we add the pulse for the _next_ time step
             // inserts the seismic pulse value in the desired position
-            data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t_tmp+1];
-            t_tmp++;
+            data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t_tmp+t+1];
 
             BARRIER( data->barrier, data->id );
         }

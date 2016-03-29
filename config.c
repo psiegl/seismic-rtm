@@ -231,6 +231,11 @@ void get_config( int argc, char * argv[], config_t * config ) {
     exit(EXIT_FAILURE);
   }
 
+  if( config->height <= 4 || config->width <= 4 ) {
+    printf("Height and Width need to be larger than 4\n");
+    exit(EXIT_FAILURE);
+  }
+
 // validation checks!
   if( (config->variant.vectorwidth || config->threads) &&
       ((config->height - 4) * sizeof(float)) % (config->variant.vectorwidth * config->threads) ) {
