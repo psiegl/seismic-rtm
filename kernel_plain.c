@@ -120,6 +120,10 @@ void seismic_exec_plain( void * v )
 }
 
 
+
+
+
+
 // function that implements the kernel of the seismic modeling algorithm
 void seismic_exec_pthread( void * v )
 {
@@ -135,10 +139,39 @@ void seismic_exec_pthread( void * v )
 
     gettimeofday(&data->s, NULL);
 
+    unsigned num_div = data->timesteps / 10;
+    unsigned num_mod = data->timesteps - (num_div * 10);
+
     // time loop
-    unsigned t;
+    unsigned t, r;
     if( data->set_pulse )
-        for (t = 0; t < data->timesteps; t++)
+    {
+        unsigned t_tmp = 0;
+        for( r = 0; r < 10; r++ ) {
+            for (t = 0; t < num_div; t++)
+            {
+                kernel_plain( data );
+
+                // switch pointers instead of copying data
+                float * tmp = data->nppf;
+                data->nppf = data->apf;
+                data->apf = tmp;
+
+                // + 1 because we add the pulse for the _next_ time step
+                // inserts the seismic pulse value in the desired position
+                data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t_tmp+1];
+                t_tmp++;
+
+                BARRIER( data->barrier, data->id );
+            }
+
+            // shows one # at each 10% of the total processing time
+            {
+                printf("#");
+                fflush(stdout);
+            }
+        }
+        for (t = 0; t < num_mod; t++)
         {
             kernel_plain( data );
 
@@ -149,17 +182,12 @@ void seismic_exec_pthread( void * v )
 
             // + 1 because we add the pulse for the _next_ time step
             // inserts the seismic pulse value in the desired position
-            data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t+1];
-
-            // shows one # at each 10% of the total processing time
-            if ( ! (t % (data->timesteps/10 + 1)) )
-            {
-                printf("#");
-                fflush(stdout);
-            }
+            data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t_tmp+1];
+            t_tmp++;
 
             BARRIER( data->barrier, data->id );
         }
+    }
     else
         for (t = 0; t < data->timesteps; t++)
         {
