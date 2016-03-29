@@ -26,10 +26,10 @@ inline __attribute__((always_inline)) void kernel_plain( stack_t * data )
   float * NPPF = &data->nppf[ r ];
   float * VEL = &data->vel[ r ];
   float * APF = &data->apf[ r ];
-  float * APF_pl1 = &data->apf[ r + data->height ];
-  float * APF_pl2 = &data->apf[ r + (data->height * 2) ];
-  float * APF_min1 = &data->apf[ r - data->height ];
-  float * APF_min2 = &data->apf[ r - (data->height * 2) ];
+  float * APF_pl1 = APF + data->height;
+  float * APF_pl2 = APF_pl1 + data->height;
+  float * APF_min1 = APF - data->height;
+  float * APF_min2 = APF_min1 - data->height;
   unsigned len_x = data->x_end - data->x_start;
   unsigned len_y = data->y_end - data->y_start;
   coeff_middle2 *= -1;
