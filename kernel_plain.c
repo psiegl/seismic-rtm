@@ -92,11 +92,36 @@ void seismic_exec_plain( void * v )
 
     data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[0];
 
+    unsigned num_div = data->timesteps / 10;
+    unsigned num_mod = data->timesteps - (num_div * 10);
+
     gettimeofday(&data->s, NULL);
 
     // time loop
-    unsigned i, j, t;
-    for (t = 0; t < data->timesteps; t++)
+    unsigned i, j, t, r, t_tmp = 0;
+    for( r = 0; r < 10; r++ ) {
+        for (t = 0; t < num_div; t++)
+        {
+            kernel_plain( data );
+
+            // switch pointers instead of copying data
+            float * tmp = data->nppf;
+            data->nppf = data->apf;
+            data->apf = tmp;
+
+            // + 1 because we add the pulse for the _next_ time step
+            // inserts the seismic pulse value in the desired position
+            data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t_tmp+1];
+            t_tmp++;
+        }
+
+        // shows one # at each 10% of the total processing time
+        {
+            printf("#");
+            fflush(stdout);
+        }
+    }
+    for (t = 0; t < num_mod; t++)
     {
         kernel_plain( data );
 
@@ -105,15 +130,10 @@ void seismic_exec_plain( void * v )
         data->nppf = data->apf;
         data->apf = tmp;
 
+        // + 1 because we add the pulse for the _next_ time step
         // inserts the seismic pulse value in the desired position
-        data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t+1];
-
-        // shows one # at each 10% of the total processing time
-        if ( ! (t % (data->timesteps/10 + 1)) )
-        {
-            printf("#");
-            fflush(stdout);
-        }
+        data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t_tmp+1];
+        t_tmp++;
     }
 
     gettimeofday(&data->e, NULL);
