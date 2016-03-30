@@ -254,7 +254,6 @@ inline __attribute__((always_inline)) void kernel_sse_fma_partial_aligned( stack
     unsigned len_x = data->x_end - data->x_start;
     unsigned len_y = (data->y_end - data->y_start)/4;
 
-    unsigned i, j;
     unsigned r = data->x_start * data->height + data->y_start;
     float * NPPF = &data->nppf[ r ];
     float * VEL = &data->vel[ r ];
@@ -266,12 +265,16 @@ inline __attribute__((always_inline)) void kernel_sse_fma_partial_aligned( stack
     APF += 2;
 
     // spatial loop in x
-    for (i=0; i<len_x; i++) {
+    unsigned i = len_x;
+    do
+    {
 
         s_above2 = _mm_loadu_ps( APF - 4 ); // APF - 2
 
         // spatial loop in y
-        for (j=0; j<len_y; j++) {
+        unsigned j = len_y;
+        do
+        {
 
             // calculates the pressure field t+1
             s_ppf_aligned = _mm_load_ps( NPPF ); // align it to get _load_ps
@@ -279,7 +282,7 @@ inline __attribute__((always_inline)) void kernel_sse_fma_partial_aligned( stack
 
             s_left1 = _mm_load_ps( APF_min1 );
             s_left2 = _mm_load_ps( APF_min2 );
-            s_right2 = _mm_load_ps( APF_pl2);
+            s_right2 = _mm_load_ps( APF_pl2 );
             s_right1 = _mm_load_ps( APF_pl1 );
 
             s_under2 = _mm_loadu_ps( APF ); // APF + 2
@@ -309,7 +312,9 @@ inline __attribute__((always_inline)) void kernel_sse_fma_partial_aligned( stack
             APF_pl2+=4;
             APF_min1+=4;
             APF_min2+=4;
+            j--;
         }
+        while( j > 0 );
         APF+=4;
         NPPF+=4;
         VEL+=4;
@@ -317,7 +322,9 @@ inline __attribute__((always_inline)) void kernel_sse_fma_partial_aligned( stack
         APF_min2+=4;
         APF_pl1+=4;
         APF_pl2+=4;
+        i--;
     }
+    while( i > 0 );
 }
 
 SEISMIC_EXEC_SSE_FCT( fma_partial_aligned );
