@@ -28,7 +28,7 @@
 
   to vector       res)     1.f 2.f 3.f 4.f 5.f 6.f 7.f 8.f
 */
-inline __attribute__((always_inline)) __m256 avx2_combine( __m256 a, __m256 b, __m256i s_shl, __m256i s_shr ) {
+static inline __attribute__((always_inline)) __m256 avx2_combine( __m256 a, __m256 b, __m256i s_shl, __m256i s_shr ) {
   __m256 a_l = _mm256_permutevar8x32_ps( a, s_shl );
   __m256 b_r = _mm256_permutevar8x32_ps( b, s_shr );
 
@@ -36,7 +36,7 @@ inline __attribute__((always_inline)) __m256 avx2_combine( __m256 a, __m256 b, _
   return res;
 }
 
-inline __attribute__((always_inline)) void init_shuffle( __m256i * s_shl, __m256i * s_shr ) {
+static inline __attribute__((always_inline)) void init_shuffle( __m256i * s_shl, __m256i * s_shr ) {
   uint32_t shl[8] = { 1, 2, 3, 4, 5, 6, 7, 7 };
   uint32_t shr[8] = { 0, 0, 1, 2, 3, 4, 5, 6 };
 
