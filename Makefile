@@ -41,7 +41,7 @@ $(SSE):  CFLAGS += -msse
 default: compile run
 
 %.elf: $(OBJS) $(AVX) $(SSE)
-	$(CC) -pthread -lm -o $@ $^
+	$(CC) -pthread -o $@ $^ -lm
 
 .INTERMEDIATE: $(OBJS) $(AVX) $(SSE)
 %.o: %.c
