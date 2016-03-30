@@ -5,7 +5,7 @@
 //  the Free Software Foundation, either version 3 of the License, or
 //  (at your option) any later version.
 //
-//  seismic is distributed in the hope that it will be useful,
+//  seismic-rtm is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
 //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //  GNU General Public License for more details.
@@ -32,7 +32,7 @@ inline __attribute__((always_inline)) __m256 avx2_combine( __m256 a, __m256 b, _
 }
 
 
-inline __attribute__((always_inline)) void kernel_avx2_fma_unaligned( stack_t * data, __m256 s_two, __m256 s_sixteen, __m256 s_sixty, __m256i s_shl, __m256i s_shr )
+inline __attribute__((always_inline)) void kernel_avx2_unaligned( stack_t * data, __m256 s_two, __m256 s_sixteen, __m256 s_sixty, __m256i s_shl, __m256i s_shr )
 {
     unsigned i, j;
     __m256 s_ppf_aligned, s_vel_aligned, s_actual, s_above1, s_left1, s_under1, s_right1, s_sum1;
@@ -53,6 +53,8 @@ inline __attribute__((always_inline)) void kernel_avx2_fma_unaligned( stack_t * 
             s_vel_aligned= _mm256_loadu_ps( &(data->vel[ r ]) );
             s_actual = _mm256_loadu_ps( &(data->apf[ r ]) );
 
+// eigentlich für SSE nur links und rechts nötig ... und dann kann durch combine mittlere erhalten werden
+
             s_left1 = _mm256_loadu_ps( &(data->apf[ r_min1 ]) );
             s_left2 = _mm256_loadu_ps( &(data->apf[ r_min2 ]) );
             s_right2 = _mm256_loadu_ps( &(data->apf[ r_plus2 ]) );
@@ -70,14 +72,13 @@ inline __attribute__((always_inline)) void kernel_avx2_fma_unaligned( stack_t * 
             // sum up
             s_sum1 = _mm256_add_ps( s_under1, _mm256_add_ps( s_above1, _mm256_add_ps( s_left1, s_right1)));
             s_above2 = _mm256_add_ps( s_left2, _mm256_add_ps( s_right2, _mm256_add_ps( s_under2, s_above2)));
-
-            s_sum1 = _mm256_fmsub_ps( s_sixteen, s_sum1,  s_above2);
-            s_sum1 = _mm256_fnmadd_ps( s_sixty, s_actual, s_sum1 );
-            s_sum1 = _mm256_fmadd_ps( s_vel_aligned, s_sum1, _mm256_fmsub_ps(s_two, s_actual, s_ppf_aligned) );
+            s_sum1 = _mm256_mul_ps( s_sixteen, s_sum1 );
+            s_sum1 = _mm256_sub_ps( _mm256_sub_ps( s_sum1,  s_above2), _mm256_mul_ps( s_sixty, s_actual ) );
+            s_sum1 = _mm256_add_ps( _mm256_mul_ps( s_vel_aligned, s_sum1), _mm256_sub_ps(_mm256_mul_ps( s_two, s_actual ), s_ppf_aligned) );
 
             _mm256_storeu_ps( &(data->nppf[ r ]), s_sum1);
         }
     }
 }
 
-SEISMIC_EXEC_AVX2_FCT( fma_unaligned )
+SEISMIC_EXEC_AVX2_FCT( unaligned )

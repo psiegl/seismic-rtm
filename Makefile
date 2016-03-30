@@ -5,7 +5,7 @@
 #  the Free Software Foundation, either version 2 of the License, or
 #  (at your option) any later version.
 #
-#  seismic is distributed in the hope that it will be useful,
+#  seismic-rtm is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
@@ -17,9 +17,9 @@ TARGET := seismic.elf
 OBJS   := kernel_plain.o config.o main.o visualize.o
 
 SSE    := kernel_sse.o kernel_sse_fma.o kernel_sse_avx_fma_partial_aligned.o kernel_sse_avx_partial_aligned.o
-AVX    := kernel_avx_unaligned.o kernel_fma_avx_unaligned.o kernel_avx2_unaligned.o kernel_fma_avx2_unaligned.o kernel_sse_avx_fma_partial_aligned.o kernel_sse_avx_partial_aligned.o
-AVX2   := kernel_avx2_unaligned.o kernel_fma_avx2_unaligned.o
-FMA    := kernel_fma_avx_unaligned.o kernel_sse_fma.o kernel_fma_avx2_unaligned.o kernel_sse_avx_fma_partial_aligned.o
+AVX    := kernel_avx_unaligned.o kernel_fma_avx_unaligned.o kernel_avx2.o kernel_avx2_fma.o kernel_sse_avx_fma_partial_aligned.o kernel_sse_avx_partial_aligned.o
+AVX2   := kernel_avx2.o kernel_avx2_fma.o
+FMA    := kernel_fma_avx_unaligned.o kernel_sse_fma.o kernel_avx2_fma.o kernel_sse_avx_fma_partial_aligned.o
 
 
 WIDTH   = 1000
