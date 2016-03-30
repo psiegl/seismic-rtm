@@ -73,8 +73,8 @@ void * malloc_aligned( size_t len, unsigned alignment ) {
       below, we set the exact ptr. to this address, so that APF[2] starts at an aligned address ...
     */
     void * h;
-    posix_memalign( &h, (size_t)(alignment * sizeof(float)), len + alignment ); // SSE: aligned = 4, AVX: aligned = 8
-    if( h == NULL )
+    int ret = posix_memalign( &h, (size_t)(alignment * sizeof(float)), len + alignment ); // SSE: aligned = 4, AVX: aligned = 8
+    if( reg != 0 || h == NULL )
       return NULL;
     return (h + alignment - 2 * sizeof(float));
   }
