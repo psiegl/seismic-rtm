@@ -15,23 +15,6 @@
 
 #include "kernel_avx2.h"
 
-/*
-  AVX2 required!
-
-  combines vectors: a) 0.f 1.f 2.f 3.f 4.f 5.f 6.f 7.f
-                    b)         2.f 3.f 4.f 5.f 6.f 7.f 8.f 9.f
-
-  to vector       res)     1.f 2.f 3.f 4.f 5.f 6.f 7.f 8.f
-*/
-inline __attribute__((always_inline)) __m256 avx2_combine( __m256 a, __m256 b, __m256i s_shl, __m256i s_shr ) {
-  __m256 a_l = _mm256_permutevar8x32_ps( a, s_shl );
-  __m256 b_r = _mm256_permutevar8x32_ps( b, s_shr );
-
-  __m256 res = _mm256_permute2f128_ps( a_l, b_r, 0x34 );
-  return res;
-}
-
-
 inline __attribute__((always_inline)) void kernel_avx2_fma_unaligned( stack_t * data, __m256 s_two, __m256 s_sixteen, __m256 s_sixty, __m256i s_shl, __m256i s_shr )
 {
     unsigned i, j;
