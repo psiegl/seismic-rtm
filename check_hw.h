@@ -17,6 +17,7 @@
 #define _CHECK_HW_H_
 
 #include <stdint.h>
+#include <cpuid.h>
 
 #define HAS_SSE   (1 << 0)
 #define HAS_SSE2  (1 << 1)
@@ -39,7 +40,11 @@ uint32_t check_hw_capabilites( void ) {
     cap |= HAS_AVX;
   if(__builtin_cpu_supports("avx2"))
     cap |= HAS_AVX2;
-  if(__builtin_cpu_supports("fma"))
+//  if(__builtin_cpu_supports("fma")) // not always supported
+//    cap |= HAS_FMA;
+  int info[4];
+  __cpuid_count(0x00000001, 0, info[0], info[1], info[2], info[3]);
+  if( (info[2] & ((int)1 << 12)) == ((int)1 << 12) )
     cap |= HAS_FMA;
 
   return cap;
