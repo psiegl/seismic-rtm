@@ -264,6 +264,9 @@ inline __attribute__((always_inline)) void kernel_sse_fma_partial_aligned( stack
     float * APF_min2 = APF_min1 - data->height;
     APF += 2;
 
+//  if( ! len_y || ! len_x ) // checked in main!
+//    return;
+
     // spatial loop in x
     unsigned i = len_x;
     do
