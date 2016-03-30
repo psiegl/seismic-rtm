@@ -1,5 +1,20 @@
 #!/usr/bin/python
 
+#  This file is part of seismic-rtm.
+#
+#  seismic-rtm is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 2 of the License, or
+#  (at your option) any later version.
+#
+#  seismic-rtm is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with seismic.  If not, see <http://www.gnu.org/licenses/>.
+
 import os
 import subprocess
 import sys
@@ -8,21 +23,30 @@ import multiprocessing
 
 kernel = "seismic.elf"
 
-def bench( kernel, var ):
-  nums = 10
-  sum_ms = 0.0
-  for t in range(0,nums):
-    cmd = "./%s --timesteps=1000 --width=2000 --height=516 --pulseX=600 --pulseY=70 --threads=%d --kernel=%s" % (kernel, multiprocessing.cpu_count(), var)
-    out2, err2 = subprocess.Popen( cmd.split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE ).communicate()
-    sum_ms += float( ("%s" % out2.decode("utf-8").splitlines()[20]).split(" ")[-1].replace(")","") )
-  print("%s: done" % var )
-  return sum_ms/float(nums)
+def bench( kernel, iterations, variants ):
+  res = {}
+  for var in variants:
+    res[ var ] = 0.0
+
+  for t in range(0,iterations):
+    for i in range(0,len(variants)):
+      var = variants[ (i + t) % len(variants) ] # due to throttling and turbo boost
+      cmd = "./%s --timesteps=1000 --width=2000 --height=516 --pulseX=600 --pulseY=70 --threads=%d --kernel=%s" % (kernel, multiprocessing.cpu_count(), var)
+      out2, err2 = subprocess.Popen( cmd.split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE ).communicate()
+      res[ var ] += float( ("%s" % out2.decode("utf-8").splitlines()[20]).split(" ")[-1].replace(")","") )
+
+    print("done with iteration %d" % (t+1) )
+
+  for var in variants:
+    res[ var ] /= float(iterations)
+
+  return res
 
 
-res = {}
-if len(sys.argv) <= 1:
+def get_all_supported():
   out, err = subprocess.Popen( ("./%s --help" % kernel).split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE ).communicate()
   kern_opt = 0
+  variants = []
   for var in out.decode("utf-8").splitlines():
     var = var.strip()
     if kern_opt:
@@ -32,14 +56,26 @@ if len(sys.argv) <= 1:
       if "--kernel" in var:
         kern_opt = 1
       continue
+    variants.append( var )
+  return variants
 
-    res[ var ] = bench( kernel, var )
+
+
+res = {}
+if len(sys.argv) <= 1:
+  res = bench( kernel, 10, get_all_supported() )
 else:
-  for i in range(1,len(sys.argv)):
-    res[ sys.argv[i] ] = bench( kernel, sys.argv[i] )
+  variants = get_all_supported()
+  for v in sys.argv[1:]:
+    if v not in variants:
+      print("%s is not supported on this machine!" % v )
+      sys.exit(1)
+  res = bench( kernel, 10, sys.argv[1:] )
 
 print("")
-print("results:")
+print("------------------")
+print("Results in GFLOPS:")
+print("------------------")
 sorted_res = sorted(res.items(), key=operator.itemgetter(1))
 for t in sorted_res:
   print("%.2f: %s" % (t[1], t[0]))
