@@ -13,6 +13,9 @@
 //  You should have received a copy of the GNU General Public License
 //  along with seismic.  If not, see <http://www.gnu.org/licenses/>.
 
+#ifndef _KERNEL_AVX_H_
+#define _KERNEL_AVX_H_
+
 #include "kernel.h"
 #include <immintrin.h>
 
@@ -165,3 +168,5 @@ void seismic_exec_avx_##NAME##_pthread(void * v ) \
     if( data->id ) \
         pthread_exit( NULL ); \
 }
+
+#endif /* #ifndef _KERNEL_AVX_H_ */
