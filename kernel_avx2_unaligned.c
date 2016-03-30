@@ -14,9 +14,6 @@
 //  along with seismic.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "kernel_avx2.h"
-#include <inttypes.h>
-
-
 
 /*
   AVX2 required!
@@ -42,7 +39,7 @@ inline __attribute__((always_inline)) void kernel_avx2_unaligned( stack_t * data
     __m256 s_above2, s_under2, s_left2, s_right2;
 
     // spatial loop in x
-    for (i=data->x_start; i<data->x_end; i++){
+    for (i=data->x_start; i<data->x_end; i++) {
         // spatial loop in y
         for (j=data->y_start; j<data->y_end; j+=8) {
             unsigned r = i * data->height + j;

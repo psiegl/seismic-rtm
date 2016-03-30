@@ -15,6 +15,7 @@
 
 #include "kernel.h"
 #include <immintrin.h>
+#include <stdint.h>
 
 // function that implements the kernel of the seismic modeling algorithm
 #define SEISMIC_EXEC_AVX2_FCT( NAME ) \
