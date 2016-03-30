@@ -15,7 +15,7 @@
 
 #include "kernel.h"
 
-inline __attribute__((always_inline)) void kernel_plain( stack_t * data )
+inline __attribute__((always_inline)) void kernel_opt( stack_t * data )
 {
   float coeff_middle = 2.0f;
   float coeff_inner = 16.0f;
@@ -102,7 +102,7 @@ void seismic_exec_plain( void * v )
     for( r = 0; r < 10; r++ ) {
         for (t = 0; t < num_div; t++, t_tmp++)
         {
-            kernel_plain( data );
+            kernel_opt( data );
 
             // switch pointers instead of copying data
             float * tmp = data->nppf;
@@ -122,7 +122,7 @@ void seismic_exec_plain( void * v )
     }
     for (t = 0; t < num_mod; t++)
     {
-        kernel_plain( data );
+        kernel_opt( data );
 
         // switch pointers instead of copying data
         float * tmp = data->nppf;
@@ -166,7 +166,7 @@ void seismic_exec_pthread( void * v )
         for( r = 0; r < 10; r++ ) {
             for (t = 0; t < num_div; t++, t_tmp++)
             {
-                kernel_plain( data );
+                kernel_opt( data );
 
                 // switch pointers instead of copying data
                 float * tmp = data->nppf;
@@ -188,7 +188,7 @@ void seismic_exec_pthread( void * v )
         }
         for (t = 0; t < num_mod; t++)
         {
-            kernel_plain( data );
+            kernel_opt( data );
 
             // switch pointers instead of copying data
             float * tmp = data->nppf;
@@ -205,7 +205,7 @@ void seismic_exec_pthread( void * v )
     else
         for (t = 0; t < data->timesteps; t++)
         {
-            kernel_plain( data );
+            kernel_opt( data );
 
             // switch pointers instead of copying data
             float * tmp = data->nppf;

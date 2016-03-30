@@ -14,45 +14,60 @@
 //  along with seismic.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "kernel.h"
-#include <xmmintrin.h>
+#include <immintrin.h>
 
 // function that implements the kernel of the seismic modeling algorithm
-#define SEISMIC_EXEC_SSE_FCT( NAME ) \
-void seismic_exec_sse_##NAME( void * v ) \
+#define SEISMIC_EXEC_AVX2_FCT( NAME ) \
+inline __attribute__((always_inline)) void init_shuffle( __m256i * s_shl, __m256i * s_shr ) { \
+  uint32_t shl[8] = { 1, 2, 3, 4, 5, 6, 7, 7 }; \
+  uint32_t shr[8] = { 0, 0, 1, 2, 3, 4, 5, 6 }; \
+ \
+  *s_shl =  _mm256_lddqu_si256( (__m256i const *) &shl[0] ); \
+  *s_shr =  _mm256_lddqu_si256( (__m256i const *) &shr[0] ); \
+} \
+ \
+ \
+ \
+void seismic_exec_avx2_##NAME( void * v ) \
 { \
     stack_t * data = (stack_t*) v; \
  \
-    float two[4] = {2.0f, 2.0f, 2.0f, 2.0f}; \
-    float sixteen[4] = {16.0f,16.0f,16.0f,16.0f}; \
-    float sixty[4] = {60.0f,60.0f,60.0f,60.0f}; \
- \
-    /* preload register with const. values. */ \
-    __m128 s_two = _mm_loadu_ps( (const float *) &two ); \
-    __m128 s_sixteen = _mm_loadu_ps( (const float *) &sixteen ); \
-    __m128 s_sixty = _mm_loadu_ps( (const float *) &sixty ); \
- \
-    data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[0]; \
+    if( data->set_pulse ) \
+        data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[0]; \
  \
     unsigned num_div = data->timesteps / 10; \
     unsigned num_mod = data->timesteps - (num_div * 10); \
  \
+    /* preload register with const. values. */ \
+    float two = 2.0f; \
+    float sixteen = 16.0f; \
+    float sixty = 60.0f; \
+ \
+    __m256 s_two = _mm256_broadcast_ss( (const float*) &two ); \
+    __m256 s_sixteen = _mm256_broadcast_ss( (const float*) &sixteen ); \
+    __m256 s_sixty = _mm256_broadcast_ss( (const float*) &sixty ); \
+ \
+    __m256i s_shl, s_shr; \
+    init_shuffle( &s_shl, &s_shr ); \
+ \
     gettimeofday(&data->s, NULL); \
  \
-    /* time loop */  \
+    /* time loop */ \
     unsigned t, r, t_tmp = 0; \
     for( r = 0; r < 10; r++ ) { \
         for (t = 0; t < num_div; t++, t_tmp++) \
         { \
-            kernel_sse_##NAME( data, s_two, s_sixteen, s_sixty ); \
+            kernel_avx2_##NAME( data, s_two, s_sixteen, s_sixty, s_shl, s_shr ); \
  \
             /* switch pointers instead of copying data */ \
             float * tmp = data->nppf; \
             data->nppf = data->apf; \
             data->apf = tmp; \
  \
-            /* + 1 because we add the pulse for the _next_ time step */ \
             /* inserts the seismic pulse value in the desired position */ \
             data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t_tmp+1]; \
+ \
+            BARRIER( data->barrier, data->id ); \
         } \
  \
         /* shows one # at each 10% of the total processing time */ \
@@ -63,39 +78,46 @@ void seismic_exec_sse_##NAME( void * v ) \
     } \
     for (t = 0; t < num_mod; t++) \
     { \
-        kernel_sse_##NAME( data, s_two, s_sixteen, s_sixty ); \
+        kernel_avx2_##NAME( data, s_two, s_sixteen, s_sixty, s_shl, s_shr ); \
  \
         /* switch pointers instead of copying data */ \
         float * tmp = data->nppf; \
         data->nppf = data->apf; \
         data->apf = tmp; \
  \
-        /* inserts the seismic pulse value in the desired position */ \
+        /* + 1 because we add the pulse for the _next_ time step */ \
+        /*  inserts the seismic pulse value in the desired position */ \
         data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t_tmp+t+1]; \
+ \
+        BARRIER( data->barrier, data->id ); \
     } \
  \
     gettimeofday(&data->e, NULL); \
 } \
  \
  \
-void seismic_exec_sse_##NAME##_pthread(void * v ) \
+ \
+void seismic_exec_avx2_unaligned_pthread(void * v ) \
 { \
     stack_t * data = (stack_t*) v; \
- \
-    float two[4] = {2.0f, 2.0f, 2.0f, 2.0f}; \
-    float sixteen[4] = {16.0f,16.0f,16.0f,16.0f}; \
-    float sixty[4] = {60.0f,60.0f,60.f,60.0f}; \
- \
-    /* preload register with const. values. */ \
-    __m128 s_two = _mm_loadu_ps( (const float *) &two ); \
-    __m128 s_sixteen = _mm_loadu_ps( (const float *) &sixteen ); \
-    __m128 s_sixty = _mm_loadu_ps( (const float *) &sixty ); \
  \
     if( data->set_pulse ) \
         data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[0]; \
  \
     unsigned num_div = data->timesteps / 10; \
     unsigned num_mod = data->timesteps - (num_div * 10); \
+ \
+    /* preload register with const. values. */ \
+    float two = 2.0f; \
+    float sixteen = 16.0f; \
+    float sixty = 60.0f; \
+ \
+    __m256 s_two = _mm256_broadcast_ss( (const float*) &two ); \
+    __m256 s_sixteen = _mm256_broadcast_ss( (const float*) &sixteen ); \
+    __m256 s_sixty = _mm256_broadcast_ss( (const float*) &sixty ); \
+ \
+    __m256i s_shl, s_shr; \
+    init_shuffle( &s_shl, &s_shr ); \
  \
     /* start everything in parallel */ \
     BARRIER( data->barrier, data->id ); \
@@ -110,14 +132,13 @@ void seismic_exec_sse_##NAME##_pthread(void * v ) \
         for( r = 0; r < 10; r++ ) { \
             for (t = 0; t < num_div; t++, t_tmp++) \
             { \
-                kernel_sse_##NAME( data, s_two, s_sixteen, s_sixty ); \
+                kernel_avx2_##NAME( data, s_two, s_sixteen, s_sixty, s_shl, s_shr ); \
  \
-                /* switch pointers instead of copying data */ \
+                /*  switch pointers instead of copying data */ \
                 float * tmp = data->nppf; \
                 data->nppf = data->apf; \
                 data->apf = tmp; \
  \
-                /* + 1 because we add the pulse for the _next_ time step */ \
                 /* inserts the seismic pulse value in the desired position */ \
                 data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t_tmp+1]; \
  \
@@ -132,15 +153,15 @@ void seismic_exec_sse_##NAME##_pthread(void * v ) \
         } \
         for (t = 0; t < num_mod; t++) \
         { \
-            kernel_sse_##NAME( data, s_two, s_sixteen, s_sixty ); \
+            kernel_avx2_##NAME( data, s_two, s_sixteen, s_sixty, s_shl, s_shr ); \
  \
-            /* switch pointers instead of copying data */ \
+            /*  switch pointers instead of copying data */ \
             float * tmp = data->nppf; \
             data->nppf = data->apf; \
             data->apf = tmp; \
  \
             /* + 1 because we add the pulse for the _next_ time step */ \
-            /* inserts the seismic pulse value in the desired position */ \
+            /*  inserts the seismic pulse value in the desired position */ \
             data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t_tmp+t+1]; \
  \
             BARRIER( data->barrier, data->id ); \
@@ -149,9 +170,9 @@ void seismic_exec_sse_##NAME##_pthread(void * v ) \
     else \
         for (t = 0; t < data->timesteps; t++) \
         { \
-            kernel_sse_##NAME( data, s_two, s_sixteen, s_sixty ); \
+            kernel_avx2_##NAME( data, s_two, s_sixteen, s_sixty, s_shl, s_shr ); \
  \
-            /* switch pointers instead of copying data */ \
+            /*  switch pointers instead of copying data */ \
             float * tmp = data->nppf; \
             data->nppf = data->apf; \
             data->apf = tmp; \

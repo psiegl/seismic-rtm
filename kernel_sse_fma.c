@@ -246,7 +246,7 @@ SEISMIC_EXEC_SSE_FCT( fma_unaligned );
 
 
 
-inline __attribute__((always_inline)) void kernel_sse_fma_partial_aligned( stack_t * data, __m128 s_two, __m128 s_sixteen, __m128 s_sixty  )
+inline __attribute__((always_inline)) void kernel_sse_fma_partial_aligned( stack_t * data, __m128 s_two, __m128 s_sixteen, __m128 s_sixty )
 {
     __m128 s_ppf_aligned, s_vel_aligned, s_actual, s_above1, s_left1, s_under1, s_right1, s_sum1;
     __m128 s_above2, s_under2, s_left2, s_right2;
