@@ -74,7 +74,7 @@ void * malloc_aligned( size_t len, unsigned alignment ) {
     */
     void * h;
     int ret = posix_memalign( &h, (size_t)(alignment * sizeof(float)), len + alignment ); // SSE: aligned = 4, AVX: aligned = 8
-    if( reg != 0 || h == NULL )
+    if( ret != 0 || h == NULL )
       return NULL;
     return (h + alignment - 2 * sizeof(float));
   }
