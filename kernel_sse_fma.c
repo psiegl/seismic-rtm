@@ -268,7 +268,6 @@ inline __attribute__((always_inline)) void kernel_sse_fma_partial_aligned( stack
     unsigned i = len_x;
     do
     {
-
         s_above2 = _mm_loadu_ps( APF - 4 ); // APF - 2
 
         // spatial loop in y
