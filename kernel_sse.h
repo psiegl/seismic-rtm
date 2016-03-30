@@ -22,11 +22,11 @@ void seismic_exec_sse_##NAME( void * v ) \
 { \
     stack_t * data = (stack_t*) v; \
  \
+    /* preload register with const. values. */ \
     float two[4] = {2.0f, 2.0f, 2.0f, 2.0f}; \
     float sixteen[4] = {16.0f,16.0f,16.0f,16.0f}; \
     float sixty[4] = {60.0f,60.0f,60.0f,60.0f}; \
  \
-    /* preload register with const. values. */ \
     __m128 s_two = _mm_loadu_ps( (const float *) &two ); \
     __m128 s_sixteen = _mm_loadu_ps( (const float *) &sixteen ); \
     __m128 s_sixty = _mm_loadu_ps( (const float *) &sixty ); \
@@ -38,7 +38,7 @@ void seismic_exec_sse_##NAME( void * v ) \
  \
     gettimeofday(&data->s, NULL); \
  \
-    /* time loop */  \
+    /* time loop */ \
     unsigned t, r, t_tmp = 0; \
     for( r = 0; r < 10; r++ ) { \
         for (t = 0; t < num_div; t++, t_tmp++) \
@@ -70,6 +70,7 @@ void seismic_exec_sse_##NAME( void * v ) \
         data->nppf = data->apf; \
         data->apf = tmp; \
  \
+        /* + 1 because we add the pulse for the _next_ time step */ \
         /* inserts the seismic pulse value in the desired position */ \
         data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t_tmp+t+1]; \
     } \
@@ -82,11 +83,11 @@ void seismic_exec_sse_##NAME##_pthread(void * v ) \
 { \
     stack_t * data = (stack_t*) v; \
  \
+    /* preload register with const. values. */ \
     float two[4] = {2.0f, 2.0f, 2.0f, 2.0f}; \
     float sixteen[4] = {16.0f,16.0f,16.0f,16.0f}; \
     float sixty[4] = {60.0f,60.0f,60.f,60.0f}; \
  \
-    /* preload register with const. values. */ \
     __m128 s_two = _mm_loadu_ps( (const float *) &two ); \
     __m128 s_sixteen = _mm_loadu_ps( (const float *) &sixteen ); \
     __m128 s_sixty = _mm_loadu_ps( (const float *) &sixty ); \

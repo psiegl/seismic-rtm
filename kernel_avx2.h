@@ -32,12 +32,6 @@ void seismic_exec_avx2_##NAME( void * v ) \
 { \
     stack_t * data = (stack_t*) v; \
  \
-    if( data->set_pulse ) \
-        data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[0]; \
- \
-    unsigned num_div = data->timesteps / 10; \
-    unsigned num_mod = data->timesteps - (num_div * 10); \
- \
     /* preload register with const. values. */ \
     float two = 2.0f; \
     float sixteen = 16.0f; \
@@ -49,6 +43,11 @@ void seismic_exec_avx2_##NAME( void * v ) \
  \
     __m256i s_shl, s_shr; \
     init_shuffle( &s_shl, &s_shr ); \
+ \
+    data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[0]; \
+ \
+    unsigned num_div = data->timesteps / 10; \
+    unsigned num_mod = data->timesteps - (num_div * 10); \
  \
     gettimeofday(&data->s, NULL); \
  \
@@ -64,10 +63,9 @@ void seismic_exec_avx2_##NAME( void * v ) \
             data->nppf = data->apf; \
             data->apf = tmp; \
  \
+            /* + 1 because we add the pulse for the _next_ time step */ \
             /* inserts the seismic pulse value in the desired position */ \
             data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t_tmp+1]; \
- \
-            BARRIER( data->barrier, data->id ); \
         } \
  \
         /* shows one # at each 10% of the total processing time */ \
@@ -86,26 +84,17 @@ void seismic_exec_avx2_##NAME( void * v ) \
         data->apf = tmp; \
  \
         /* + 1 because we add the pulse for the _next_ time step */ \
-        /*  inserts the seismic pulse value in the desired position */ \
+        /* inserts the seismic pulse value in the desired position */ \
         data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t_tmp+t+1]; \
- \
-        BARRIER( data->barrier, data->id ); \
     } \
  \
     gettimeofday(&data->e, NULL); \
 } \
  \
  \
- \
-void seismic_exec_avx2_unaligned_pthread(void * v ) \
+void seismic_exec_avx2_##NAME##_pthread(void * v ) \
 { \
     stack_t * data = (stack_t*) v; \
- \
-    if( data->set_pulse ) \
-        data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[0]; \
- \
-    unsigned num_div = data->timesteps / 10; \
-    unsigned num_mod = data->timesteps - (num_div * 10); \
  \
     /* preload register with const. values. */ \
     float two = 2.0f; \
@@ -118,6 +107,12 @@ void seismic_exec_avx2_unaligned_pthread(void * v ) \
  \
     __m256i s_shl, s_shr; \
     init_shuffle( &s_shl, &s_shr ); \
+ \
+    if( data->set_pulse ) \
+        data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[0]; \
+ \
+    unsigned num_div = data->timesteps / 10; \
+    unsigned num_mod = data->timesteps - (num_div * 10); \
  \
     /* start everything in parallel */ \
     BARRIER( data->barrier, data->id ); \
@@ -134,11 +129,12 @@ void seismic_exec_avx2_unaligned_pthread(void * v ) \
             { \
                 kernel_avx2_##NAME( data, s_two, s_sixteen, s_sixty, s_shl, s_shr ); \
  \
-                /*  switch pointers instead of copying data */ \
+                /* switch pointers instead of copying data */ \
                 float * tmp = data->nppf; \
                 data->nppf = data->apf; \
                 data->apf = tmp; \
  \
+                /* + 1 because we add the pulse for the _next_ time step */ \
                 /* inserts the seismic pulse value in the desired position */ \
                 data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t_tmp+1]; \
  \
@@ -155,13 +151,13 @@ void seismic_exec_avx2_unaligned_pthread(void * v ) \
         { \
             kernel_avx2_##NAME( data, s_two, s_sixteen, s_sixty, s_shl, s_shr ); \
  \
-            /*  switch pointers instead of copying data */ \
+            /* switch pointers instead of copying data */ \
             float * tmp = data->nppf; \
             data->nppf = data->apf; \
             data->apf = tmp; \
  \
             /* + 1 because we add the pulse for the _next_ time step */ \
-            /*  inserts the seismic pulse value in the desired position */ \
+            /* inserts the seismic pulse value in the desired position */ \
             data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t_tmp+t+1]; \
  \
             BARRIER( data->barrier, data->id ); \
@@ -172,7 +168,7 @@ void seismic_exec_avx2_unaligned_pthread(void * v ) \
         { \
             kernel_avx2_##NAME( data, s_two, s_sixteen, s_sixty, s_shl, s_shr ); \
  \
-            /*  switch pointers instead of copying data */ \
+            /* switch pointers instead of copying data */ \
             float * tmp = data->nppf; \
             data->nppf = data->apf; \
             data->apf = tmp; \
