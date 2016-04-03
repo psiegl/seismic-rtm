@@ -31,7 +31,7 @@ def bench( kernel, iterations, variants ):
   for t in range(0,iterations):
     for i in range(0,len(variants)):
       var = variants[ (i + t) % len(variants) ] # due to throttling and turbo boost
-      cmd = "./%s --timesteps=1000 --width=2000 --height=516 --pulseX=600 --pulseY=70 --threads=%d --kernel=%s" % (kernel, multiprocessing.cpu_count(), var)
+      cmd = "./%s --timesteps=4000 --width=2000 --height=516 --pulseX=600 --pulseY=70 --threads=%d --kernel=%s" % (kernel, multiprocessing.cpu_count(), var)
       out2, err2 = subprocess.Popen( cmd.split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE ).communicate()
       res[ var ] += float( ("%s" % out2.decode("utf-8").splitlines()[20]).split(" ")[-1].replace(")","") )
 
@@ -63,14 +63,14 @@ def get_all_supported():
 
 res = {}
 if len(sys.argv) <= 1:
-  res = bench( kernel, 10, get_all_supported() )
+  res = bench( kernel, 5, get_all_supported() )
 else:
   variants = get_all_supported()
   for v in sys.argv[1:]:
     if v not in variants:
       print("%s is not supported on this machine!" % v )
       sys.exit(1)
-  res = bench( kernel, 10, sys.argv[1:] )
+  res = bench( kernel, 5, sys.argv[1:] )
 
 print("")
 print("------------------")

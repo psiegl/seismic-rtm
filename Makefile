@@ -13,13 +13,42 @@
 #  You should have received a copy of the GNU General Public License
 #  along with seismic.  If not, see <http://www.gnu.org/licenses/>.
 
-TARGET := seismic.elf
-OBJS   := kernel_plain.o config.o main.o visualize.o
+TARGET          := seismic.elf
+OBJS            := config.o main.o visualize.o
+PLAIN           := kernel_plain.o
+SSE             := kernel_sse.o
+SSE_FMA         := kernel_sse_fma.o
+SSE_AVX         := kernel_sse_avx_partial_aligned.o
+SSE_AVX_FMA     := kernel_sse_avx_fma_partial_aligned.o
+AVX             := kernel_avx.o
+AVX_FMA         := kernel_avx_fma.o
+AVX2            := kernel_avx2.o
+AVX2_FMA        := kernel_avx2_fma.o
 
-SSE    := kernel_sse.o kernel_sse_fma.o kernel_sse_avx_fma_partial_aligned.o kernel_sse_avx_partial_aligned.o
-AVX    := kernel_avx.o kernel_avx_fma.o kernel_avx2.o kernel_avx2_fma.o kernel_sse_avx_fma_partial_aligned.o kernel_sse_avx_partial_aligned.o
-AVX2   := kernel_avx2.o kernel_avx2_fma.o
-FMA    := kernel_avx_fma.o kernel_sse_fma.o kernel_avx2_fma.o kernel_sse_avx_fma_partial_aligned.o
+CC              = gcc # clang
+CFLAGS          = -ffast-math -ffp-contract=fast -Ofast #-march=native
+
+$(PLAIN):       CFLAGS += -mno-sse -mno-fma -mno-avx -mno-avx2 # plain_opt version gains a lot with -msse
+$(SSE):         CFLAGS += -msse    -mno-fma -mno-avx -mno-avx2
+$(SSE_FMA):     CFLAGS += -msse    -mfma    -mavx    -mno-avx2 # fma only allowed with avx
+$(SSE_AVX):     CFLAGS += -msse    -mno-fma -mavx    -mno-avx2
+$(SSE_AVX_FMA): CFLAGS += -msse    -mfma    -mavx    -mno-avx2
+$(AVX):         CFLAGS += -msse    -mno-fma -mavx    -mno-avx2
+$(AVX_FMA):     CFLAGS += -msse    -mfma    -mavx    -mno-avx2
+$(AVX2):        CFLAGS += -msse    -mno-fma -mavx    -mavx2
+$(AVX2_FMA):    CFLAGS += -msse    -mfma    -mavx    -mavx2
+
+default: compile run
+
+%.elf: $(OBJS) $(PLAIN) $(SSE) $(SSE_FMA) $(SSE_AVX) $(SSE_AVX_FMA) $(AVX) $(AVX_FMA) $(AVX2) $(AVX2_FMA)
+	$(CC) -pthread -o $@ $^ -lm
+
+.INTERMEDIATE: $(OBJS) $(PLAIN) $(SSE) $(SSE_FMA) $(SSE_AVX) $(SSE_AVX_FMA) $(AVX) $(AVX_FMA) $(AVX2) $(AVX2_FMA)
+%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+compile: $(TARGET)
+
 
 
 WIDTH   = 1000
@@ -29,27 +58,6 @@ PULSEY  = 70
 STEPS   = 1000
 THREADS = 8
 TYPE    = sse_unaligned
-
-CC      = gcc # clang
-CFLAGS  = -O3 -ffast-math -ffp-contract=fast #-march=native
-
-$(AVX):  CFLAGS += -mavx
-$(AVX2): CFLAGS += -mavx2
-$(FMA):  CFLAGS += -mfma
-$(SSE):  CFLAGS += -msse
-
-default: compile run
-
-%.elf: $(OBJS) $(AVX) $(SSE)
-	$(CC) -pthread -o $@ $^ -lm
-
-.INTERMEDIATE: $(OBJS) $(AVX) $(SSE)
-%.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-
-
-compile: $(TARGET)
 
 run: compile
 	./$(TARGET) --timesteps=$(STEPS) --width=$(WIDTH) --height=$(HEIGHT) --pulseX=$(PULSEX) --pulseY=$(PULSEY) --threads=$(THREADS) --kernel=$(TYPE)
