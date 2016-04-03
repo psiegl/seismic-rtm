@@ -133,10 +133,11 @@ int main( int argc, char * argv[] ) {
     write_matrice( &config, APF, NPPF );
   }
 
- // aligned version!
-  free( ((void*)APF) - (config.variant.alignment ? (config.variant.alignment - 2 * sizeof(float)) : 0) );
-  free( ((void*)NPPF) - (config.variant.alignment ? (config.variant.alignment - 2 * sizeof(float)) : 0)  );
-  free( ((void*)VEL) - (config.variant.alignment ? (config.variant.alignment - 2 * sizeof(float)) : 0) );
+  // aligned version!
+  unsigned alignment = config.variant.alignment ? (config.variant.alignment - 2 * sizeof(float)) : 0;
+  free( ((void*)APF) - alignment );
+  free( ((void*)NPPF) - alignment );
+  free( ((void*)VEL) - alignment );
 
   free( pulsevector );
   free( data );
