@@ -31,9 +31,19 @@ def bench( kernel, iterations, variants ):
   for t in range(0,iterations):
     for i in range(0,len(variants)):
       var = variants[ (i + t) % len(variants) ] # due to throttling and turbo boost
-      cmd = "./%s --timesteps=4000 --width=2000 --height=516 --pulseX=600 --pulseY=70 --threads=%d --kernel=%s" % (kernel, multiprocessing.cpu_count(), var)
+      s_var = "--kernel=%s" % var
+      if var == "openmp":
+        s_var = "-m"
+      cmd = "./%s --timesteps=4000 --width=2000 --height=516 --pulseX=600 --pulseY=70 --threads=%d %s" % (kernel, multiprocessing.cpu_count(), s_var)
+      print( cmd )
       out2, err2 = subprocess.Popen( cmd.split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE ).communicate()
-      res[ var ] += float( ("%s" % out2.decode("utf-8").splitlines()[20]).split(" ")[-1].replace(")","") )
+      line = ""
+      for s in out2.decode("utf-8").splitlines():
+        if "OUTER" in s:
+          line = s
+          break
+      print( line )
+      res[ var ] += float( line.split(" ")[-1].replace(")","") )
 
     print("done with iteration %d" % (t+1) )
 

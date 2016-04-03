@@ -69,6 +69,7 @@ void default_values( config_t * config ) {
   config->variant   = variants[0]; // plain_c
   config->threads   = 1;
 
+  config->openmp    = 0;
   config->output    = 0;
   config->ascii     = 0; // will also be used for scale!
 }
@@ -103,6 +104,7 @@ void print_usage( const char * argv0 ) {
   for( i = 0; i < sizeof(variants)/sizeof(variants[0]); i++ )
     if( ! (variants[i].cap & ~cap) )
       printf("  \t %s\n", variants[i].type );
+  printf("  \t openmp\n" );
 
   printf("\n"
          "  --threads \t( -p )                    Default: %d\n"
@@ -152,6 +154,7 @@ void get_config( int argc, char * argv[], config_t * config ) {
     {"output",      no_argument,        NULL,           'o'},
     {"ascii",       required_argument,  NULL,           'a'},
     {"help",        no_argument,        NULL,           'h'},
+    {"openmp",      no_argument,        NULL,           'm'},
 
     {NULL,          0,                  NULL,            0 }
   };
@@ -159,7 +162,7 @@ void get_config( int argc, char * argv[], config_t * config ) {
   uint32_t cap = check_hw_capabilites();
   while( 1 ) {
     int option_index = 0;
-    int opt = getopt_long( argc, argv, "x:y:i:j:t:k:p:h", long_options, &option_index );
+    int opt = getopt_long( argc, argv, "x:y:i:j:t:k:p:hm", long_options, &option_index );
     if( opt == -1 )
       break;
 
@@ -205,6 +208,10 @@ void get_config( int argc, char * argv[], config_t * config ) {
 
       case 'p':
         config->threads = atoi( optarg );
+        break;
+
+      case 'm':
+        config->openmp = 1;
         break;
 
       case 'o':

@@ -14,7 +14,9 @@
 #  along with seismic.  If not, see <http://www.gnu.org/licenses/>.
 
 TARGET          := seismic.elf
-OBJS            := config.o main.o visualize.o
+OBJS            := config.o visualize.o pthreading.o 
+OPENMP_MAIN     := main.o
+OPENMP          := openmp.o
 PLAIN           := kernel_plain.o
 SSE             := kernel_sse.o
 SSE_FMA         := kernel_sse_fma.o
@@ -37,13 +39,15 @@ $(AVX):         CFLAGS += -msse    -mno-fma -mavx    -mno-avx2
 $(AVX_FMA):     CFLAGS += -msse    -mfma    -mavx    -mno-avx2
 $(AVX2):        CFLAGS += -msse    -mno-fma -mavx    -mavx2
 $(AVX2_FMA):    CFLAGS += -msse    -mfma    -mavx    -mavx2
+$(OPENMP_MAIN): CFLAGS += -fopenmp
+$(OPENMP):      CFLAGS += -mno-sse -mno-fma -mno-avx -mno-avx2 -fopenmp
 
 default: compile run
 
-%.elf: $(OBJS) $(PLAIN) $(SSE) $(SSE_FMA) $(SSE_AVX) $(SSE_AVX_FMA) $(AVX) $(AVX_FMA) $(AVX2) $(AVX2_FMA)
-	$(CC) -pthread -o $@ $^ -lm
+%.elf: $(OBJS) $(PLAIN) $(SSE) $(SSE_FMA) $(SSE_AVX) $(SSE_AVX_FMA) $(AVX) $(AVX_FMA) $(AVX2) $(AVX2_FMA) $(OPENMP) $(OPENMP_MAIN)
+	$(CC) -fopenmp -pthread -o $@ $^ -lm
 
-.INTERMEDIATE: $(OBJS) $(PLAIN) $(SSE) $(SSE_FMA) $(SSE_AVX) $(SSE_AVX_FMA) $(AVX) $(AVX_FMA) $(AVX2) $(AVX2_FMA)
+.INTERMEDIATE: $(OBJS) $(PLAIN) $(SSE) $(SSE_FMA) $(SSE_AVX) $(SSE_AVX_FMA) $(AVX) $(AVX_FMA) $(AVX2) $(AVX2_FMA) $(OPENMP) $(OPENMP_MAIN)
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
