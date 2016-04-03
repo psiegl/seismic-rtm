@@ -15,7 +15,94 @@
 
 #include "kernel.h"
 
-inline __attribute__((always_inline)) void kernel_opt( stack_t * data )
+inline __attribute__((always_inline)) void kernel_plain_naiiv( stack_t * data )
+{
+  unsigned i, j;
+  for (i=data->x_start; i<data->x_end; i++){
+    // spatial loop in y
+    for (j=data->y_start; j<data->y_end; j++) {
+      // calculates the pressure field t+1
+      data->nppf[ (i * data->height + j) ] = 2.0f*data->apf[ (i * data->height + j) ] - data->nppf[ (i * data->height + j) ] + data->vel[ (i * data->height + j) ] 
+          *(16.0f*(data->apf[ (i * data->height + j) -1]+data->apf[ (i * data->height + j) +1]+data->apf[ (i * data->height + j) - data->height ]+data->apf[ (i * data->height + j) + data->height ] )
+            - (data->apf[ (i * data->height + j) -2]+data->apf[ (i * data->height + j) +2]+data->apf[ (i * data->height + j) - (data->height * 2) ]+data->apf[ (i * data->height + j) + (data->height * 2) ] )
+            -60.0f*data->apf[ (i * data->height + j) ]);
+    }
+  }
+}
+
+// function that implements the kernel of the seismic modeling algorithm
+void seismic_exec_plain_naiiv( void * v )
+{
+    stack_t * data = (stack_t*) v;
+
+    gettimeofday(&data->s, NULL);
+
+    // time loop
+    unsigned t;
+    for (t = 0; t < data->timesteps; t++)
+    {
+        // inserts the seismic pulse value in the desired position
+        data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t];
+
+        kernel_plain_naiiv( data );
+
+        // switch pointers instead of copying data
+        float * tmp = data->nppf;
+        data->nppf = data->apf;
+        data->apf = tmp;
+        
+        // shows one # at each 10% of the total processing time
+        if( ! (t % (data->timesteps/10)) )
+        {
+            printf("#");
+            fflush(stdout);
+        }
+    }
+
+    gettimeofday(&data->e, NULL);
+}
+
+// function that implements the kernel of the seismic modeling algorithm
+void seismic_exec_plain_naiiv_pthread( void * v )
+{
+    stack_t * data = (stack_t*) v;
+
+    gettimeofday(&data->s, NULL);
+
+    // time loop
+    unsigned t;
+    for (t = 0; t < data->timesteps; t++)
+    {
+        BARRIER( data->barrier, data->id );
+
+        // inserts the seismic pulse value in the desired position
+        data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t];
+
+        BARRIER( data->barrier, data->id );
+
+        kernel_plain_naiiv( data );
+
+        // switch pointers instead of copying data
+        float * tmp = data->nppf;
+        data->nppf = data->apf;
+        data->apf = tmp;
+        
+        // shows one # at each 10% of the total processing time
+        if( ! data->id && ! (t % (data->timesteps/10)) )
+        {
+            printf("#");
+            fflush(stdout);
+        }
+    }
+
+    gettimeofday(&data->e, NULL);
+
+    if( data->id )
+        pthread_exit( NULL );
+}
+
+
+inline __attribute__((always_inline)) void kernel_plain_opt( stack_t * data )
 {
   float coeff_middle = 2.0f;
   float coeff_inner = 16.0f;
@@ -84,9 +171,8 @@ inline __attribute__((always_inline)) void kernel_opt( stack_t * data )
 }
 
 
-
 // function that implements the kernel of the seismic modeling algorithm
-void seismic_exec_plain( void * v )
+void seismic_exec_plain_opt( void * v )
 {
     stack_t * data = (stack_t*) v;
 
@@ -102,7 +188,7 @@ void seismic_exec_plain( void * v )
     for( r = 0; r < 10; r++ ) {
         for (t = 0; t < num_div; t++, t_tmp++)
         {
-            kernel_opt( data );
+            kernel_plain_opt( data );
 
             // switch pointers instead of copying data
             float * tmp = data->nppf;
@@ -122,7 +208,7 @@ void seismic_exec_plain( void * v )
     }
     for (t = 0; t < num_mod; t++)
     {
-        kernel_opt( data );
+        kernel_plain_opt( data );
 
         // switch pointers instead of copying data
         float * tmp = data->nppf;
@@ -143,7 +229,7 @@ void seismic_exec_plain( void * v )
 
 
 // function that implements the kernel of the seismic modeling algorithm
-void seismic_exec_pthread( void * v )
+void seismic_exec_plain_opt_pthread( void * v )
 {
     stack_t * data = (stack_t*) v;
 
@@ -166,7 +252,7 @@ void seismic_exec_pthread( void * v )
         for( r = 0; r < 10; r++ ) {
             for (t = 0; t < num_div; t++, t_tmp++)
             {
-                kernel_opt( data );
+                kernel_plain_opt( data );
 
                 // switch pointers instead of copying data
                 float * tmp = data->nppf;
@@ -188,7 +274,7 @@ void seismic_exec_pthread( void * v )
         }
         for (t = 0; t < num_mod; t++)
         {
-            kernel_opt( data );
+            kernel_plain_opt( data );
 
             // switch pointers instead of copying data
             float * tmp = data->nppf;
@@ -205,7 +291,7 @@ void seismic_exec_pthread( void * v )
     else
         for (t = 0; t < data->timesteps; t++)
         {
-            kernel_opt( data );
+            kernel_plain_opt( data );
 
             // switch pointers instead of copying data
             float * tmp = data->nppf;
@@ -220,3 +306,5 @@ void seismic_exec_pthread( void * v )
     if( data->id )
         pthread_exit( NULL );
 }
+
+

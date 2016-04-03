@@ -50,8 +50,11 @@ struct _stack_t {
   struct timeval e;
 };
 
-void seismic_exec_plain( void * v );
-void seismic_exec_pthread( void * v );
+void seismic_exec_plain_naiiv( void * v );
+void seismic_exec_plain_naiiv_pthread( void * v );
+
+void seismic_exec_plain_opt( void * v );
+void seismic_exec_plain_opt_pthread( void * v );
 
 void seismic_exec_sse_std( void * v );
 void seismic_exec_sse_std_pthread( void * v );
