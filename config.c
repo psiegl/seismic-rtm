@@ -285,7 +285,7 @@ void print_config( config_t * config ) {
          "=== Running configuration:\n"
          "(ID=0Z): res    = %dx%d\n"
          "(ID=0Z): time   = %d\n"
-         "(ID=0Z): pulse  = %d,%d\n"
+         "(ID=0Z): pulse  = %dx%d\n"
          "(ID=0Z): kernel = %s\n"
          "(ID=0Z): thrds  = %d\n"
          "(ID=0Z): mem    = %ld %s\n"
