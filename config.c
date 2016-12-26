@@ -27,6 +27,8 @@
 #include "check_hw.h"
 #include "kernel.h"
 
+#define elemsof( x )        (sizeof( (x) ) / sizeof( (x)[0] ))
+
 
 variant_t variants[] = {
   { "plain_naiiv",                  0,                            seismic_exec_plain_naiiv,                 seismic_exec_plain_naiiv_pthread,                 0,                 1 * sizeof(float) },
@@ -111,7 +113,7 @@ void print_usage( const char * argv0 ) {
 
   uint32_t cap = check_hw_capabilites();
   unsigned i;
-  for( i = 0; i < sizeof(variants)/sizeof(variants[0]); i++ )
+  for( i = 0; i < elemsof(variants); i++ )
     if( ! (variants[i].cap & ~cap) )
       printf("  \t %s\n", variants[i].type );
 
@@ -131,11 +133,11 @@ void print_usage( const char * argv0 ) {
          "\n", c.threads, c.ascii );
 }
 
-unsigned long round_and_get_unit( unsigned long mem, const char ** type ) {
-  const char * types[] = { "B", "KB", "MB", "GB", "TB", "PB" };
+unsigned long round_and_get_unit( unsigned long mem, char * type ) {
+  char types[] = { ' ', 'K', 'M', 'G', 'T', 'P' };
 
   unsigned i;
-  for( i = 0; i < sizeof(types)/sizeof(types[0]); i++ ) {
+  for( i = 0; i < elemsof(types); i++ ) {
     if( mem < 1024 ) {
       *type = types[i];
       return mem;
@@ -295,8 +297,8 @@ unsigned getNumCores( void ) {
 void print_config( config_t * config ) {
 
   unsigned long mem = config->height * (config->width + config->variant.alignment) * sizeof(float) * 3 /* APF, NPPF, VEL */
-                      + config->timesteps * sizeof(float) /* pulsevector */;
-  const char * type;
+                      + (config->timesteps /* +1? */) * sizeof(float) /* pulsevector */;
+  char type;
   mem = round_and_get_unit( mem, &type );
 
   printf("-=-=-=-=-=-\n"
@@ -306,7 +308,7 @@ void print_config( config_t * config ) {
          "(ID=0Z): pulse  = %dx%d\n"
          "(ID=0Z): kernel = %s\n"
          "(ID=0Z): thrds  = %d\n"
-         "(ID=0Z): mem    = %ld %s\n"
+         "(ID=0Z): mem    = %ld %cB\n"
          "(ID=0Z): GFLOP  = %.2f\n"
          "=== Running environment:\n",
          config->width, config->height,
@@ -326,19 +328,23 @@ void print_config( config_t * config ) {
   printf( "(ID=0Z): CORES  = %d", getNumCores() );
 
   uint32_t cap = check_hw_capabilites();
-  if( cap & (HAS_SSE | HAS_AVX | HAS_AVX2 | HAS_FMA | HAS_VMX) )
+  if( cap ) {
     printf(" inc.");
-  if( cap & HAS_SSE )
-    printf(" SSE");
-  if( cap & HAS_AVX ) {
-    printf(" AVX");
-    if( cap & HAS_AVX2 )
-      printf(" AVX2");
+    if( cap & HAS_SSE )
+      printf(" SSE");
+    if( cap & HAS_AVX ) {
+      printf(" AVX");
+      if( cap & HAS_AVX2 )
+        printf(" AVX2");
+    }
+    if( cap & HAS_FMA )
+      printf(" FMA");
+    if( cap & HAS_VMX ) {
+      printf(" VMX");
+      if( cap & HAS_VSX )
+        printf(" VSX");
+    }
   }
-  if( cap & HAS_FMA )
-    printf(" FMA");
-  if( cap & HAS_VMX )
-    printf(" VMX");
 
   printf("\n\n");
 }

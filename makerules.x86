@@ -34,3 +34,5 @@ $(AVX2):        CFLAGS += -mfpmath=sse,387 -msse    -mno-fma -mavx    -mavx2
 $(AVX2_FMA):    CFLAGS += -mfpmath=sse,387 -msse    -mfma    -mavx    -mavx2
 
 ADD_KERNELS     = $(SSE) $(SSE_FMA) $(SSE_AVX) $(SSE_AVX_FMA) $(AVX) $(AVX_FMA) $(AVX2) $(AVX2_FMA)
+
+XIMAGE          := ximage.x86_64.elf

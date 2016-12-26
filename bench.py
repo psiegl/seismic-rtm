@@ -25,14 +25,13 @@ kernel = "seismic.elf"
 
 def bench( kernel, iterations, variants ):
   res = {}
-  for var in variants:
-    res[ var ] = 0.0
-
-  for t in range(0,iterations):
-    for i in range(0,len(variants)):
+  g_cmd = "./%s --timesteps=4000 --width=2000 --height=516 --pulseX=600 --pulseY=70 --threads=%d" % (kernel, multiprocessing.cpu_count())
+  for t in range(iterations):
+    for i in range(len(variants)):
       var = variants[ (i + t) % len(variants) ] # due to throttling and turbo boost
-      cmd = "./%s --timesteps=4000 --width=2000 --height=516 --pulseX=600 --pulseY=70 --threads=%d --kernel=%s" % (kernel, multiprocessing.cpu_count(), var)
+      cmd = "%s --kernel=%s" % (g_cmd, var)
       out2, err2 = subprocess.Popen( cmd.split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE ).communicate()
+      res.setdefault(var, 0.0)
       res[ var ] += float( ("%s" % out2.decode("utf-8").splitlines()[20]).split(" ")[-1].replace(")","") )
 
     print("done with iteration %d" % (t+1) )
@@ -45,18 +44,18 @@ def bench( kernel, iterations, variants ):
 
 def get_all_supported():
   out, err = subprocess.Popen( ("./%s --help" % kernel).split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE ).communicate()
-  kern_opt = 0
   variants = []
-  for var in out.decode("utf-8").splitlines():
-    var = var.strip()
-    if kern_opt:
-      if var == "":
-        break
+  lines = out.splitlines()
+  for i in range(len(lines)):
+    if "--kernel" in lines[i]:
+      break
+  while 1:
+    i += 1
+    var = lines[i].strip()
+    if var != "":
+      variants.append(var)
     else:
-      if "--kernel" in var:
-        kern_opt = 1
-      continue
-    variants.append( var )
+      break
   return variants
 
 
@@ -74,8 +73,8 @@ else:
 
 print("")
 print("------------------")
-print("Results in GFLOPS:")
+print("Results:")
 print("------------------")
 sorted_res = sorted(res.items(), key=operator.itemgetter(1))
 for t in sorted_res:
-  print("%.2f: %s" % (t[1], t[0]))
+  print("%2.2f Gflops   (%3.2fx): %s" % (t[1], t[1]/sorted_res[0][1], t[0]))

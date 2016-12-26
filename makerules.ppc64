@@ -21,3 +21,5 @@ $(PLAIN):       CFLAGS += -mno-altivec -mno-vsx
 $(VMX):         CFLAGS += -maltivec -mabi=altivec  #-mvsx
 
 ADD_KERNELS     = $(VMX)
+
+XIMAGE          := ximage.ppc32.elf
