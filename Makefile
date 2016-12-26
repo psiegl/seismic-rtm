@@ -15,38 +15,26 @@
 
 TARGET          := seismic.elf
 OBJS            := config.o main.o visualize.o
-PLAIN           := kernel_plain.o
-SSE             := kernel_sse.o
-SSE_FMA         := kernel_sse_fma.o
-SSE_AVX         := kernel_sse_avx_partial_aligned.o
-SSE_AVX_FMA     := kernel_sse_avx_fma_partial_aligned.o
-AVX             := kernel_avx.o
-AVX_FMA         := kernel_avx_fma.o
-AVX2            := kernel_avx2.o
-AVX2_FMA        := kernel_avx2_fma.o
+PLAIN           := kernel/kernel_plain.o
 
 CC              = gcc # clang
 CFLAGS          = -ffast-math -ffp-contract=fast -Ofast #-march=native
 
-# https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/i386-and-x86_002d64-Options.html
-$(PLAIN):       CFLAGS += -mfpmath=387     -mno-sse -mno-fma -mno-avx -mno-avx2 # plain_opt version gains a lot with -msse
-$(SSE):         CFLAGS += -mfpmath=sse,387 -msse    -mno-fma -mno-avx -mno-avx2
-$(SSE_FMA):     CFLAGS += -mfpmath=sse,387 -msse    -mfma    -mavx    -mno-avx2 # fma only allowed with avx
-$(SSE_AVX):     CFLAGS += -mfpmath=sse,387 -msse    -mno-fma -mavx    -mno-avx2
-$(SSE_AVX_FMA): CFLAGS += -mfpmath=sse,387 -msse    -mfma    -mavx    -mno-avx2
-$(AVX):         CFLAGS += -mfpmath=sse,387 -msse    -mno-fma -mavx    -mno-avx2
-$(AVX_FMA):     CFLAGS += -mfpmath=sse,387 -msse    -mfma    -mavx    -mno-avx2
-$(AVX2):        CFLAGS += -mfpmath=sse,387 -msse    -mno-fma -mavx    -mavx2
-$(AVX2_FMA):    CFLAGS += -mfpmath=sse,387 -msse    -mfma    -mavx    -mavx2
+UNAME_P         := $(shell uname -p)
+ifeq ($(UNAME_P),x86_64)
+    include makerules.x86
+else
+    include makerules.ppc64
+endif
 
 default: compile run
 
-%.elf: $(OBJS) $(PLAIN) $(SSE) $(SSE_FMA) $(SSE_AVX) $(SSE_AVX_FMA) $(AVX) $(AVX_FMA) $(AVX2) $(AVX2_FMA)
+%.elf: $(OBJS) $(PLAIN) $(ADD_KERNELS)
 	$(CC) -pthread -o $@ $^ -lm
 
-.INTERMEDIATE: $(OBJS) $(PLAIN) $(SSE) $(SSE_FMA) $(SSE_AVX) $(SSE_AVX_FMA) $(AVX) $(AVX_FMA) $(AVX2) $(AVX2_FMA)
+#.INTERMEDIATE: $(OBJS) $(PLAIN) $(ADD_KERNELS)
 %.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) -I. $(CFLAGS) -c -o $@ $<
 
 compile: $(TARGET)
 

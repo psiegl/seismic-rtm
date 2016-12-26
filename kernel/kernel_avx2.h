@@ -13,15 +13,40 @@
 //  You should have received a copy of the GNU General Public License
 //  along with seismic.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef _KERNEL_AVX_H_
-#define _KERNEL_AVX_H_
-
+#ifndef _KERNEL_AVX2_H_
+#define _KERNEL_AVX2_H_
+#ifdef __x86_64__
 #include "kernel.h"
 #include <immintrin.h>
+#include <stdint.h>
+
+/*
+  AVX2 required!
+
+  combines vectors: a) 0.f 1.f 2.f 3.f 4.f 5.f 6.f 7.f
+                    b)         2.f 3.f 4.f 5.f 6.f 7.f 8.f 9.f
+
+  to vector       res)     1.f 2.f 3.f 4.f 5.f 6.f 7.f 8.f
+*/
+static inline __attribute__((always_inline)) __m256 avx2_combine( __m256 a, __m256 b, __m256i s_shl, __m256i s_shr ) {
+  __m256 a_l = _mm256_permutevar8x32_ps( a, s_shl );
+  __m256 b_r = _mm256_permutevar8x32_ps( b, s_shr );
+
+  __m256 res = _mm256_permute2f128_ps( a_l, b_r, 0x34 );
+  return res;
+}
+
+static inline __attribute__((always_inline)) void init_shuffle( __m256i * s_shl, __m256i * s_shr ) {
+  uint32_t shl[8] = { 1, 2, 3, 4, 5, 6, 7, 7 };
+  uint32_t shr[8] = { 0, 0, 1, 2, 3, 4, 5, 6 };
+
+  *s_shl =  _mm256_lddqu_si256( (__m256i const *) &shl[0] );
+  *s_shr =  _mm256_lddqu_si256( (__m256i const *) &shr[0] );
+}
 
 // function that implements the kernel of the seismic modeling algorithm
-#define SEISMIC_EXEC_AVX_FCT( NAME ) \
-void seismic_exec_avx_##NAME( void * v ) \
+#define SEISMIC_EXEC_AVX2_FCT( NAME ) \
+void seismic_exec_avx2_##NAME( void * v ) \
 { \
     stack_t * data = (stack_t*) v; \
  \
@@ -33,6 +58,9 @@ void seismic_exec_avx_##NAME( void * v ) \
     __m256 s_two = _mm256_broadcast_ss( (const float*) &two ); \
     __m256 s_sixteen = _mm256_broadcast_ss( (const float*) &sixteen ); \
     __m256 s_sixty = _mm256_broadcast_ss( (const float*) &sixty ); \
+ \
+    __m256i s_shl, s_shr; \
+    init_shuffle( &s_shl, &s_shr ); \
  \
     data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[0]; \
  \
@@ -46,7 +74,7 @@ void seismic_exec_avx_##NAME( void * v ) \
     for( r = 0; r < 10; r++ ) { \
         for (t = 0; t < num_div; t++, t_tmp++) \
         { \
-            kernel_avx_##NAME( data, s_two, s_sixteen, s_sixty ); \
+            kernel_avx2_##NAME( data, s_two, s_sixteen, s_sixty, s_shl, s_shr ); \
  \
             /* switch pointers instead of copying data */ \
             float * tmp = data->nppf; \
@@ -66,7 +94,7 @@ void seismic_exec_avx_##NAME( void * v ) \
     } \
     for (t = 0; t < num_mod; t++) \
     { \
-        kernel_avx_##NAME( data, s_two, s_sixteen, s_sixty ); \
+        kernel_avx2_##NAME( data, s_two, s_sixteen, s_sixty, s_shl, s_shr ); \
  \
         /* switch pointers instead of copying data */ \
         float * tmp = data->nppf; \
@@ -82,7 +110,7 @@ void seismic_exec_avx_##NAME( void * v ) \
 } \
  \
  \
-void seismic_exec_avx_##NAME##_pthread(void * v ) \
+void seismic_exec_avx2_##NAME##_pthread(void * v ) \
 { \
     stack_t * data = (stack_t*) v; \
  \
@@ -94,6 +122,9 @@ void seismic_exec_avx_##NAME##_pthread(void * v ) \
     __m256 s_two = _mm256_broadcast_ss( (const float*) &two ); \
     __m256 s_sixteen = _mm256_broadcast_ss( (const float*) &sixteen ); \
     __m256 s_sixty = _mm256_broadcast_ss( (const float*) &sixty ); \
+ \
+    __m256i s_shl, s_shr; \
+    init_shuffle( &s_shl, &s_shr ); \
  \
     if( data->set_pulse ) \
         data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[0]; \
@@ -114,7 +145,7 @@ void seismic_exec_avx_##NAME##_pthread(void * v ) \
         for( r = 0; r < 10; r++ ) { \
             for (t = 0; t < num_div; t++, t_tmp++) \
             { \
-                kernel_avx_##NAME( data, s_two, s_sixteen, s_sixty ); \
+                kernel_avx2_##NAME( data, s_two, s_sixteen, s_sixty, s_shl, s_shr ); \
  \
                 /* switch pointers instead of copying data */ \
                 float * tmp = data->nppf; \
@@ -136,7 +167,7 @@ void seismic_exec_avx_##NAME##_pthread(void * v ) \
         } \
         for (t = 0; t < num_mod; t++) \
         { \
-            kernel_avx_##NAME( data, s_two, s_sixteen, s_sixty ); \
+            kernel_avx2_##NAME( data, s_two, s_sixteen, s_sixty, s_shl, s_shr ); \
  \
             /* switch pointers instead of copying data */ \
             float * tmp = data->nppf; \
@@ -153,7 +184,7 @@ void seismic_exec_avx_##NAME##_pthread(void * v ) \
     else \
         for (t = 0; t < data->timesteps; t++) \
         { \
-            kernel_avx_##NAME( data, s_two, s_sixteen, s_sixty ); \
+            kernel_avx2_##NAME( data, s_two, s_sixteen, s_sixty, s_shl, s_shr ); \
  \
             /* switch pointers instead of copying data */ \
             float * tmp = data->nppf; \
@@ -169,4 +200,5 @@ void seismic_exec_avx_##NAME##_pthread(void * v ) \
         pthread_exit( NULL ); \
 }
 
-#endif /* #ifndef _KERNEL_AVX_H_ */
+#endif /* #ifdef __x86_64__ */
+#endif /* #ifndef _KERNEL_AVX2_H_ */

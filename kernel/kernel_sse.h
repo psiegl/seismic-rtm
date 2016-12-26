@@ -15,7 +15,7 @@
 
 #ifndef _KERNEL_SSE_H_
 #define _KERNEL_SSE_H_
-
+#ifdef __x86_64__
 #include "kernel.h"
 #include <xmmintrin.h>
 
@@ -169,4 +169,5 @@ void seismic_exec_sse_##NAME##_pthread(void * v ) \
         pthread_exit( NULL ); \
 }
 
+#endif /* #ifdef __x86_64__ */
 #endif /* #ifndef _KERNEL_SSE_H_ */

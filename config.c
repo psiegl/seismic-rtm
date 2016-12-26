@@ -29,24 +29,35 @@
 
 
 variant_t variants[] = {
-  { "plain_naiiv",                  0,                            seismic_exec_plain_naiiv,                 seismic_exec_plain_naiiv_pthread,                 0,                 1 * sizeof(float) },
-  { "plain_opt",                    0,                            seismic_exec_plain_opt,                   seismic_exec_plain_opt_pthread,                   0,                 1 * sizeof(float) },
-  { "sse_std",                      HAS_SSE,                      seismic_exec_sse_std,                     seismic_exec_sse_std_pthread,                     4 * sizeof(float), 4 * sizeof(float) },
-  { "sse_unaligned",                HAS_SSE,                      seismic_exec_sse_unaligned,               seismic_exec_sse_unaligned_pthread,               0,                 4 * sizeof(float) },
-  { "sse_aligned",                  HAS_SSE,                      seismic_exec_sse_aligned,                 seismic_exec_sse_aligned_pthread,                 4 * sizeof(float), 4 * sizeof(float) },
-  { "sse_aligned_not_grouped",      HAS_SSE,                      seismic_exec_sse_aligned_not_grouped,     seismic_exec_sse_aligned_not_grouped_pthread,     4 * sizeof(float), 4 * sizeof(float) },
-  { "sse_partial_aligned",          HAS_SSE,                      seismic_exec_sse_partial_aligned,         seismic_exec_sse_partial_aligned_pthread,         4 * sizeof(float), 4 * sizeof(float) },
+//  { "plain_naiiv",                  0,                            seismic_exec_plain_naiiv,                 seismic_exec_plain_naiiv_pthread,                 0,                 1 * sizeof(float) },
+//  { "plain_opt",                    0,                            seismic_exec_plain_opt,                   seismic_exec_plain_opt_pthread,                   0,                 1 * sizeof(float) },
+#ifdef __x86_64__
+//  { "sse_std",                      HAS_SSE,                      seismic_exec_sse_std,                     seismic_exec_sse_std_pthread,                     4 * sizeof(float), 4 * sizeof(float) },
+//  { "sse_unaligned",                HAS_SSE,                      seismic_exec_sse_unaligned,               seismic_exec_sse_unaligned_pthread,               0,                 4 * sizeof(float) },
+//  { "sse_aligned",                  HAS_SSE,                      seismic_exec_sse_aligned,                 seismic_exec_sse_aligned_pthread,                 4 * sizeof(float), 4 * sizeof(float) },
+//  { "sse_aligned_not_grouped",      HAS_SSE,                      seismic_exec_sse_aligned_not_grouped,     seismic_exec_sse_aligned_not_grouped_pthread,     4 * sizeof(float), 4 * sizeof(float) },
+//  { "sse_partial_aligned",          HAS_SSE,                      seismic_exec_sse_partial_aligned,         seismic_exec_sse_partial_aligned_pthread,         4 * sizeof(float), 4 * sizeof(float) },
   { "sse_avx_partial_aligned",      HAS_SSE | HAS_AVX,            seismic_exec_sse_avx_partial_aligned,     seismic_exec_sse_avx_partial_aligned_pthread,     4 * sizeof(float), 4 * sizeof(float) },
+  { "sse_avx_partial_aligned_opt",      HAS_SSE | HAS_AVX,            seismic_exec_sse_avx_partial_aligned_opt,     seismic_exec_sse_avx_partial_aligned_opt_pthread,     4 * sizeof(float), 4 * sizeof(float) },
   { "avx_unaligned",                HAS_AVX,                      seismic_exec_avx_unaligned,               seismic_exec_avx_unaligned_pthread,               0,                 8 * sizeof(float) },
   { "avx2_unaligned",               HAS_AVX | HAS_AVX2,           seismic_exec_avx2_unaligned,              seismic_exec_avx2_unaligned_pthread,              0,                 8 * sizeof(float) },
-  { "fma_sse_std",                  HAS_SSE | HAS_FMA,            seismic_exec_sse_fma_std,                 seismic_exec_sse_fma_std_pthread,                 4 * sizeof(float), 4 * sizeof(float) },
-  { "fma_sse_unaligned",            HAS_SSE | HAS_FMA,            seismic_exec_sse_fma_unaligned,           seismic_exec_sse_fma_unaligned_pthread,           0,                 4 * sizeof(float) },
-  { "fma_sse_aligned",              HAS_SSE | HAS_FMA,            seismic_exec_sse_fma_aligned,             seismic_exec_sse_fma_aligned_pthread,             4 * sizeof(float), 4 * sizeof(float) },
-  { "fma_sse_aligned_not_grouped",  HAS_SSE | HAS_FMA,            seismic_exec_sse_fma_aligned_not_grouped, seismic_exec_sse_fma_aligned_not_grouped_pthread, 4 * sizeof(float), 4 * sizeof(float) },
-  { "fma_sse_partial_aligned",      HAS_SSE | HAS_FMA,            seismic_exec_sse_fma_partial_aligned,     seismic_exec_sse_fma_partial_aligned_pthread,     4 * sizeof(float), 4 * sizeof(float) },
+//  { "fma_sse_std",                  HAS_SSE | HAS_FMA,            seismic_exec_sse_fma_std,                 seismic_exec_sse_fma_std_pthread,                 4 * sizeof(float), 4 * sizeof(float) },
+//  { "fma_sse_unaligned",            HAS_SSE | HAS_FMA,            seismic_exec_sse_fma_unaligned,           seismic_exec_sse_fma_unaligned_pthread,           0,                 4 * sizeof(float) },
+//  { "fma_sse_aligned",              HAS_SSE | HAS_FMA,            seismic_exec_sse_fma_aligned,             seismic_exec_sse_fma_aligned_pthread,             4 * sizeof(float), 4 * sizeof(float) },
+//  { "fma_sse_aligned_not_grouped",  HAS_SSE | HAS_FMA,            seismic_exec_sse_fma_aligned_not_grouped, seismic_exec_sse_fma_aligned_not_grouped_pthread, 4 * sizeof(float), 4 * sizeof(float) },
+//  { "fma_sse_partial_aligned",      HAS_SSE | HAS_FMA,            seismic_exec_sse_fma_partial_aligned,     seismic_exec_sse_fma_partial_aligned_pthread,     4 * sizeof(float), 4 * sizeof(float) },
   { "fma_sse_avx_partial_aligned",  HAS_SSE | HAS_AVX | HAS_FMA,  seismic_exec_sse_avx_fma_partial_aligned, seismic_exec_sse_avx_fma_partial_aligned_pthread, 4 * sizeof(float), 4 * sizeof(float) },
+  { "fma_sse_avx_partial_aligned_opt",  HAS_SSE | HAS_AVX | HAS_FMA,  seismic_exec_sse_avx_fma_partial_aligned_opt, seismic_exec_sse_avx_fma_partial_aligned_opt_pthread, 4 * sizeof(float), 4 * sizeof(float) },
   { "fma_avx_unaligned",            HAS_AVX | HAS_FMA,            seismic_exec_avx_fma_unaligned,           seismic_exec_avx_fma_unaligned_pthread,           0,                 8 * sizeof(float) },
   { "fma_avx2_unaligned",           HAS_AVX | HAS_AVX2 | HAS_FMA, seismic_exec_avx2_fma_unaligned,          seismic_exec_avx2_fma_unaligned_pthread,          0,                 8 * sizeof(float) },
+#endif
+#ifdef __ALTIVEC__
+  { "vmx",                          HAS_VMX,                      seismic_exec_vmx_aligned,                 seismic_exec_vmx_aligned_pthread,                 4 * sizeof(float), 4 * sizeof(float) },
+#ifdef __VSX__
+  { "vsx_aligned",                  HAS_VMX | HAS_VSX,            seismic_exec_vsx_aligned,                 seismic_exec_vsx_aligned_pthread,                 4 * sizeof(float), 4 * sizeof(float) },
+  { "vsx_unaligned",                HAS_VMX | HAS_VSX,            seismic_exec_vsx_unaligned,               seismic_exec_vsx_unaligned_pthread,               0,                 4 * sizeof(float) },
+#endif /* #ifdef __VSX__ */
+#endif /* #ifdef __ALTIVEC__ */
 };
 
 
@@ -188,7 +199,8 @@ void get_config( int argc, char * argv[], config_t * config ) {
         {
           unsigned i, found = 0;
           for( i = 0; i < sizeof(variants)/sizeof(variants[0]); i++ ) {
-            if( ! strcmp( optarg, variants[i].type ) && (cap & variants[i].cap) == variants[i].cap ) {
+            if( ! strcmp( optarg, variants[i].type )
+                && (cap & variants[i].cap) == variants[i].cap ) {
               config->variant = variants[i];
               found = 1;
               break;
@@ -196,7 +208,7 @@ void get_config( int argc, char * argv[], config_t * config ) {
           }
 
           if( ! found ) {
-            printf("\n\tNo supported version given! '%s' \n\n", optarg );
+            fprintf(stderr, "ERROR:\n\tNo supported version given! '%s' \n\n", optarg );
             print_usage( argv[0] );
             exit(EXIT_FAILURE);
           }
@@ -221,34 +233,40 @@ void get_config( int argc, char * argv[], config_t * config ) {
         break;
 
       case '?':
-        printf("Try '%s --help' for more information.\n", argv[0]);
+        fprintf(stderr, "Try '%s --help' for more information.\n", argv[0]);
         exit(EXIT_FAILURE);
     }
   }
 
   if (optind != argc) {
-    printf("%s: unrecognized option '%s'.\n", argv[0], argv[optind]);
-    printf("Try '%s --help' for more information.\n", argv[0]);
+    fprintf(stderr, "%s: unrecognized option '%s'.\n", argv[0], argv[optind]);
+    fprintf(stderr, "Try '%s --help' for more information.\n", argv[0]);
     exit(EXIT_FAILURE);
   }
 
   if( config->height <= 4 || config->width <= 4 ) {
-    printf("Height and Width need to be larger than 4\n");
+    fprintf(stderr, "ERROR: height and width need to be larger than 4\n");
     exit(EXIT_FAILURE);
   }
 
 // validation checks!
-  if( (config->variant.vectorwidth || config->threads) &&
-      ((config->height - 4) * sizeof(float)) % (config->variant.vectorwidth * config->threads) ) {
-    printf("The height needs to be: (X * simd * threads) + 4!\n");
+  if( (config->variant.vectorwidth || config->threads)
+      && ((config->height - 4) * sizeof(float)) % (config->variant.vectorwidth * config->threads) ) {
+    fprintf(stderr, "ERROR: the height needs to be: (X * simd * threads) + 4!\n");
     exit(EXIT_FAILURE);
   }
 
-  if( config->pulseX > config->width )
-    config->pulseX = config->width / 2;
-  if( config->pulseY > config->height )
-    config->pulseY = config->height / 2;
-  if( config->threads < 1 )
+  if( config->pulseX > config->width ) {
+    fprintf(stderr, "ERROR: pulseX (%d) is larger then width (%d)!\n", config->pulseX, config->width);
+    exit(EXIT_FAILURE);
+  }
+  
+  if( config->pulseY > config->height ) {
+    fprintf(stderr, "ERROR: pulseY (%d) is larger then height (%d)!\n", config->pulseY, config->height);
+    exit(EXIT_FAILURE);
+  }
+  
+  if( ! config->threads )
     config->threads = 1;
 
   config->GFLOP = ((double)((double)(config->width - 4) * (double)(config->height - 4) * 15.0 + 1.0) * (double)config->timesteps)/1000000.0;
@@ -308,7 +326,7 @@ void print_config( config_t * config ) {
   printf( "(ID=0Z): CORES  = %d", getNumCores() );
 
   uint32_t cap = check_hw_capabilites();
-  if( cap & (HAS_SSE | HAS_AVX | HAS_AVX2 | HAS_FMA) )
+  if( cap & (HAS_SSE | HAS_AVX | HAS_AVX2 | HAS_FMA | HAS_VMX) )
     printf(" inc.");
   if( cap & HAS_SSE )
     printf(" SSE");
@@ -319,6 +337,8 @@ void print_config( config_t * config ) {
   }
   if( cap & HAS_FMA )
     printf(" FMA");
+  if( cap & HAS_VMX )
+    printf(" VMX");
 
   printf("\n\n");
 }
