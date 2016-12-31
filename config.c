@@ -64,7 +64,7 @@ variant_t variants[] = {
 
 
 unsigned int ggT(unsigned int a, unsigned int b){
-  if(b == 0)
+  if( ! b )
     return a;
   else return ggT(b, a % b);
 }
@@ -79,7 +79,7 @@ void default_values( config_t * config ) {
   config->timesteps = 100;
   config->pulseY    = config->height / 2;
   config->pulseX    = config->width / 2;
-  config->variant   = variants[0]; // plain_c
+  config->variant   = variants[0];
   config->threads   = 1;
 
   config->output    = 0;
@@ -95,21 +95,16 @@ void print_usage( const char * argv0 ) {
          "\n"
          "  --width \t( -y )                    Default: %d\n"
          "  \t Define vertical matrix size.\n"
-         "\n"
          "  --height \t( -x )                    Default: %d\n"
          "  \t Define horizontal matrix size.\n"
-         "\n"
          "  --pulseY \t( -i )                    Default: %d\n"
          "  \t y coordinate of pulse offset.\n"
-         "\n"
          "  --pulseX \t( -j )                    Default: %d\n"
          "  \t x coordinate of pulse offset.\n"
-         "\n"
          "  --timesteps \t( -t )                    Default: %d\n"
          "  \t Determine number of timesteps.\n"
-         "\n"
-         "  --kernel \t( -k )                    Default: plain_c\n",
-          argv0, c.height, c.width, c.pulseY, c.pulseX, c.timesteps );
+         "  --kernel \t( -k )                    Default: %s\n",
+          argv0, c.height, c.width, c.pulseY, c.pulseX, c.timesteps, variants[0].type );
 
   uint32_t cap = check_hw_capabilites();
   unsigned i;
@@ -117,35 +112,30 @@ void print_usage( const char * argv0 ) {
     if( ! (variants[i].cap & ~cap) )
       printf("  \t %s\n", variants[i].type );
 
-  printf("\n"
-         "  --threads \t( -p )                    Default: %d\n"
+  printf("  --threads \t( -p )                    Default: %d\n"
          "  \t Number of threads.\n"
-         "\n"
          "  --output \t( -o )                    Default: \"output.bin\"\n"
          "  \t Write output to file 'file'.\n"
-         "\n"
          "  --ascii\t( -a ) <scale>            Default: %d\n"
          "  \t Print an ascii image.\n"
          "  \t Parameter will be used as scale.\n"
-         "\n"
          "  --help \t( -h )\n"
-         "  \t Show this help page.\n"
-         "\n", c.threads, c.ascii );
+         "  \t Show this help page.\n", c.threads, c.ascii );
 }
 
 unsigned long round_and_get_unit( unsigned long mem, char * type ) {
-  char types[] = { ' ', 'K', 'M', 'G', 'T', 'P' };
+  char types[] = { ' ', 'K', 'M', 'G', 'T' };
 
   unsigned i;
   for( i = 0; i < elemsof(types); i++ ) {
-    if( mem < 1024 ) {
+    if( mem < (1<<10) ) {
       *type = types[i];
       return mem;
     }
-    mem /= 1024;
+    mem >>= 10;
   }
 
-  *type = types[0];
+  *type = 'P';
   return mem;
 }
 
@@ -271,7 +261,7 @@ void get_config( int argc, char * argv[], config_t * config ) {
   if( ! config->threads )
     config->threads = 1;
 
-  config->GFLOP = ((double)((double)(config->width - 4) * (double)(config->height - 4) * 15.0 + 1.0) * (double)config->timesteps)/1000000.0;
+  config->GFLOP = (((double)(config->width - 4) * (double)(config->height - 4) * 15.0 + 1.0) * (double)config->timesteps)/1000000.0;
 }
 
 unsigned getNumCores( void ) {
@@ -303,13 +293,13 @@ void print_config( config_t * config ) {
 
   printf("-=-=-=-=-=-\n"
          "=== Running configuration:\n"
-         "(ID=0Z): res    = %dx%d\n"
-         "(ID=0Z): time   = %d\n"
-         "(ID=0Z): pulse  = %dx%d\n"
-         "(ID=0Z): kernel = %s\n"
-         "(ID=0Z): thrds  = %d\n"
-         "(ID=0Z): mem    = %ld %cB\n"
-         "(ID=0Z): GFLOP  = %.2f\n"
+         "(rank0): res    = %dx%d\n"
+         "(rank0): time   = %d\n"
+         "(rank0): pulse  = %dx%d\n"
+         "(rank0): kernel = %s\n"
+         "(rank0): thrds  = %d\n"
+         "(rank0): mem    = %ld %cB\n"
+         "(rank0): GFLOP  = %.2f\n"
          "=== Running environment:\n",
          config->width, config->height,
          config->timesteps,
@@ -320,12 +310,12 @@ void print_config( config_t * config ) {
 
   struct utsname myuts;
   if( ! uname( &myuts ) ) {
-    printf("(ID=0Z): HOST   = %s\n"
-           "(ID=0Z): MACH   = %s\n",
+    printf("(rank0): HOST   = %s\n"
+           "(rank0): MACH   = %s\n",
            myuts.nodename, myuts.machine );
   }
 
-  printf( "(ID=0Z): CORES  = %d", getNumCores() );
+  printf( "(rank0): CORES  = %d", getNumCores() );
 
   uint32_t cap = check_hw_capabilites();
   if( cap ) {

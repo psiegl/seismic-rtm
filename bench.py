@@ -25,7 +25,7 @@ kernel = "seismic.elf"
 
 def bench( kernel, iterations, variants ):
   res = {}
-  g_cmd = "./%s --timesteps=4000 --width=2000 --height=516 --pulseX=600 --pulseY=70 --threads=%d" % (kernel, multiprocessing.cpu_count())
+  g_cmd = "./%s --timesteps=4000 --width=2000 --height=644 --pulseX=600 --pulseY=70 --threads=%d" % (kernel, multiprocessing.cpu_count())
   for t in range(iterations):
     for i in range(len(variants)):
       var = variants[ (i + t) % len(variants) ] # due to throttling and turbo boost

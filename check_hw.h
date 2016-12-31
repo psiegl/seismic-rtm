@@ -20,6 +20,9 @@
 #ifdef __x86_64__
 #include <cpuid.h>
 #endif /* #ifdef __x86_64__ */
+#if defined( __ALTIVEC__ ) && defined( __VSX__ )
+#include <stdio.h>
+#endif /* #if defined( __ALTIVEC__ ) && defined( __VSX__ ) */
 
 #define HAS_SSE   (1 << 0)
 #define HAS_SSE2  (1 << 1)
@@ -38,23 +41,34 @@
 uint32_t check_hw_capabilites( void ) {
   uint32_t cap = 0;
 #ifdef __x86_64__
-  if(__builtin_cpu_supports("sse"))
+  if( __builtin_cpu_supports("sse") )
     cap |= HAS_SSE;
-  if(__builtin_cpu_supports("avx"))
+  if( __builtin_cpu_supports("avx") )
     cap |= HAS_AVX;
-  if(__builtin_cpu_supports("avx2"))
+  if( __builtin_cpu_supports("avx2") )
     cap |= HAS_AVX2;
 //  if(__builtin_cpu_supports("fma")) // not always supported
 //    cap |= HAS_FMA;
   int info[4];
   __cpuid_count(0x00000001, 0, info[0], info[1], info[2], info[3]);
-  if( (info[2] & ((int)1 << 12)) == ((int)1 << 12) )
+  if((info[2] & ((int)1 << 12)) == ((int)1 << 12))
     cap |= HAS_FMA;
 #endif /* #ifdef __x86_64__ */
 #ifdef __ALTIVEC__
-    cap |= HAS_VMX;
+  cap |= HAS_VMX;
 #ifdef __VSX__
-    cap |= HAS_VSX;
+  // needs at least Power ISA v2.06 (e.g. POWER7)
+  FILE *f = fopen("/proc/cpuinfo", "r");
+  char b[256];
+  while(!feof(f)) {
+    fgets(b, 256, f);
+    if(!memcmp(b, "cpu", 3)) {
+      int version;
+      cap |= HAS_VSX * (sscanf(b, "%*[^0123456789]%d", &version) && version >= 7);
+      break;
+    }
+  }
+  fclose(f);
 #endif /* #ifdef __VSX__ */
 #endif /* #ifdef __ALTIVEC__ */
 
