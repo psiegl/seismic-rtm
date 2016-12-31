@@ -52,7 +52,7 @@ def get_all_supported():
   while 1:
     i += 1
     var = lines[i].strip()
-    if var != "":
+    if "--" not in var:
       variants.append(var)
     else:
       break
