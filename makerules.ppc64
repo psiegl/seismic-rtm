@@ -14,12 +14,14 @@
 #  along with seismic.  If not, see <http://www.gnu.org/licenses/>.
 
 VMX             := kernel/kernel_vmx.o
+VSX             := kernel/kernel_vsx.o
 
 # https://gcc.gnu.org/onlinedocs/gcc/PowerPC-AltiVec_002fVSX-Built-in-Functions.html
 # https://github.com/gcc-mirror/gcc/blob/master/gcc/config/rs6000/altivec.h
-$(PLAIN):       CFLAGS += -mno-altivec -mno-vsx
-$(VMX):         CFLAGS += -maltivec -mabi=altivec  #-mvsx
+$(PLAIN):       CFLAGS += -mno-altivec            -mno-vsx
+$(VMX):         CFLAGS += -maltivec -mabi=altivec -mno-vsx
+$(VSX):         CFLAGS += -maltivec -mabi=altivec -mvsx
 
-ADD_KERNELS     = $(VMX)
+ADD_KERNELS     = $(VMX) $(VSX)
 
 XIMAGE          := ximage.ppc32.elf
