@@ -1,4 +1,28 @@
-ORIGINAL        :   MADAGASCAR project (http://www.ahay.org/)
-PLAIN           :   Victor Medeiros    (Thesis: "fastRTM: An IDE to Support Development of the RTM Algorithm in High Performance FPGA platforms")
-SSE             :   Alexandros Gremm   (https://github.com/agremm/Seismic)
-CURRENT VERSION :   Patrick Siegl
+ORIGIN
+------
+  CWP/SU:Seismic Un*x (SeisUnix)
+   https://pubs.usgs.gov/of/2001/of01-326/HTML/SEISUNIX.HTM
+   https://github.com/JohnWStockwellJr/SeisUnix
+
+  MADAGASCAR project
+   http://www.ahay.org/
+
+PLAIN, FPGA
+-----------
+  Victor Medeiros
+   Thesis: "fastRTM: An IDE to Support Development of the RTM Algorithm in High Performance FPGA platforms", 2013
+
+SSE
+---
+  Alexandros Gremm
+   Thesis: "Acceleration, Clustering and Performance Evaluation of Seismic Applications", June 2011
+   https://github.com/agremm/Seismic
+
+  Thomas Grosser, Alexandros Gremm, Sebastian Veith, Gerald Heim, Wolfgang Rosenstiel, Victor Medeiros, Manoel Eusebio de Lima
+   "Exploiting Heterogeneous Computing Platforms By Cataloging Best Solutions For Resource Intensive Seismic Applications", Mai 2011
+
+CURRENT
+-------
+  Patrick Siegl
+   Thesis: "Hybride Beschleunigung einer seismischen Applikation durch Kombination von traditionellen Methoden und OpenCL", April 2012
+           ("Hybrid acceleration of a seismic application by combining traditional methods with opencl")
