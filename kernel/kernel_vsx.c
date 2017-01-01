@@ -85,6 +85,7 @@ inline __attribute__((always_inline)) void kernel_vsx_aligned( stack_t * data, v
         unsigned r = i * data->height + data->y_start;
         s_above1 = vec_ld(0, &(data->apf[ r -4]) );
         s_actual = vec_ld(0, &(data->apf[ r ]) );
+        s_above2 = vec_perm(s_above1, s_actual, mergeHighLow);
         
         // spatial loop in y
         for (j=data->y_start; j<data->y_end; j+=4, r+=4) {
@@ -104,7 +105,6 @@ inline __attribute__((always_inline)) void kernel_vsx_aligned( stack_t * data, v
             s_vel_aligned = vec_ld(0, &(data->vel[ r ]) );
 
             s_under2 = vec_perm(s_actual, s_under1, mergeHighLow);
-            s_above2 = vec_perm(s_above1, s_actual, mergeHighLow);
             
             s_above2 = vec_add( vec_add( s_right2, s_left2),  vec_add( s_above2, s_under2));
             
@@ -120,9 +120,10 @@ inline __attribute__((always_inline)) void kernel_vsx_aligned( stack_t * data, v
             s_sum1 = vec_madd( s_vel_aligned, s_sum1, s_ppf_aligned );
 
             // store result
-            vec_st(s_sum1, 0, &(data->nppf[ r ]));
             s_above1 = s_actual;
             s_actual = s_under1_orig;
+            s_above2 = s_under2;
+            vec_st(s_sum1, 0, &(data->nppf[ r ]));
         }
     }
 }
