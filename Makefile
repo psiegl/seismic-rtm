@@ -24,7 +24,11 @@ UNAME_P         := $(shell uname -p)
 ifeq ($(UNAME_P),x86_64)
     include makerules.x86
 else
-    include makerules.ppc64
+ ifeq ($(UNAME_P),aarch64)
+     include makerules.arm
+ else
+     include makerules.ppc64
+ endif
 endif
 
 default: compile run
@@ -65,4 +69,4 @@ objdump: compile
 	objdump -dS $(TARGET) | less
 
 clean:
-	rm $(TARGET) *.o *.bin -rf
+	rm $(TARGET) *.o */*.o *.bin -rf

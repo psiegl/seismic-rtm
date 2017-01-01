@@ -18,11 +18,19 @@
 
 #include <stdint.h>
 #ifdef __x86_64__
-#include <cpuid.h>
+# include <cpuid.h>
 #endif /* #ifdef __x86_64__ */
 #if defined( __ALTIVEC__ ) && defined( __VSX__ )
-#include <stdio.h>
+# include <stdio.h>
 #endif /* #if defined( __ALTIVEC__ ) && defined( __VSX__ ) */
+
+#if defined( __ARM_NEON ) || defined ( __ARM_NEON_FP )
+# include <sys/auxv.h>
+# include <asm/hwcap.h>
+# ifndef HWCAP_NEON 
+#  define HWCAP_NEON (1 << 12)
+# endif
+#endif /* #if defined( __ARM_NEON ) || defined ( __ARM_NEON_FP ) */
 
 #define HAS_SSE   (1 << 0)
 //#define HAS_SSE2  (1 << 1)
@@ -39,8 +47,12 @@
 #define HAS_VMX   (1 << 11)
 #define HAS_VSX   (1 << 12)
 
+#define HAS_NEON  (1 << 13)
+#define HAS_ASIMD (1 << 14)
+
 /* option to parse lscpu? */
-uint32_t check_hw_capabilites( void ) {
+uint32_t check_hw_capabilites( void )
+{
   uint32_t cap = 0;
 #ifdef __x86_64__
   if( __builtin_cpu_supports("sse") )
@@ -56,6 +68,7 @@ uint32_t check_hw_capabilites( void ) {
   if((info[2] & ((int)1 << 12)) == ((int)1 << 12))
     cap |= HAS_FMA;
 #endif /* #ifdef __x86_64__ */
+
 #ifdef __ALTIVEC__
   cap |= HAS_VMX;
 #ifdef __VSX__
@@ -73,6 +86,13 @@ uint32_t check_hw_capabilites( void ) {
   fclose(f);
 #endif /* #ifdef __VSX__ */
 #endif /* #ifdef __ALTIVEC__ */
+
+#if defined( __ARM_NEON ) || defined ( __ARM_NEON_FP ) // __ARM_ARCH
+  if(getauxval(AT_HWCAP) & HWCAP_NEON)
+    cap |= HAS_NEON;  
+  if(getauxval(AT_HWCAP) & HWCAP_ASIMD)
+    cap |= HAS_NEON | HAS_ASIMD;
+#endif /* #if defined( __ARM_NEON ) || defined ( __ARM_NEON_FP ) */
   return cap;
 }
 

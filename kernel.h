@@ -122,4 +122,9 @@ void seismic_exec_vsx_aligned_pthread( void * v );
 #endif /* #ifdef __VSX__ */
 #endif /* #ifdef __ALTIVEC__ */
 
+#if defined( __ARM_NEON ) || defined ( __ARM_NEON_FP )
+void seismic_exec_arm_neon_aligned( void * v );
+void seismic_exec_arm_neon_aligned_pthread( void * v );
+#endif /* #if defined( __ARM_NEON ) || defined ( __ARM_NEON_FP ) */
+
 #endif /* #ifndef _KERNEL_H_ */
