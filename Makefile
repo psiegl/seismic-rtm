@@ -13,12 +13,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with seismic.  If not, see <http://www.gnu.org/licenses/>.
 
-TARGET  := seismic.elf
 
 UNAME_P := $(shell uname -p)
 
 SDIR    := 
 BDIR    := bld.$(UNAME_P)
+
+TARGET  := seismic.$(UNAME_P).elf
 
 OBJS    := $(BDIR)/config.o $(BDIR)/main.o $(BDIR)/visualize.o
 PLAIN   := $(BDIR)/kernel/kernel_plain.o
@@ -46,7 +47,7 @@ $(BDIR):
 %.elf: $(ALL_OBJS)
 	$(CC) -pthread -lm -o $@ $^
 
-.INTERMEDIATE: $(ALL_OBJS)
+#.INTERMEDIATE: $(ALL_OBJS)
 $(ALL_OBJS): $(BDIR)/%.o: %.c
 	$(CC) -I. $(CFLAGS) -c -o $@ $<
 
