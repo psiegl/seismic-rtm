@@ -15,14 +15,18 @@
 
 TARGET  := seismic.elf
 
-OBJS    := config.o main.o visualize.o
-PLAIN   := kernel/kernel_plain.o
-CHK_HW  := check_hw.o
+UNAME_P := $(shell uname -p)
+
+SDIR    := 
+BDIR    := bld.$(UNAME_P)
+
+OBJS    := $(BDIR)/config.o $(BDIR)/main.o $(BDIR)/visualize.o
+PLAIN   := $(BDIR)/kernel/kernel_plain.o
+CHK_HW  := $(BDIR)/check_hw.o
 
 CC      = gcc # clang
 CFLAGS  = -ffast-math -ffp-contract=fast -Ofast #-march=native
 
-UNAME_P := $(shell uname -p)
 ifeq ($(UNAME_P),x86_64)
  include makerules.x86
 else
@@ -32,17 +36,22 @@ else
   include makerules.ppc64
  endif
 endif
+ALL_OBJS = $(OBJS) $(CHK_HW) $(PLAIN) $(ADD_KERNELS)
 
 default: compile run
 
-%.elf: $(OBJS) $(CHK_HW) $(PLAIN) $(ADD_KERNELS)
+$(BDIR):
+	mkdir -p $(BDIR)/kernel
+
+%.elf: $(ALL_OBJS)
 	$(CC) -pthread -lm -o $@ $^
 
-.INTERMEDIATE: $(OBJS) $(CHK_HW) $(PLAIN) $(ADD_KERNELS)
-%.o: %.c
+.INTERMEDIATE: $(ALL_OBJS)
+$(ALL_OBJS): $(BDIR)/%.o: %.c
 	$(CC) -I. $(CFLAGS) -c -o $@ $<
 
-compile: $(TARGET)
+
+compile: $(BDIR) $(TARGET)
 
 WIDTH   = 1000
 HEIGHT  = 516
@@ -71,4 +80,4 @@ objdump: compile
 	objdump -dS $(TARGET) | less
 
 clean:
-	rm $(TARGET) *.o */*.o *.bin -rf
+	rm $(TARGET) $(BDIR) *.bin -rf

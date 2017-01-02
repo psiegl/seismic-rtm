@@ -13,14 +13,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with seismic.  If not, see <http://www.gnu.org/licenses/>.
 
-SSE             := kernel/kernel_sse.o
-SSE_FMA         := kernel/kernel_sse_fma.o
-SSE_AVX         := kernel/kernel_sse_avx_partial_aligned.o
-SSE_AVX_FMA     := kernel/kernel_sse_avx_fma_partial_aligned.o
-AVX             := kernel/kernel_avx.o
-AVX_FMA         := kernel/kernel_avx_fma.o
-AVX2            := kernel/kernel_avx2.o
-AVX2_FMA        := kernel/kernel_avx2_fma.o
+SSE             := $(BDIR)/kernel/kernel_sse.o
+SSE_FMA         := $(BDIR)/kernel/kernel_sse_fma.o
+SSE_AVX         := $(BDIR)/kernel/kernel_sse_avx_partial_aligned.o
+SSE_AVX_FMA     := $(BDIR)/kernel/kernel_sse_avx_fma_partial_aligned.o
+AVX             := $(BDIR)/kernel/kernel_avx.o
+AVX_FMA         := $(BDIR)/kernel/kernel_avx_fma.o
+AVX2            := $(BDIR)/kernel/kernel_avx2.o
+AVX2_FMA        := $(BDIR)/kernel/kernel_avx2_fma.o
 
 # https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/i386-and-x86_002d64-Options.html
 $(PLAIN):       CFLAGS += -mfpmath=387     -mno-sse -mno-fma -mno-avx -mno-avx2 # plain_opt version gains a lot with -msse
