@@ -25,10 +25,12 @@
 #define VMAX       2000.0f
 #define VEL_VALUE  2000.0f 
 
-float libgeof_source_rickerb(float t,float fc) {
-  float alpha = sqrt(.5)*M_PI*fc;
-  float aux   = (t*alpha)*(t*alpha);
-  return (1.0 - 2.0*aux)*exp((double) -aux); // = r
+// http://subsurfwiki.org/wiki/Ricker_wavelet
+// http://wiki.seg.org/wiki/Dictionary:Ricker_wavelet
+float ricker_wavelet(float t,float fc) {
+  float x   = M_PI*fc*t;
+  float aux = x*x;
+  return (1.0 - 2.0*aux)*exp((double) -aux);
 }
 
 #define init_seismic_pulsevector( pulsevector, timesteps, dt, tf, fc ) \
@@ -36,7 +38,8 @@ float libgeof_source_rickerb(float t,float fc) {
     unsigned i; \
     for( i = 0; i < timesteps; i++ ) { \
       float time = ( i * dt ) - tf; \
-      pulsevector[ i ] = libgeof_source_rickerb( time, fc ); \
+      time *= sqrt(.5); \
+      pulsevector[ i ] = ricker_wavelet( time, fc ); \
     } \
     pulsevector[ timesteps ] = 0.0f; /* performance optimisation */ \
   }
