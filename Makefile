@@ -16,14 +16,14 @@
 
 UNAME_P := $(shell uname -p)
 
-SDIR    := 
+SDIR    := src
 BDIR    := bld.$(UNAME_P)
 
 TARGET  := seismic.$(UNAME_P).elf
 
 OBJS    := $(BDIR)/config.o $(BDIR)/main.o $(BDIR)/visualize.o
-PLAIN   := $(BDIR)/kernel/kernel_plain.o
 CHK_HW  := $(BDIR)/check_hw.o
+PLAIN   := $(BDIR)/kernel/kernel_plain.o
 
 CC      = gcc # clang
 CFLAGS  = -ffast-math -ffp-contract=fast -Ofast #-march=native
@@ -48,8 +48,8 @@ $(BDIR):
 	$(CC) -pthread -lm -o $@ $^
 
 #.INTERMEDIATE: $(ALL_OBJS)
-$(ALL_OBJS): $(BDIR)/%.o: %.c
-	$(CC) -I. $(CFLAGS) -c -o $@ $<
+$(ALL_OBJS): $(BDIR)/%.o: $(SDIR)/%.c
+	$(CC) -I$(SDIR) $(CFLAGS) -c -o $@ $<
 
 
 compile: $(BDIR) $(TARGET)
@@ -82,3 +82,6 @@ objdump: compile
 
 clean:
 	rm $(TARGET) $(BDIR) *.bin -rf
+
+distclean: clean
+	rm bld.* seismic.* -rf
