@@ -13,36 +13,36 @@
 #  You should have received a copy of the GNU General Public License
 #  along with seismic.  If not, see <http://www.gnu.org/licenses/>.
 
-TARGET          := seismic.elf
-OBJS            := config.o main.o visualize.o
-PLAIN           := kernel/kernel_plain.o
+TARGET  := seismic.elf
 
-CC              = gcc # clang
-CFLAGS          = -ffast-math -ffp-contract=fast -Ofast #-march=native
+OBJS    := config.o main.o visualize.o
+PLAIN   := kernel/kernel_plain.o
+CHK_HW  := check_hw.o
 
-UNAME_P         := $(shell uname -p)
+CC      = gcc # clang
+CFLAGS  = -ffast-math -ffp-contract=fast -Ofast #-march=native
+
+UNAME_P := $(shell uname -p)
 ifeq ($(UNAME_P),x86_64)
-    include makerules.x86
+ include makerules.x86
 else
- ifeq ($(UNAME_P),aarch64)
-     include makerules.arm
+ ifneq (,$(filter $(UNAME_P),armv7l aarch64))
+  include makerules.arm
  else
-     include makerules.ppc64
+  include makerules.ppc64
  endif
 endif
 
 default: compile run
 
-%.elf: $(OBJS) $(PLAIN) $(ADD_KERNELS)
-	$(CC) -pthread -o $@ $^ -lm
+%.elf: $(OBJS) $(CHK_HW) $(PLAIN) $(ADD_KERNELS)
+	$(CC) -pthread -lm -o $@ $^
 
-#.INTERMEDIATE: $(OBJS) $(PLAIN) $(ADD_KERNELS)
+.INTERMEDIATE: $(OBJS) $(CHK_HW) $(PLAIN) $(ADD_KERNELS)
 %.o: %.c
 	$(CC) -I. $(CFLAGS) -c -o $@ $<
 
 compile: $(TARGET)
-
-
 
 WIDTH   = 1000
 HEIGHT  = 516
@@ -50,20 +50,22 @@ PULSEX  = 600
 PULSEY  = 70
 STEPS   = 1000
 THREADS = 8
-TYPE    = sse_unaligned
+TYPE    = plain_opt
+
+CMD     = --timesteps=$(STEPS) --width=$(WIDTH) --height=$(HEIGHT) --pulseX=$(PULSEX) --pulseY=$(PULSEY) --threads=$(THREADS) --kernel=$(TYPE)
 
 run: compile
-	./$(TARGET) --timesteps=$(STEPS) --width=$(WIDTH) --height=$(HEIGHT) --pulseX=$(PULSEX) --pulseY=$(PULSEY) --threads=$(THREADS) --kernel=$(TYPE)
+	./$(TARGET) $(CMD)
 
 bench: compile
-	python bench.py
+	python tools/bench.py
 
 ascii: compile
-	./$(TARGET) --timesteps=$(STEPS) --width=$(WIDTH) --height=$(HEIGHT) --pulseX=$(PULSEX) --pulseY=$(PULSEY) --threads=$(THREADS) --kernel=$(TYPE) --ascii=1
+	./$(TARGET) $(CMD) --ascii=1
 
 visualize: compile
-	./$(TARGET) --timesteps=$(STEPS) --width=$(WIDTH) --height=$(HEIGHT) --pulseX=$(PULSEX) --pulseY=$(PULSEY) --threads=$(THREADS) --kernel=$(TYPE) --output
-	./$(XIMAGE) n1=$(HEIGHT) n2=$(WIDTH) hbox=$(HEIGHT) wbox=$(WIDTH) title=visualizer < output.bin
+	./$(TARGET) $(CMD) --output
+	./tools/ximage.$(shell uname -m).elf n1=$(HEIGHT) n2=$(WIDTH) hbox=$(HEIGHT) wbox=$(WIDTH) title=visualizer < output.bin
 
 objdump: compile
 	objdump -dS $(TARGET) | less

@@ -340,12 +340,10 @@ void print_config( config_t * config ) {
       if( cap & HAS_VSX )
         printf(" VSX");
     }
-    if( cap & HAS_NEON ) {
+    if( cap & HAS_NEON )
       printf(" NEON");
-      if( cap & HAS_ASIMD ) {
-        printf(" ASIMD");
-      }
-    }
+    if( cap & HAS_ASIMD )
+      printf(" ASIMD");
   }
 
   printf("\n\n");

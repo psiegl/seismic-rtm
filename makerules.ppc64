@@ -23,5 +23,3 @@ $(VMX):         CFLAGS += -maltivec -mabi=altivec -mno-vsx
 $(VSX):         CFLAGS += -maltivec -mabi=altivec -mvsx
 
 ADD_KERNELS     = $(VMX) $(VSX)
-
-XIMAGE          := ximage.$(shell uname -m).elf
