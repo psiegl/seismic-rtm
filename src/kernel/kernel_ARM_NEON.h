@@ -26,13 +26,13 @@ void seismic_exec_arm_neon_##NAME( void * v ) \
     stack_t * data = (stack_t*) v; \
  \
     /* preload register with const. values. */ \
-    float32_t two[4] = {2.0f, 2.0f, 2.0f, 2.0f}; \
-    float32_t sixteen[4] = {16.0f,16.0f,16.0f,16.0f}; \
-    float32_t sixty[4] = {-60.0f,-60.0f,-60.f,-60.0f}; \
+    float32_t two = 2.0f; \
+    float32_t sixteen = 16.0f; \
+    float32_t min_sixty = -60.0f; \
  \
-    float32x4_t neon_two     = vld1q_f32( (const float32_t *) &two[0] ); \
-    float32x4_t neon_sixteen = vld1q_f32( (const float32_t *) &sixteen[0] ); \
-    float32x4_t neon_minus_sixty   = vld1q_f32( (const float32_t *) &sixty[0] ); \
+    float32x4_t neon_two     = vld1q_dup_f32( (const float32_t *) &two ); \
+    float32x4_t neon_sixteen = vld1q_dup_f32( (const float32_t *) &sixteen ); \
+    float32x4_t neon_minus_sixty = vld1q_dup_f32( (const float32_t *) &min_sixty ); \
  \
     data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[0]; \
  \
@@ -87,13 +87,13 @@ void seismic_exec_arm_neon_##NAME##_pthread(void * v ) \
     stack_t * data = (stack_t*) v; \
  \
     /* preload register with const. values. */ \
-    float32_t two[4] = {2.0f, 2.0f, 2.0f, 2.0f}; \
-    float32_t sixteen[4] = {16.0f,16.0f,16.0f,16.0f}; \
-    float32_t sixty[4] = {-60.0f,-60.0f,-60.f,-60.0f}; \
+    float32_t two = 2.0f; \
+    float32_t sixteen = 16.0f; \
+    float32_t min_sixty = -60.0f; \
  \
-    float32x4_t neon_two     = vld1q_f32( (const float32_t *) &two[0] ); \
-    float32x4_t neon_sixteen = vld1q_f32( (const float32_t *) &sixteen[0] ); \
-    float32x4_t neon_minus_sixty   = vld1q_f32( (const float32_t *) &sixty[0] ); \
+    float32x4_t neon_two     = vld1q_dup_f32( (const float32_t *) &two ); \
+    float32x4_t neon_sixteen = vld1q_dup_f32( (const float32_t *) &sixteen ); \
+    float32x4_t neon_minus_sixty = vld1q_dup_f32( (const float32_t *) &min_sixty ); \
  \
     if( data->set_pulse ) \
         data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[0]; \
