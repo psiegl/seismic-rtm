@@ -14,7 +14,7 @@
 #  along with seismic.  If not, see <http://www.gnu.org/licenses/>.
 
 
-UNAME_P := $(shell uname -p)
+UNAME_P := $(shell uname -m)
 
 SDIR    := src
 BDIR    := bld.$(UNAME_P)

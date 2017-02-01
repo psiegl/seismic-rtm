@@ -22,8 +22,6 @@
 #define FC          125.0f
 #define ALPHA         9.0f
 #define BETA          5.0f
-#define VMAX       2000.0f
-#define VEL_VALUE  2000.0f 
 
 // http://subsurfwiki.org/wiki/Ricker_wavelet
 // http://wiki.seg.org/wiki/Dictionary:Ricker_wavelet
@@ -33,13 +31,12 @@ float ricker_wavelet(float t,float fc) {
   return (1.0 - 2.0*aux)*exp((double) -aux);
 }
 
-#define init_seismic_pulsevector( pulsevector, timesteps, dt, tf, fc ) \
+#define init_seismic_pulsevector( pulsevector, timesteps, dt, tf, fpeak ) \
   { \
     unsigned i; \
     for( i = 0; i < timesteps; i++ ) { \
       float time = ( i * dt ) - tf; \
-      time *= sqrt(.5); \
-      pulsevector[ i ] = ricker_wavelet( time, fc ); \
+      pulsevector[ i ] = ricker_wavelet( time, fpeak ); \
     } \
     pulsevector[ timesteps ] = 0.0f; /* performance optimisation */ \
   }
@@ -47,20 +44,31 @@ float ricker_wavelet(float t,float fc) {
 #define init_seismic_matrices( width, height, VEL, APF, NPPF, fat ) \
   { \
     unsigned i; \
-    float t_vel = VEL_VALUE * VEL_VALUE * (fat); \
     for( i = 0; i < (height) * (width); i++ ) { \
       (APF)[ i ] = (NPPF)[ i ] = 0.0f; \
-      (VEL)[ i ] = t_vel; \
+      (VEL)[ i ] = fat; \
     } \
   }
 
 #define init_seismic_buffers( width, height, timesteps, VEL, APF, NPPF, pulsevector ) \
   { \
-    float h = VMAX / ( ALPHA * FC ); \
-    float dt = h / ( BETA * VMAX ); /* = 1 / ( ALPHA * FC * BETA ) */ \
-    float fat = ( dt * dt ) / ( h * h * 12.0f ); \
+    float vmin = sqrt(.5) * 40.0; \
+    float vmax = BETA * ALPHA; \
+    \
+    float h = 2.0 / ( FC ); \
+    float fat = 1.0f / ( BETA * BETA * 12.0f ); \
     float tf = ( 2.0f * sqrt( M_PI ) ) / FC; \
-    init_seismic_pulsevector( (pulsevector), (timesteps), dt, tf, FC ); \
+    \
+    /* determine time sampling interval to ensure stability */ \
+    float dt = h / (2.0 * vmax); \
+    \
+    /* determine maximum temporal frequency to avoid dispersion */ \
+    float fmax = vmin/(10.0*h); \
+    \
+    /* compute or set peak frequency for ricker wavelet */ \
+    float fpeak = 0.5 * fmax;  \
+    \
+    init_seismic_pulsevector( (pulsevector), (timesteps), dt, tf, fpeak ); \
     init_seismic_matrices( (width), (height), (VEL), (APF), (NPPF), fat ); \
   }
 
