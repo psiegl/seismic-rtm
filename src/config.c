@@ -90,6 +90,7 @@ void default_values( config_t * config ) {
 
   config->output    = 0;
   config->ascii     = 0; // will also be used for scale!
+  config->verbose   = 1;
 }
 
 void print_usage( const char * argv0 ) {
@@ -125,6 +126,8 @@ void print_usage( const char * argv0 ) {
          "  --ascii\t( -a ) <scale>            Default: %d\n"
          "  \t Print an ascii image.\n"
          "  \t Parameter will be used as scale.\n"
+         "  --quite\t( -q)\n"
+         "  \t Run without verbose output.\n"
          "  --help \t( -h )\n"
          "  \t Show this help page.\n", c.threads, c.ascii );
 }
@@ -161,6 +164,7 @@ void get_config( int argc, char * argv[], config_t * config ) {
     {"output",      no_argument,        NULL,           'o'},
     {"ascii",       required_argument,  NULL,           'a'},
     {"help",        no_argument,        NULL,           'h'},
+    {"quite",       no_argument,        NULL,           'q'},
 
     {NULL,          0,                  NULL,            0 }
   };
@@ -168,7 +172,7 @@ void get_config( int argc, char * argv[], config_t * config ) {
   uint32_t cap = check_hw_capabilites();
   while( 1 ) {
     int option_index = 0;
-    int opt = getopt_long( argc, argv, "x:y:i:j:t:k:p:h", long_options, &option_index );
+    int opt = getopt_long( argc, argv, "x:y:i:j:t:k:p:hq", long_options, &option_index );
     if( opt == -1 )
       break;
 
@@ -223,6 +227,10 @@ void get_config( int argc, char * argv[], config_t * config ) {
 
       case 'a':
         config->ascii = atoi(optarg);
+        break;
+
+      case 'q':
+        config->verbose = 0;
         break;
 
       case 'h':
@@ -291,6 +299,9 @@ unsigned getNumCores( void ) {
 }
 
 void print_config( config_t * config ) {
+
+  if(!config->verbose)
+    return;
 
   unsigned long mem = config->height * (config->width + config->variant.alignment) * sizeof(float) * 3 /* APF, NPPF, VEL */
                       + (config->timesteps /* +1? */) * sizeof(float) /* pulsevector */;

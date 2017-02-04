@@ -27,7 +27,8 @@ int main( int argc, char * argv[] ) {
   get_config( argc, argv, &config );
   print_config( &config );
 
-  printf("allocate and initialize seismic data\n");
+  if(config.verbose)
+    printf("allocate and initialize seismic data\n");
   float *APF, *VEL, *NPPF, *pulsevector;
   if( alloc_seismic_buffers( config.width, config.height, config.timesteps, config.variant.alignment, &VEL, &APF, &NPPF, &pulsevector ) ) {
     printf("allocation failure\n");
@@ -87,7 +88,8 @@ int main( int argc, char * argv[] ) {
 //  pthread_attr_init( &attr );
 //  pthread_attr_setdetachstate( &attr, PTHREAD_CREATE_JOINABLE );
 
-  printf("processing...\n");
+  if(config.verbose)
+    printf("processing...\n");
 
   pthread_t * threads = (pthread_t*) malloc ( sizeof(pthread_t) * (config.threads - 1) );
 
@@ -116,15 +118,19 @@ int main( int argc, char * argv[] ) {
 
   gettimeofday(&t2, NULL);
 
-  printf("\nend process!\n");
-  fflush(stdout);
+  if(config.verbose) {
+    printf("\nend process!\n");
+    fflush(stdout);
 
-  double elapsedTimeOuter = (t2.tv_sec - t1.tv_sec) * 1000.0 + (t2.tv_usec - t1.tv_usec) / 1000.0; // ms
-  double elapsedTimeInner = (data[0].e.tv_sec - data[0].s.tv_sec) * 1000.0 + (data[0].e.tv_usec - data[0].s.tv_usec) / 1000.0; // ms
+    double elapsedTimeOuter = (t2.tv_sec - t1.tv_sec) * 1000.0 + (t2.tv_usec - t1.tv_usec) / 1000.0; // ms
+    double elapsedTimeInner = (data[0].e.tv_sec - data[0].s.tv_sec) * 1000.0 + (data[0].e.tv_usec - data[0].s.tv_usec) / 1000.0; // ms
 
-  printf("\n");
-  printf("(ID=0Z): OUTER  = %.2f ms (GFLOPS: %.2f)\n", elapsedTimeOuter, config.GFLOP/elapsedTimeOuter );
-  printf("(ID=0Z): INNER  = %.2f ms (GFLOPS: %.2f)\n", elapsedTimeInner, config.GFLOP/elapsedTimeInner );
+    printf("\n");
+    printf("(ID=0Z): OUTER  = %.2f ms (GFLOPS: %.2f)\n", elapsedTimeOuter, config.GFLOP/elapsedTimeOuter );
+    printf("(ID=0Z): INNER  = %.2f ms (GFLOPS: %.2f)\n", elapsedTimeInner, config.GFLOP/elapsedTimeInner );
+  }
+  else
+    printf("\n");
 
   if( config.ascii ) {
     show_ascii( &config, config.ascii, APF, NPPF );

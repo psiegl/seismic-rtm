@@ -40,6 +40,7 @@ struct _config_t {
 
   unsigned output;
   unsigned ascii;
+  unsigned verbose;
 
   double GFLOP;
 };
