@@ -20,8 +20,9 @@ import subprocess
 import sys
 import operator
 import multiprocessing
+import pprint
 
-kernel = "seismic.elf"
+kernel = "seismic.x86_64.elf"
 
 def bench( kernel, iterations, variants ):
   res = {}
@@ -47,11 +48,11 @@ def get_all_supported():
   variants = []
   lines = out.splitlines()
   for i in range(len(lines)):
-    if "--kernel" in lines[i]:
+    if "--kernel" in str(lines[i]):
       break
   while 1:
     i += 1
-    var = lines[i].strip()
+    var = str(lines[i].decode("utf-8") ).strip()
     if "--" not in var:
       variants.append(var)
     else:
@@ -64,6 +65,7 @@ res = {}
 if len(sys.argv) <= 1:
   res = bench( kernel, 5, get_all_supported() )
 else:
+  print( sys.argv[1:] )
   variants = get_all_supported()
   for v in sys.argv[1:]:
     if v not in variants:
