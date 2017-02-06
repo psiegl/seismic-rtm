@@ -26,7 +26,7 @@ CHK_HW  := $(BDIR)/check_hw.o
 PLAIN   := $(BDIR)/kernel/kernel_plain.o
 
 CC      = gcc #clang
-CFLAGS  = -ffast-math -ffp-contract=fast -Ofast -fprefetch-loop-arrays  -ggdb -march=native
+CFLAGS  = -ffast-math -ffp-contract=fast -Ofast -fprefetch-loop-arrays  #-ggdb -march=native
 
 ifeq ($(UNAME_P),x86_64)
  include makerules.x86
