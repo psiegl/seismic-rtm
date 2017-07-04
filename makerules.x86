@@ -23,14 +23,14 @@ AVX2            := $(BDIR)/kernel/kernel_avx2.o
 AVX2_FMA        := $(BDIR)/kernel/kernel_avx2_fma.o
 
 # https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/i386-and-x86_002d64-Options.html
-$(PLAIN):       CFLAGS += -mfpmath=387     -mno-sse -mno-fma -mno-avx -mno-avx2 # plain_opt version gains a lot with -msse
-$(SSE):         CFLAGS += -mfpmath=sse,387 -msse    -mno-fma -mno-avx -mno-avx2
-$(SSE_FMA):     CFLAGS += -mfpmath=sse,387 -msse    -mfma    -mavx    -mno-avx2 # fma only allowed with avx
-$(SSE_AVX):     CFLAGS += -mfpmath=sse,387 -msse    -mno-fma -mavx    -mno-avx2
-$(SSE_AVX_FMA): CFLAGS += -mfpmath=sse,387 -msse    -mfma    -mavx    -mno-avx2
-$(AVX):         CFLAGS += -mfpmath=sse,387 -msse    -mno-fma -mavx    -mno-avx2
-$(AVX_FMA):     CFLAGS += -mfpmath=sse,387 -msse    -mfma    -mavx    -mno-avx2
-$(AVX2):        CFLAGS += -mfpmath=sse,387 -msse    -mno-fma -mavx    -mavx2
-$(AVX2_FMA):    CFLAGS += -mfpmath=sse,387 -msse    -mfma    -mavx    -mavx2
+$(PLAIN):       CFLAGS += -mno-sse -mno-fma -mno-avx -mno-avx2 # plain_opt version gains a lot with -msse
+$(SSE):         CFLAGS += -msse    -mno-fma -mno-avx -mno-avx2
+$(SSE_FMA):     CFLAGS += -msse    -mfma    -mavx    -mno-avx2 # fma only allowed with avx
+$(SSE_AVX):     CFLAGS += -msse    -mno-fma -mavx    -mno-avx2
+$(SSE_AVX_FMA): CFLAGS += -msse    -mfma    -mavx    -mno-avx2
+$(AVX):         CFLAGS += -msse    -mno-fma -mavx    -mno-avx2
+$(AVX_FMA):     CFLAGS += -msse    -mfma    -mavx    -mno-avx2
+$(AVX2):        CFLAGS += -msse    -mno-fma -mavx    -mavx2
+$(AVX2_FMA):    CFLAGS += -msse    -mfma    -mavx    -mavx2
 
 ADD_KERNELS     = $(SSE) $(SSE_FMA) $(SSE_AVX) $(SSE_AVX_FMA) $(AVX) $(AVX_FMA) $(AVX2) $(AVX2_FMA)

@@ -44,7 +44,6 @@ inline __attribute__((always_inline)) void kernel_avx_fma_unaligned( stack_t * d
                                              r_plus2+=8) {
 
             // calculates the pressure field t+1
-
             s_right2 = _mm256_loadu_ps( &(data->apf[ r_plus2 ]) );
 
             // sum up
