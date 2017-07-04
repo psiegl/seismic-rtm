@@ -17,15 +17,16 @@
 
 inline __attribute__((always_inline)) void kernel_plain_naiiv( stack_t * data )
 {
-  unsigned i, j;
-  for (i=data->x_start; i<data->x_end; i++){
-    // spatial loop in y
-    for (j=data->y_start; j<data->y_end; j++) {
+  unsigned x, z;
+  for (x=data->x_start; x<data->x_end; x++){
+    // spatial loop in z
+    for (z=data->y_start; z<data->y_end; z++) {
       // calculates the pressure field t+1
-      data->nppf[ (i * data->height + j) ] = 2.0f*data->apf[ (i * data->height + j) ] - data->nppf[ (i * data->height + j) ] + data->vel[ (i * data->height + j) ] 
-          *(16.0f*(data->apf[ (i * data->height + j) -1]+data->apf[ (i * data->height + j) +1]+data->apf[ (i * data->height + j) - data->height ]+data->apf[ (i * data->height + j) + data->height ] )
-            - (data->apf[ (i * data->height + j) -2]+data->apf[ (i * data->height + j) +2]+data->apf[ (i * data->height + j) - (data->height * 2) ]+data->apf[ (i * data->height + j) + (data->height * 2) ] )
-            -60.0f*data->apf[ (i * data->height + j) ]);
+      unsigned off = x * data->height + z;
+      data->nppf[ off ] = 2.0f*data->apf[ off ] - data->nppf[ off ] + data->vel[ off ] 
+          *(-60.0f*data->apf[ off ]
+            +16.0f*(data->apf[ off - 1 ]+data->apf[ off + 1 ]+data->apf[ off - data->height ]+data->apf[ off + data->height ] )
+            -(data->apf[ off - 2 ]+data->apf[ off + 2 ]+data->apf[ off - (data->height * 2) ]+data->apf[ off + (data->height * 2) ] ));
     }
   }
 }

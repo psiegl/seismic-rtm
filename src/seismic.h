@@ -82,21 +82,13 @@ void * malloc_aligned( size_t len, unsigned alignment ) {
 int alloc_seismic_buffers( unsigned width, unsigned height, unsigned timesteps, unsigned alignment, float **VEL, float **APF, float **NPPF, float **pulsevector ) {
   unsigned long size_matrice = (width * height) * sizeof(float);
   *APF = (float*)malloc_aligned( size_matrice, alignment );
-  if( *APF == NULL )
-    return -1;
-
   *VEL = (float*)malloc_aligned( size_matrice, alignment );
-  if( *VEL == NULL )
-    return -1;
-
   *NPPF = (float*)malloc_aligned( size_matrice, alignment );
-  if( *NPPF == NULL )
-    return -1;
-
   *pulsevector = (float*)malloc( (timesteps + 1) * sizeof(float) );
-  if( *pulsevector == NULL )
-    return -1;
-
+  return ( *APF == NULL
+           || *VEL == NULL
+           || *NPPF == NULL
+           || *pulsevector == NULL ) * -1;
   return 0;
 }
 
