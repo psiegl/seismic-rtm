@@ -19,24 +19,21 @@
 #include <math.h> // sqrt, exp
 #include <stdlib.h> // posix_memalign, malloc
 
-#define FC          125.0f
-#define ALPHA         9.0f
-#define BETA          5.0f
 
 // http://subsurfwiki.org/wiki/Ricker_wavelet
 // http://wiki.seg.org/wiki/Dictionary:Ricker_wavelet
 float ricker_wavelet(float t,float fc) {
-  float x   = M_PI*fc*t;
-  float aux = x*x;
-  return (1.0 - 2.0*aux)*exp((double) -aux);
+  double x   = ((double)M_PI)*fc*t;
+  double aux = x*x;
+  return (1.0 - 2.0*aux)*exp(-aux);
 }
 
-#define init_seismic_pulsevector( pulsevector, timesteps, dt, tf, fpeak ) \
+#define init_seismic_pulsevector( pulsevector, timesteps, fpeak ) \
   { \
-    unsigned i; \
-    for( i = 0; i < timesteps; i++ ) { \
-      float time = ( i * dt ) - tf; \
-      pulsevector[ i ] = ricker_wavelet( time, fpeak ); \
+    float tdelay = 1.0/fpeak; \
+    unsigned t; \
+    for( t = 0; t < timesteps; t++ ) { \
+      pulsevector[ t ] = ricker_wavelet( t - tdelay, fpeak ); \
     } \
     pulsevector[ timesteps ] = 0.0f; /* performance optimisation */ \
   }
@@ -52,26 +49,17 @@ float ricker_wavelet(float t,float fc) {
 
 #define init_seismic_buffers( width, height, timesteps, VEL, APF, NPPF, pulsevector ) \
   { \
-    float vmin = sqrt(.5) * 40.0; \
-    float vmax = BETA * ALPHA; \
-    \
-    float h = 2.0 / ( FC ); \
-    float fat = 1.0f / ( BETA * BETA * 12.0f ); \
-    float tf = ( 2.0f * sqrt( M_PI ) ) / FC; \
-    \
-    /* determine time sampling interval to ensure stability */ \
-    float dt = h / (2.0 * vmax); \
-    \
-    /* determine maximum temporal frequency to avoid dispersion */ \
-    float fmax = vmin/(10.0*h); \
-    \
-    /* compute or set peak frequency for ricker wavelet */ \
-    float fpeak = 0.5 * fmax;  \
-    \
-    init_seismic_pulsevector( (pulsevector), (timesteps), dt, tf, fpeak ); \
-    init_seismic_matrices( (width), (height), (VEL), (APF), (NPPF), fat ); \
+    float c_max  = 2000     ; \
+    float c_min  =    0.002 ; \
+    float h      =    2     ; \
+    float fmax = h*c_min*5; \
+    float dt = 0.606*h/c_max; /* this is the max value. otherwise it needs to be lower */ \
+    printf("fmax %f, c_min %f, c_max %f, h %f, dt %f\n", fmax, c_min, c_max, h, dt); \
+    init_seismic_pulsevector( (pulsevector), (timesteps), fmax ); \
+    float c_avg = (c_max - c_min)/2 + c_min; /* loaded velocity */ \
+    printf("courant val: %.12f\n", c_max * dt / h); \
+    init_seismic_matrices( (width), (height), (VEL), (APF), (NPPF), (c_avg*c_avg*dt*dt)/( h * h * 12.0f ) ); \
   }
-
 
 
 void * malloc_aligned( size_t len, unsigned alignment ) {
