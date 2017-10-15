@@ -26,3 +26,9 @@ CURRENT
   Patrick Siegl
    Thesis: "Hybride Beschleunigung einer seismischen Applikation durch Kombination von traditionellen Methoden und OpenCL", April 2012
            ("Hybrid acceleration of a seismic application by combining traditional methods with opencl")
+
+EXPLANATION
+-----------
+Code models a 2-dimensional, forward-propagated Reverse Time Migration (RTM) by utilising an acoustic, homogeneous wave equation.
+The 2-dimensional nine point stencil builds upon a fourth order FDM with second derivative, whereas the synthethic initial wavelet leverages the seismic Ricker wavelet.
+FDM fourth derivative: https://en.wikipedia.org/wiki/Five-point_stencil#Higher_derivatives
