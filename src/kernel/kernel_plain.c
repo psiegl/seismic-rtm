@@ -88,7 +88,8 @@ void seismic_exec_plain_naiiv_pthread( void * v )
         BARRIER( data->barrier, data->id );
 
         // inserts the seismic pulse value in the desired position
-        data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t];
+        if( data->set_pulse )
+          data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t];
 
         BARRIER( data->barrier, data->id );
 
