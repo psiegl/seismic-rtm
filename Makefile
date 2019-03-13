@@ -56,7 +56,7 @@ $(BDIR):
 	mkdir -p $(BDIR)/kernel
 
 %.elf: $(ALL_OBJS)
-	$(CC) -pthread -lm -o $@ $^
+	$(CC) -pthread -o $@ $^ -lm
 
 #.INTERMEDIATE: $(ALL_OBJS)
 $(ALL_OBJS): $(BDIR)/%.o: $(SDIR)/%.c
