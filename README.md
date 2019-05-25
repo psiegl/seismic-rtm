@@ -2,8 +2,8 @@
 
 [![Build Status](https://circleci.com/gh/psiegl/seismic-rtm.svg?style=svg)](https://circleci.com/gh/psiegl/seismic-rtm)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2db350f5b41b44d19403ab0a51350ef6)](https://www.codacy.com/app/psiegl/seismic-rtm?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=psiegl/seismic-rtm&amp;utm_campaign=Badge_Grade)
-[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/github/psiegl/seismic-rtm.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/psiegl/seismic-rtm/context:cpp)
-[![Language grade: Python](https://img.shields.io/lgtm/grade/python/github/psiegl/seismic-rtm.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/psiegl/seismic-rtm/context:cpp)
+[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/psiegl/seismic-rtm.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/psiegl/seismic-rtm/context:cpp)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/psiegl/seismic-rtm.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/psiegl/seismic-rtm/context:python)
 [![GitHub license](https://img.shields.io/github/license/psiegl/seismic-rtm.svg)](https://raw.githubusercontent.com/psiegl/seismic-rtm/master/LICENSE.MIT)
 
 Code models a 2-dimensional, forward-propagated Reverse Time Migration (RTM) by utilising an acoustic, homogeneous wave equation.
