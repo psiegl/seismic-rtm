@@ -129,9 +129,9 @@ int main( int argc, char * argv[] ) {
 
   // aligned version!
   unsigned alignment = config.variant.alignment ? (config.variant.alignment - 2 * sizeof(float)) : 0;
-  free( ((void*)APF) - alignment );
-  free( ((void*)NPPF) - alignment );
-  free( ((void*)VEL) - alignment );
+  free( ((char*)APF) - alignment );
+  free( ((char*)NPPF) - alignment );
+  free( ((char*)VEL) - alignment );
 
   free( pulsevector );
   free( data );
