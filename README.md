@@ -1,4 +1,3 @@
-
 # Seismic Reverse Time Migration (RTM)
 
 [![Build Status](https://circleci.com/gh/psiegl/seismic-rtm.svg?style=svg)](https://circleci.com/gh/psiegl/seismic-rtm)
@@ -27,4 +26,3 @@ The 2-dimensional nine point stencil builds upon a fourth order [FDM with second
 ## CURRENT
 
   Patrick Siegl, "Hybride Beschleunigung einer seismischen Applikation durch Kombination von traditionellen Methoden und OpenCL" ("Hybrid acceleration of a seismic application by combining traditional methods with opencl"), April 2012
-
