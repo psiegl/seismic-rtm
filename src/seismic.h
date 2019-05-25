@@ -77,7 +77,6 @@ int alloc_seismic_buffers( unsigned width, unsigned height, unsigned timesteps, 
            || *VEL == NULL
            || *NPPF == NULL
            || *pulsevector == NULL ) * -1;
-  return 0;
 }
 
 #endif /* #ifndef _SEISMIC_H_ */
