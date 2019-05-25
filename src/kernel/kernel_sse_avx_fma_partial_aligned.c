@@ -14,7 +14,7 @@ inline __attribute__((always_inline)) void kernel_sse_avx_fma_partial_aligned( s
 
     unsigned r = data->x_start * data->height + data->y_start;
     unsigned r_min1 = r - data->height;
-    unsigned r_min2 = r_min2 - data->height;
+    unsigned r_min2 = r_min1 - data->height;
     unsigned r_plus1 = r + data->height;
     unsigned r_plus2 = r_plus1 + data->height;
     float * NPPF = &data->nppf[ r ];
