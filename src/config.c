@@ -107,7 +107,7 @@ void print_usage( const char * argv0 ) {
     if( ! (variants[i].cap & ~cap) )
       printf("  \t %s\n", variants[i].type );
 
-  printf("  --threads \t( -p )                    Default: %d\n"
+  printf("  --threads \t( -p )                    Default: %u\n"
          "  \t Number of threads.\n"
          "  --output \t( -o )                    Default: \"output.bin\"\n"
          "  \t Write output to file 'file'.\n"
@@ -251,12 +251,12 @@ void get_config( int argc, char * argv[], config_t * config ) {
   }
 
   if( config->pulseX > config->width ) {
-    fprintf(stderr, "ERROR: pulseX (%d) is larger then width (%d)!\n", config->pulseX, config->width);
+    fprintf(stderr, "ERROR: pulseX (%u) is larger then width (%d)!\n", config->pulseX, config->width);
     exit(EXIT_FAILURE);
   }
   
   if( config->pulseY > config->height ) {
-    fprintf(stderr, "ERROR: pulseY (%d) is larger then height (%d)!\n", config->pulseY, config->height);
+    fprintf(stderr, "ERROR: pulseY (%u) is larger then height (%d)!\n", config->pulseY, config->height);
     exit(EXIT_FAILURE);
   }
   
@@ -320,7 +320,7 @@ void print_config( config_t * config ) {
            myuts.nodename, myuts.machine );
   }
 
-  printf( "(rank0): CORES  = %d", getNumCores() );
+  printf( "(rank0): CORES  = %u", getNumCores() );
 
   uint32_t cap = check_hw_capabilites();
   if( cap ) {
