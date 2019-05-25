@@ -1,6 +1,5 @@
 # Seismic Reverse Time Migration (RTM)
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/660e70a7763a48ef9c322289a6d3cb70)](https://app.codacy.com/app/psiegl/seismic-rtm?utm_source=github.com&utm_medium=referral&utm_content=psiegl/seismic-rtm&utm_campaign=Badge_Grade_Dashboard)
 [![Build Status](https://circleci.com/gh/psiegl/seismic-rtm.svg?style=svg)](https://circleci.com/gh/psiegl/seismic-rtm)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2db350f5b41b44d19403ab0a51350ef6)](https://www.codacy.com/app/psiegl/seismic-rtm?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=psiegl/seismic-rtm&amp;utm_campaign=Badge_Grade)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/psiegl/seismic-rtm.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/psiegl/seismic-rtm/context:cpp)
