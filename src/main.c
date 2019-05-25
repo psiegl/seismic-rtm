@@ -84,7 +84,7 @@ int main( int argc, char * argv[] ) {
   unsigned i;
   for( i = 0; i < config.threads - 1; i++ ) {
     if( pthread_create( &threads[i], NULL, (void * (*)(void *))func, (void*) &data[i + 1] ) ) {
-      printf("ERROR: Couldn't create thread %d of %d threads!!\nExiting...\n", i+1, config.threads);
+      printf("ERROR: Couldn't create thread %d of %u threads!!\nExiting...\n", i+1, config.threads);
       exit( EXIT_FAILURE );
     }
 
@@ -99,7 +99,7 @@ int main( int argc, char * argv[] ) {
 
   for( i = 0; i < config.threads - 1; i++ ) {
     if( pthread_join( threads[i], NULL ) ) {
-      printf("ERROR: Couldn't join thread %d of %d threads!!\nExiting...\n", i+1, config.threads );
+      printf("ERROR: Couldn't join thread %d of %u threads!!\nExiting...\n", i+1, config.threads );
       exit( EXIT_FAILURE );
     }
   }
@@ -129,9 +129,9 @@ int main( int argc, char * argv[] ) {
 
   // aligned version!
   unsigned alignment = config.variant.alignment ? (config.variant.alignment - 2 * sizeof(float)) : 0;
-  free( ((void*)APF) - alignment );
-  free( ((void*)NPPF) - alignment );
-  free( ((void*)VEL) - alignment );
+  free( ((char*)APF) - alignment );
+  free( ((char*)NPPF) - alignment );
+  free( ((char*)VEL) - alignment );
 
   free( pulsevector );
   free( data );
