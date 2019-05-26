@@ -5,6 +5,7 @@
 [![Coverity Scan Build Status](https://img.shields.io/coverity/scan/18474.svg)](https://scan.coverity.com/projects/psiegl-seismic-rtm)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/psiegl/seismic-rtm.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/psiegl/seismic-rtm/context:cpp)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/psiegl/seismic-rtm.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/psiegl/seismic-rtm/context:python)
+[![CodeFactor](https://www.codefactor.io/repository/github/psiegl/seismic-rtm/badge/master)](https://www.codefactor.io/repository/github/psiegl/seismic-rtm/overview/master)
 [![GitHub license](https://img.shields.io/github/license/psiegl/seismic-rtm.svg)](https://raw.githubusercontent.com/psiegl/seismic-rtm/master/LICENSE)
 
 Code models a 2-dimensional, forward-propagated Reverse Time Migration (RTM) by utilising an acoustic, homogeneous wave equation.
