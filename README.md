@@ -5,7 +5,7 @@
 [![Coverity Scan Build Status](https://img.shields.io/coverity/scan/18474.svg)](https://scan.coverity.com/projects/psiegl-seismic-rtm)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/psiegl/seismic-rtm.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/psiegl/seismic-rtm/context:cpp)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/psiegl/seismic-rtm.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/psiegl/seismic-rtm/context:python)
-[![GitHub license](https://img.shields.io/github/license/psiegl/seismic-rtm.svg)](https://raw.githubusercontent.com/psiegl/seismic-rtm/master/LICENSE.MIT)
+[![GitHub license](https://img.shields.io/github/license/psiegl/seismic-rtm.svg)](https://raw.githubusercontent.com/psiegl/seismic-rtm/master/LICENSE)
 
 Code models a 2-dimensional, forward-propagated Reverse Time Migration (RTM) by utilising an acoustic, homogeneous wave equation.
 The 2-dimensional nine point stencil builds upon a fourth order [FDM with second derivative](https://en.wikipedia.org/wiki/Five-point_stencil#Higher_derivatives), whereas the synthethic initial wavelet leverages the seismic Ricker wavelet.
