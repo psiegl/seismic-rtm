@@ -62,7 +62,7 @@ ascii: compile
 
 visualize: compile
 	./$(TARGET) $(CMD) --output
-	./tools/ximage.$(shell uname -m).elf n1=$(HEIGHT) n2=$(WIDTH) hbox=$(HEIGHT) wbox=$(WIDTH) title=visualizer < output.bin
+	./tools/ximage.$(UNAME_M).elf n1=$(HEIGHT) n2=$(WIDTH) hbox=$(HEIGHT) wbox=$(WIDTH) title=visualizer < output.bin
 
 objdump: compile
 	objdump -dS $(TARGET) | less
