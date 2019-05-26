@@ -10,9 +10,9 @@
 Code models a 2-dimensional, forward-propagated Reverse Time Migration (RTM) by utilising an acoustic, homogeneous wave equation.
 The 2-dimensional nine point stencil builds upon a fourth order [FDM with second derivative](https://en.wikipedia.org/wiki/Five-point_stencil#Higher_derivatives), whereas the synthethic initial wavelet leverages the seismic Ricker wavelet.
 
-| variants | authors |
-| ------ | -------|
-| origin | CWP/SU:[Seismic Un*x](https://pubs.usgs.gov/of/2001/of01-326/HTML/SEISUNIX.HTM) / [SeisUnix](https://github.com/JohnWStockwellJr/SeisUnix) and [MADAGASCAR project](http://www.ahay.org/) |
-| plain, FPGA | Victor Medeiros, "fastRTM: An IDE to Support Development of the RTM Algorithm in High Performance FPGA platforms", 2013 |
-| SSE | Alexandros Gremm, "Acceleration, Clustering and Performance Evaluation of Seismic Applications", June 2011, [url](https://github.com/agremm/Seismic) and Thomas Grosser, Alexandros Gremm, Sebastian Veith, Gerald Heim, Wolfgang Rosenstiel, Victor Medeiros, Manoel Eusebio de Lima, "Exploiting Heterogeneous Computing Platforms By Cataloging Best Solutions For Resource Intensive Seismic Applications", Mai 2011 |
-| current | Patrick Siegl, "Hybride Beschleunigung einer seismischen Applikation durch Kombination von traditionellen Methoden und OpenCL" ("Hybrid acceleration of a seismic application by combining traditional methods with opencl"), April 2012 |
+| variants    | authors |
+| ----------- | ------- |
+| origin      | CWP/SU:[Seismic Un*x](https://pubs.usgs.gov/of/2001/of01-326/HTML/SEISUNIX.HTM) / [SeisUnix](https://github.com/JohnWStockwellJr/SeisUnix) and [MADAGASCAR project](http://www.ahay.org/) |
+| plain, FPGA | [Victor Medeiros, "fastRTM: An IDE to Support Development of the RTM Algorithm in High Performance FPGA platforms", 2013](https://repositorio.ufpe.br/handle/123456789/12299) |
+| SSE         | [Alexandros Gremm, "Acceleration, Clustering and Performance Evaluation of Seismic Applications", June 2011](https://github.com/agremm/Seismic) and [Thomas Grosser, Alexandros Gremm, Sebastian Veith, Gerald Heim, Wolfgang Rosenstiel, Victor Medeiros, Manoel Eusebio de Lima, "Exploiting Heterogeneous Computing Platforms By Cataloging Best Solutions For Resource Intensive Seismic Applications", Mai 2011](https://www.thinkmind.org/index.php?view=article&articleid=intensive_2011_2_20_30034) |
+| current     | Patrick Siegl, "Hybride Beschleunigung einer seismischen Applikation durch Kombination von traditionellen Methoden und OpenCL" ("Hybrid acceleration of a seismic application by combining traditional methods with opencl"), April 2012 |
