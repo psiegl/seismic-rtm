@@ -291,7 +291,9 @@ void print_config( config_t * config ) {
   if(!config->verbose)
     return;
 
-  unsigned long mem = config->height * (config->width + config->variant.alignment) * sizeof(float) * 3 /* APF, NPPF, VEL */
+  unsigned long mem = (unsigned long)config->height
+                      * (unsigned long)(config->width + config->variant.alignment)
+                      * sizeof(float) * 3 /* APF, NPPF, VEL */
                       + (config->timesteps /* +1? */) * sizeof(float) /* pulsevector */;
   char type;
   mem = round_and_get_unit( mem, &type );
