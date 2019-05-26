@@ -16,7 +16,7 @@ void write_matrice( config_t * config, float * apf, float * nppf ) {
   if( f1 == NULL )
     exit(EXIT_FAILURE);
 
-  fwrite( matrice, sizeof(float), config->height * config->width, f1 );
+  fwrite( matrice, sizeof(float), (unsigned long)config->height * (unsigned long)config->width, f1 );
   fclose(f1);
 }
 
