@@ -17,55 +17,45 @@
 
 #define elemsof( x )        (sizeof( (x) ) / sizeof( (x)[0] ))
 
+#define VARTMPL( NAME, CAP, ALIGNMENT, VECTORWIDTH ) { #NAME, CAP, seismic_exec_##NAME, seismic_exec_##NAME##_pthread, ALIGNMENT, VECTORWIDTH }
 
 variant_t variants[] = {
-  { "plain_naiiv",                  0,                            seismic_exec_plain_naiiv,                 seismic_exec_plain_naiiv_pthread,                 0,                 1 * sizeof(float) },
-  { "plain_opt",                    0,                            seismic_exec_plain_opt,                   seismic_exec_plain_opt_pthread,                   0,                 1 * sizeof(float) },
+  VARTMPL( plain_naiiv,                  0,                            0,                 1 * sizeof(float) ),
+  VARTMPL( plain_opt,                    0,                            0,                 1 * sizeof(float) ),
 
 #ifdef __x86_64__
-  { "sse_std",                      HAS_SSE,                      seismic_exec_sse_std,                     seismic_exec_sse_std_pthread,                     4 * sizeof(float), 4 * sizeof(float) },
-  { "sse_unaligned",                HAS_SSE,                      seismic_exec_sse_unaligned,               seismic_exec_sse_unaligned_pthread,               0,                 4 * sizeof(float) },
-  { "sse_aligned",                  HAS_SSE,                      seismic_exec_sse_aligned,                 seismic_exec_sse_aligned_pthread,                 4 * sizeof(float), 4 * sizeof(float) },
-  { "sse_aligned_not_grouped",      HAS_SSE,                      seismic_exec_sse_aligned_not_grouped,     seismic_exec_sse_aligned_not_grouped_pthread,     4 * sizeof(float), 4 * sizeof(float) },
-  { "sse_partial_aligned",          HAS_SSE,                      seismic_exec_sse_partial_aligned,         seismic_exec_sse_partial_aligned_pthread,         4 * sizeof(float), 4 * sizeof(float) },
-  { "sse_avx_partial_aligned",      HAS_SSE | HAS_AVX,            seismic_exec_sse_avx_partial_aligned,     seismic_exec_sse_avx_partial_aligned_pthread,     4 * sizeof(float), 4 * sizeof(float) },
-  { "sse_avx_partial_aligned_opt",  HAS_SSE | HAS_AVX,            seismic_exec_sse_avx_partial_aligned_opt, seismic_exec_sse_avx_partial_aligned_opt_pthread, 4 * sizeof(float), 4 * sizeof(float) },
-  { "avx_unaligned",                HAS_AVX,                      seismic_exec_avx_unaligned,               seismic_exec_avx_unaligned_pthread,               0,                 8 * sizeof(float) },
-  { "avx2_unaligned",               HAS_AVX | HAS_AVX2,           seismic_exec_avx2_unaligned,              seismic_exec_avx2_unaligned_pthread,              0,                 8 * sizeof(float) },
-  { "fma_sse_std",                  HAS_SSE | HAS_FMA,            seismic_exec_sse_fma_std,                 seismic_exec_sse_fma_std_pthread,                 4 * sizeof(float), 4 * sizeof(float) },
-  { "fma_sse_unaligned",            HAS_SSE | HAS_FMA,            seismic_exec_sse_fma_unaligned,           seismic_exec_sse_fma_unaligned_pthread,           0,                 4 * sizeof(float) },
-  { "fma_sse_aligned",              HAS_SSE | HAS_FMA,            seismic_exec_sse_fma_aligned,             seismic_exec_sse_fma_aligned_pthread,             4 * sizeof(float), 4 * sizeof(float) },
-  { "fma_sse_aligned_not_grouped",  HAS_SSE | HAS_FMA,            seismic_exec_sse_fma_aligned_not_grouped, seismic_exec_sse_fma_aligned_not_grouped_pthread, 4 * sizeof(float), 4 * sizeof(float) },
-  { "fma_sse_partial_aligned",      HAS_SSE | HAS_FMA,            seismic_exec_sse_fma_partial_aligned,     seismic_exec_sse_fma_partial_aligned_pthread,     4 * sizeof(float), 4 * sizeof(float) },
-  { "fma_sse_avx_partial_aligned",  HAS_SSE | HAS_AVX | HAS_FMA,  seismic_exec_sse_avx_fma_partial_aligned, seismic_exec_sse_avx_fma_partial_aligned_pthread, 4 * sizeof(float), 4 * sizeof(float) },
-  { "fma_sse_avx_partial_aligned_opt", HAS_SSE | HAS_AVX | HAS_FMA,  seismic_exec_sse_avx_fma_partial_aligned_opt, seismic_exec_sse_avx_fma_partial_aligned_opt_pthread, 4 * sizeof(float), 4 * sizeof(float) },
-  { "fma_avx_unaligned",            HAS_AVX | HAS_FMA,            seismic_exec_avx_fma_unaligned,           seismic_exec_avx_fma_unaligned_pthread,           0,                 8 * sizeof(float) },
-  { "fma_avx2_unaligned",           HAS_AVX | HAS_AVX2 | HAS_FMA, seismic_exec_avx2_fma_unaligned,          seismic_exec_avx2_fma_unaligned_pthread,          0,                 8 * sizeof(float) },
+  VARTMPL( sse_std,                      HAS_SSE,                      4 * sizeof(float), 4 * sizeof(float) ),
+  VARTMPL( sse_unaligned,                HAS_SSE,                      0,                 4 * sizeof(float) ),
+  VARTMPL( sse_aligned,                  HAS_SSE,                      4 * sizeof(float), 4 * sizeof(float) ),
+  VARTMPL( sse_aligned_not_grouped,      HAS_SSE,                      4 * sizeof(float), 4 * sizeof(float) ),
+  VARTMPL( sse_partial_aligned,          HAS_SSE,                      4 * sizeof(float), 4 * sizeof(float) ),
+  VARTMPL( sse_avx_partial_aligned,      HAS_SSE | HAS_AVX,            4 * sizeof(float), 4 * sizeof(float) ),
+  VARTMPL( sse_avx_partial_aligned_opt,  HAS_SSE | HAS_AVX,            4 * sizeof(float), 4 * sizeof(float) ),
+  VARTMPL( avx_unaligned,                HAS_AVX,                      0,                 8 * sizeof(float) ),
+  VARTMPL( avx2_unaligned,               HAS_AVX | HAS_AVX2,           0,                 8 * sizeof(float) ),
+  VARTMPL( sse_fma_std,                  HAS_SSE | HAS_FMA,            4 * sizeof(float), 4 * sizeof(float) ),
+  VARTMPL( sse_fma_unaligned,            HAS_SSE | HAS_FMA,            0,                 4 * sizeof(float) ),
+  VARTMPL( sse_fma_aligned,              HAS_SSE | HAS_FMA,            4 * sizeof(float), 4 * sizeof(float) ),
+  VARTMPL( sse_fma_aligned_not_grouped,  HAS_SSE | HAS_FMA,            4 * sizeof(float), 4 * sizeof(float) ),
+  VARTMPL( sse_fma_partial_aligned,      HAS_SSE | HAS_FMA,            4 * sizeof(float), 4 * sizeof(float) ),
+  VARTMPL( sse_avx_fma_partial_aligned,  HAS_SSE | HAS_AVX | HAS_FMA,  4 * sizeof(float), 4 * sizeof(float) ),
+  VARTMPL( sse_avx_fma_partial_aligned_opt, HAS_SSE | HAS_AVX | HAS_FMA, 4 * sizeof(float), 4 * sizeof(float) ),
+  VARTMPL( avx_fma_unaligned,            HAS_AVX | HAS_FMA,            0,                 8 * sizeof(float) ),
+  VARTMPL( avx2_fma_unaligned,           HAS_AVX | HAS_AVX2 | HAS_FMA, 0,                 8 * sizeof(float) ),
 #endif /* #ifdef __x86_64__ */
 
 #ifdef __ALTIVEC__
-  { "vmx",                          HAS_VMX,                      seismic_exec_vmx_aligned,                 seismic_exec_vmx_aligned_pthread,                 4 * sizeof(float), 4 * sizeof(float) },
+  VARTMPL( vmx,                          HAS_VMX,                      4 * sizeof(float), 4 * sizeof(float) ),
 #ifdef __VSX__
-  { "vsx_aligned",                  HAS_VMX | HAS_VSX,            seismic_exec_vsx_aligned,                 seismic_exec_vsx_aligned_pthread,                 4 * sizeof(float), 4 * sizeof(float) },
-  { "vsx_unaligned",                HAS_VMX | HAS_VSX,            seismic_exec_vsx_unaligned,               seismic_exec_vsx_unaligned_pthread,               0,                 4 * sizeof(float) },
+  VARTMPL( vsx_aligned,                  HAS_VMX | HAS_VSX,            4 * sizeof(float), 4 * sizeof(float) ),
+  VARTMPL( vsx_unaligned,                HAS_VMX | HAS_VSX,            0,                 4 * sizeof(float) ),
 #endif /* #ifdef __VSX__ */
 #endif /* #ifdef __ALTIVEC__ */
 
 #if defined( __ARM_NEON ) || defined ( __ARM_NEON_FP )
-  { "neon_aligned",                 HAS_NEON,                     seismic_exec_arm_neon_aligned,            seismic_exec_arm_neon_aligned_pthread,            4 * sizeof(float), 4 * sizeof(float) },
+  VARTMPL( neon_aligned,                 HAS_NEON,                     4 * sizeof(float), 4 * sizeof(float) ),
 #endif /* #if defined( __ARM_NEON ) || defined ( __ARM_NEON_FP ) */
 };
-
-
-unsigned int ggT(unsigned int a, unsigned int b){
-  if( ! b )
-    return a;
-  else return ggT(b, a % b);
-}
-
-unsigned int kgV(unsigned int a, unsigned int b){
-  return (a * b) / ggT(a, b);
-}
 
 void default_values( config_t * config ) {
   config->width     = 2300;
