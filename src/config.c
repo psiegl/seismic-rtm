@@ -178,7 +178,7 @@ void get_config( int argc, char * argv[], config_t * config ) {
       case 'k':
         {
           unsigned i, found = 0;
-          for( i = 0; i < sizeof(variants)/sizeof(variants[0]); i++ ) {
+          for( i = 0; i < elemsof(variants); i++ ) {
             if( ! strcmp( optarg, variants[i].type )
                 && (cap & variants[i].cap) == variants[i].cap ) {
               config->variant = variants[i];
