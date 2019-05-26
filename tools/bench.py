@@ -7,6 +7,7 @@ import subprocess
 import sys
 import operator
 import multiprocessing
+import re
 
 kernel = "seismic.x86_64.elf"
 
@@ -16,10 +17,13 @@ def bench( kernel, iterations, variants ):
   for t in range(iterations):
     for i in range(len(variants)):
       var = variants[ (i + t) % len(variants) ] # due to throttling and turbo boost
-      cmd = "%s --kernel=%s" % (g_cmd, var)
-      out2, err2 = subprocess.Popen( cmd.split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE ).communicate()
       res.setdefault(var, 0.0)
-      res[ var ] += float( ("%s" % out2.decode("utf-8").splitlines()[20]).split(" ")[-1].replace(")","") )
+
+      cmd = g_cmd.split(' ')
+      cmd.append( "--kernel=%s" % var )
+      out = subprocess.check_output( cmd )
+      obj = re.match( r'(.*\n)*.*INNER.*GFLOPS: ([0-9]*\.[0-9]*).*', out.decode("utf-8"), re.MULTILINE )
+      res[ var ] += float( obj.group(2) )
 
     print("done with iteration %d" % (t+1) )
 
@@ -30,29 +34,27 @@ def bench( kernel, iterations, variants ):
 
 
 def get_all_supported():
-  out, err = subprocess.Popen( ("./%s --help" % kernel).split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE ).communicate()
+  out = subprocess.check_output( [ "./%s" % kernel, "--help" ] )
+  lines = out.decode("utf-8").splitlines()
   variants = []
-  lines = out.splitlines()
-  for i in range(len(lines)):
-    if "--kernel" in str(lines[i]):
+  it = enumerate(lines)
+  for tpl in it:
+    if "--kernel" in tpl[1]:
       break
-  while 1:
-    i += 1
-    var = str(lines[i].decode("utf-8") ).strip()
-    if "--" not in var:
-      variants.append(var)
+  for tpl in it:
+    if "--" not in tpl[1]:
+      variants.append(tpl[1].strip())
     else:
       break
   return variants
 
 
-
 res = {}
+variants = get_all_supported()
 if len(sys.argv) <= 1:
-  res = bench( kernel, 5, get_all_supported() )
+  res = bench( kernel, 5, variants )
 else:
   print( sys.argv[1:] )
-  variants = get_all_supported()
   for v in sys.argv[1:]:
     if v not in variants:
       print("%s is not supported on this machine!" % v )
