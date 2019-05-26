@@ -88,15 +88,15 @@ void print_usage( const char * argv0 ) {
   printf("\n"
          "usage: %s [options] \n"
          "\n"
-         "  --width \t( -y )                    Default: %d\n"
+         "  --width \t( -y )                    Default: %u\n"
          "  \t Define vertical matrix size.\n"
-         "  --height \t( -x )                    Default: %d\n"
+         "  --height \t( -x )                    Default: %u\n"
          "  \t Define horizontal matrix size.\n"
-         "  --pulseY \t( -i )                    Default: %d\n"
+         "  --pulseY \t( -i )                    Default: %u\n"
          "  \t y coordinate of pulse offset.\n"
-         "  --pulseX \t( -j )                    Default: %d\n"
+         "  --pulseX \t( -j )                    Default: %u\n"
          "  \t x coordinate of pulse offset.\n"
-         "  --timesteps \t( -t )                    Default: %d\n"
+         "  --timesteps \t( -t )                    Default: %u\n"
          "  \t Determine number of timesteps.\n"
          "  --kernel \t( -k )                    Default: %s\n",
           argv0, c.height, c.width, c.pulseY, c.pulseX, c.timesteps, variants[0].type );
@@ -111,7 +111,7 @@ void print_usage( const char * argv0 ) {
          "  \t Number of threads.\n"
          "  --output \t( -o )                    Default: \"output.bin\"\n"
          "  \t Write output to file 'file'.\n"
-         "  --ascii\t( -a ) <scale>            Default: %d\n"
+         "  --ascii\t( -a ) <scale>            Default: %u\n"
          "  \t Print an ascii image.\n"
          "  \t Parameter will be used as scale.\n"
          "  --quite\t( -q)\n"
@@ -251,12 +251,12 @@ void get_config( int argc, char * argv[], config_t * config ) {
   }
 
   if( config->pulseX > config->width ) {
-    fprintf(stderr, "ERROR: pulseX (%u) is larger then width (%d)!\n", config->pulseX, config->width);
+    fprintf(stderr, "ERROR: pulseX (%u) is larger then width (%u)!\n", config->pulseX, config->width);
     exit(EXIT_FAILURE);
   }
   
   if( config->pulseY > config->height ) {
-    fprintf(stderr, "ERROR: pulseY (%u) is larger then height (%d)!\n", config->pulseY, config->height);
+    fprintf(stderr, "ERROR: pulseY (%u) is larger then height (%u)!\n", config->pulseY, config->height);
     exit(EXIT_FAILURE);
   }
   
@@ -298,11 +298,11 @@ void print_config( config_t * config ) {
 
   printf("-=-=-=-=-=-\n"
          "=== Running configuration:\n"
-         "(rank0): res    = %dx%d\n"
-         "(rank0): time   = %d\n"
-         "(rank0): pulse  = %dx%d\n"
+         "(rank0): res    = %ux%u\n"
+         "(rank0): time   = %u\n"
+         "(rank0): pulse  = %ux%u\n"
          "(rank0): kernel = %s\n"
-         "(rank0): thrds  = %d\n"
+         "(rank0): thrds  = %u\n"
          "(rank0): mem    = %ld %cB\n"
          "(rank0): GFLOP  = %.2f\n"
          "=== Running environment:\n",
