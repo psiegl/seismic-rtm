@@ -70,7 +70,7 @@ void seismic_exec_arm_neon_##NAME( void * v ) \
 } \
  \
  \
-void seismic_exec_arm_neon_##NAME##_pthread(void * v ) \
+void seismic_exec_arm_neon_##NAME##_pthread( void * v ) \
 { \
     stack_t * data = (stack_t*) v; \
  \
