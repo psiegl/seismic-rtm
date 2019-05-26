@@ -21,7 +21,7 @@ def bench( kernel, iterations, variants ):
 
       cmd = g_cmd.split(' ')
       cmd.append( "--kernel=%s" % var )
-      out = subprocess.check_output( cmd )
+      out = subprocess.check_output( cmd, shell=False )
       obj = re.match( r'(.*\n)*.*INNER.*GFLOPS: ([0-9]*\.[0-9]*).*', out.decode("utf-8"), re.MULTILINE )
       res[ var ] += float( obj.group(2) )
 
@@ -34,7 +34,7 @@ def bench( kernel, iterations, variants ):
 
 
 def get_all_supported():
-  out = subprocess.check_output( [ "./%s" % kernel, "--help" ] )
+  out = subprocess.check_output( [ "./%s" % kernel, "--help" ], shell=False )
   lines = out.decode("utf-8").splitlines()
   variants = []
   it = enumerate(lines)
