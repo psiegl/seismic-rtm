@@ -4,15 +4,7 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
-typedef struct _variant_t variant_t;
-struct _variant_t {
-  const char * type;
-  unsigned cap;
-  void (* f_sequential)(void *);
-  void (* f_parallel)(void *);
-  unsigned alignment;
-  unsigned vectorwidth;
-};
+#include "kernel.h"
 
 typedef struct _config_t config_t;
 struct _config_t {
@@ -22,7 +14,7 @@ struct _config_t {
   unsigned pulseY;
   unsigned pulseX;
 
-  variant_t variant;
+  sym_kernel_t* variant;
 
   unsigned threads;
 

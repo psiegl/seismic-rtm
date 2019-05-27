@@ -18,7 +18,7 @@ int main( int argc, char * argv[] ) {
   if(config.verbose)
     printf("allocate and initialize seismic data\n");
   float *APF, *VEL, *NPPF, *pulsevector;
-  if( alloc_seismic_buffers( config.width, config.height, config.timesteps, config.variant.alignment, &VEL, &APF, &NPPF, &pulsevector ) ) {
+  if( alloc_seismic_buffers( config.width, config.height, config.timesteps, config.variant->alignment, &VEL, &APF, &NPPF, &pulsevector ) ) {
     printf("allocation failure\n");
     exit(EXIT_FAILURE);
   }
@@ -33,8 +33,8 @@ int main( int argc, char * argv[] ) {
 
   unsigned t_id = 0;
   unsigned width_part = (config.width - 4) / config.threads;
-  if( config.variant.alignment )
-    width_part += (config.variant.alignment / sizeof(float)) - (width_part % config.variant.alignment); // round up to next alignment
+  if( config.variant->alignment )
+    width_part += (config.variant->alignment / sizeof(float)) - (width_part % config.variant->alignment); // round up to next alignment
 
   stack_t * data = (stack_t*) malloc ( sizeof(stack_t) * config.threads );
   for( t_id = 0; t_id < config.threads; t_id++ ) {
@@ -62,9 +62,9 @@ int main( int argc, char * argv[] ) {
     data[t_id].set_pulse = (data[t_id].x_start <= data[t_id].x_pulse && data[t_id].x_pulse < data[t_id].x_end);
   }
 
-  void (* func)(void *) = config.variant.f_sequential;
+  void (* func)(void *) = config.variant->fnc_sgl;
   if( config.threads != 1 )
-    func = config.variant.f_parallel;
+    func = config.variant->fnc_par;
 
   if( func == NULL ) {
     printf("no function ptr. found!\n");
@@ -128,7 +128,7 @@ int main( int argc, char * argv[] ) {
   }
 
   // aligned version!
-  unsigned alignment = config.variant.alignment ? (config.variant.alignment - 2 * sizeof(float)) : 0;
+  unsigned alignment = config.variant->alignment ? (config.variant->alignment - 2 * sizeof(float)) : 0;
   free( ((char*)APF) - alignment );
   free( ((char*)NPPF) - alignment );
   free( ((char*)VEL) - alignment );

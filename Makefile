@@ -1,12 +1,12 @@
 # Copyright 2017 - , Dr.-Ing. Patrick Siegl
 # SPDX-License-Identifier: BSD-2-Clause
 
-UNAME_P := $(shell uname -m)
+UNAME_M := $(shell uname -m)
 
 SDIR    := src
-BDIR    := bld.$(UNAME_P)
+BDIR    := bld.$(UNAME_M)
 
-TARGET  := seismic.$(UNAME_P).elf
+TARGET  := seismic.$(UNAME_M).elf
 
 OBJS    := $(BDIR)/config.o $(BDIR)/main.o $(BDIR)/visualize.o
 CHK_HW  := $(BDIR)/check_hw.o
@@ -15,10 +15,10 @@ PLAIN   := $(BDIR)/kernel/kernel_plain.o
 CC      = gcc #clang
 CFLAGS  = -ffast-math -ffp-contract=fast -Ofast -fprefetch-loop-arrays  #-ggdb -march=native
 
-ifeq ($(UNAME_P),x86_64)
+ifeq ($(UNAME_M),x86_64)
  include makerules.x86
 else
- ifneq (,$(filter $(UNAME_P),armv7l aarch64))
+ ifneq (,$(filter $(UNAME_M),armv6l armv7l aarch64))
   include makerules.arm
  else
   include makerules.ppc64
@@ -62,7 +62,7 @@ ascii: compile
 
 visualize: compile
 	./$(TARGET) $(CMD) --output
-	./tools/ximage.$(shell uname -m).elf n1=$(HEIGHT) n2=$(WIDTH) hbox=$(HEIGHT) wbox=$(WIDTH) title=visualizer < output.bin
+	./tools/ximage.$(UNAME_M).elf n1=$(HEIGHT) n2=$(WIDTH) hbox=$(HEIGHT) wbox=$(WIDTH) title=visualizer < output.bin
 
 objdump: compile
 	objdump -dS $(TARGET) | less

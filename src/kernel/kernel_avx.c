@@ -49,4 +49,5 @@ inline __attribute__((always_inline)) void kernel_avx_unaligned( stack_t * data,
     }
 }
 
-SEISMIC_EXEC_AVX_FCT( unaligned )
+SEISMIC_EXEC_AVX_FCT( unaligned );
+SYM_KERNEL( avx_unaligned, HAS_AVX, 0, 8 * sizeof(float) );

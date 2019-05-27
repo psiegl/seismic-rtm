@@ -62,4 +62,5 @@ inline __attribute__((always_inline)) void kernel_avx2_fma_unaligned( stack_t * 
     }
 }
 
-SEISMIC_EXEC_AVX2_FCT( fma_unaligned )
+SEISMIC_EXEC_AVX2_FCT( fma_unaligned );
+SYM_KERNEL( avx2_fma_unaligned, HAS_AVX | HAS_AVX2 | HAS_FMA, 0, 8 * sizeof(float) );

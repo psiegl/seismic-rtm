@@ -17,45 +17,8 @@
 
 #define elemsof( x )        (sizeof( (x) ) / sizeof( (x)[0] ))
 
-#define VARTMPL( NAME, CAP, ALIGNMENT, VECTORWIDTH ) { #NAME, CAP, seismic_exec_##NAME, seismic_exec_##NAME##_pthread, ALIGNMENT, VECTORWIDTH }
-
-variant_t variants[] = {
-  VARTMPL( plain_naiiv,                  0,                            0,                 1 * sizeof(float) ),
-  VARTMPL( plain_opt,                    0,                            0,                 1 * sizeof(float) ),
-
-#ifdef __x86_64__
-  VARTMPL( sse_std,                      HAS_SSE,                      4 * sizeof(float), 4 * sizeof(float) ),
-  VARTMPL( sse_unaligned,                HAS_SSE,                      0,                 4 * sizeof(float) ),
-  VARTMPL( sse_aligned,                  HAS_SSE,                      4 * sizeof(float), 4 * sizeof(float) ),
-  VARTMPL( sse_aligned_not_grouped,      HAS_SSE,                      4 * sizeof(float), 4 * sizeof(float) ),
-  VARTMPL( sse_partial_aligned,          HAS_SSE,                      4 * sizeof(float), 4 * sizeof(float) ),
-  VARTMPL( sse_avx_partial_aligned,      HAS_SSE | HAS_AVX,            4 * sizeof(float), 4 * sizeof(float) ),
-  VARTMPL( sse_avx_partial_aligned_opt,  HAS_SSE | HAS_AVX,            4 * sizeof(float), 4 * sizeof(float) ),
-  VARTMPL( avx_unaligned,                HAS_AVX,                      0,                 8 * sizeof(float) ),
-  VARTMPL( avx2_unaligned,               HAS_AVX | HAS_AVX2,           0,                 8 * sizeof(float) ),
-  VARTMPL( sse_fma_std,                  HAS_SSE | HAS_FMA,            4 * sizeof(float), 4 * sizeof(float) ),
-  VARTMPL( sse_fma_unaligned,            HAS_SSE | HAS_FMA,            0,                 4 * sizeof(float) ),
-  VARTMPL( sse_fma_aligned,              HAS_SSE | HAS_FMA,            4 * sizeof(float), 4 * sizeof(float) ),
-  VARTMPL( sse_fma_aligned_not_grouped,  HAS_SSE | HAS_FMA,            4 * sizeof(float), 4 * sizeof(float) ),
-  VARTMPL( sse_fma_partial_aligned,      HAS_SSE | HAS_FMA,            4 * sizeof(float), 4 * sizeof(float) ),
-  VARTMPL( sse_avx_fma_partial_aligned,  HAS_SSE | HAS_AVX | HAS_FMA,  4 * sizeof(float), 4 * sizeof(float) ),
-  VARTMPL( sse_avx_fma_partial_aligned_opt, HAS_SSE | HAS_AVX | HAS_FMA, 4 * sizeof(float), 4 * sizeof(float) ),
-  VARTMPL( avx_fma_unaligned,            HAS_AVX | HAS_FMA,            0,                 8 * sizeof(float) ),
-  VARTMPL( avx2_fma_unaligned,           HAS_AVX | HAS_AVX2 | HAS_FMA, 0,                 8 * sizeof(float) ),
-#endif /* #ifdef __x86_64__ */
-
-#ifdef __ALTIVEC__
-  VARTMPL( vmx,                          HAS_VMX,                      4 * sizeof(float), 4 * sizeof(float) ),
-#ifdef __VSX__
-  VARTMPL( vsx_aligned,                  HAS_VMX | HAS_VSX,            4 * sizeof(float), 4 * sizeof(float) ),
-  VARTMPL( vsx_unaligned,                HAS_VMX | HAS_VSX,            0,                 4 * sizeof(float) ),
-#endif /* #ifdef __VSX__ */
-#endif /* #ifdef __ALTIVEC__ */
-
-#if defined( __ARM_NEON ) || defined ( __ARM_NEON_FP )
-  VARTMPL( neon_aligned,                 HAS_NEON,                     4 * sizeof(float), 4 * sizeof(float) ),
-#endif /* #if defined( __ARM_NEON ) || defined ( __ARM_NEON_FP ) */
-};
+unsigned sym_kern_c = 0;
+sym_kernel_t* sym_kern[32];
 
 void default_values( config_t * config ) {
   config->width     = 2300;
@@ -63,7 +26,7 @@ void default_values( config_t * config ) {
   config->timesteps = 100;
   config->pulseY    = config->height / 2;
   config->pulseX    = config->width / 2;
-  config->variant   = variants[0];
+  config->variant   = sym_kern[0];
   config->threads   = 1;
 
   config->output    = 0;
@@ -89,13 +52,13 @@ void print_usage( const char * argv0 ) {
          "  --timesteps \t( -t )                    Default: %u\n"
          "  \t Determine number of timesteps.\n"
          "  --kernel \t( -k )                    Default: %s\n",
-          argv0, c.height, c.width, c.pulseY, c.pulseX, c.timesteps, variants[0].type );
+          argv0, c.height, c.width, c.pulseY, c.pulseX, c.timesteps, sym_kern[0]->name );
 
   uint32_t cap = check_hw_capabilites();
   unsigned i;
-  for( i = 0; i < elemsof(variants); i++ )
-    if( ! (variants[i].cap & ~cap) )
-      printf("  \t %s\n", variants[i].type );
+  for( i = 0; i < sym_kern_c; i++ )
+    if( ! (sym_kern[i]->cap & ~cap) )
+      printf("  \t %s\n", sym_kern[i]->name );
 
   printf("  --threads \t( -p )                    Default: %u\n"
          "  \t Number of threads.\n"
@@ -178,10 +141,10 @@ void get_config( int argc, char * argv[], config_t * config ) {
       case 'k':
         {
           unsigned i, found = 0;
-          for( i = 0; i < elemsof(variants); i++ ) {
-            if( ! strcmp( optarg, variants[i].type )
-                && (cap & variants[i].cap) == variants[i].cap ) {
-              config->variant = variants[i];
+          for( i = 0; i < sym_kern_c; i++ ) {
+            if( ! strcmp( optarg, sym_kern[i]->name )
+                && (cap & sym_kern[i]->cap) == sym_kern[i]->cap ) {
+              config->variant = sym_kern[i];
               found = 1;
               break;
             }
@@ -234,8 +197,8 @@ void get_config( int argc, char * argv[], config_t * config ) {
   }
 
 // validation checks!
-  if( (config->variant.vectorwidth || config->threads)
-      && ((config->height - 4) * sizeof(float)) % (config->variant.vectorwidth * config->threads) ) {
+  if( (config->variant->vectorwidth || config->threads)
+      && ((config->height - 4) * sizeof(float)) % (config->variant->vectorwidth * config->threads) ) {
     fprintf(stderr, "ERROR: the height needs to be: (X * simd * threads) + 4!\n");
     exit(EXIT_FAILURE);
   }
@@ -282,7 +245,7 @@ void print_config( config_t * config ) {
     return;
 
   unsigned long mem = (unsigned long)config->height
-                      * (unsigned long)(config->width + config->variant.alignment)
+                      * (unsigned long)(config->width + config->variant->alignment)
                       * sizeof(float) * 3 /* APF, NPPF, VEL */
                       + (config->timesteps /* +1? */) * sizeof(float) /* pulsevector */;
   char type;
@@ -301,7 +264,7 @@ void print_config( config_t * config ) {
          config->width, config->height,
          config->timesteps,
          config->pulseX, config->pulseY,
-         config->variant.type,
+         config->variant->name,
          config->threads,
          mem, type, config->GFLOP );
 
