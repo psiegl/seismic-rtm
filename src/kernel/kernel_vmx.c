@@ -67,3 +67,4 @@ inline __attribute__((always_inline)) void kernel_vmx_aligned( stack_t * data, v
 }
 
 SEISMIC_EXEC_PPC_FCT( vmx_aligned );
+SYM_KERNEL( vmx, HAS_VMX, 4 * sizeof(float), 4 * sizeof(float) );
