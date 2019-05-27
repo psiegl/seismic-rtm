@@ -49,7 +49,7 @@ sym_kernel_t sym_##NAME = { \
 }; \
 extern unsigned sym_kern_c; \
 extern sym_kernel_t* sym_kern[]; \
-__attribute__((constructor))  int sym_##NAME##_init(void) { \
+__attribute__((constructor)) void sym_##NAME##_init(void) { \
   sym_kern[ sym_kern_c++ ] = &sym_##NAME; \
 }
 
