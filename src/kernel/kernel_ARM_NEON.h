@@ -3,7 +3,6 @@
 
 #ifndef _KERNEL_ARM_NEON_H_
 #define _KERNEL_ARM_NEON_H_
-#if defined( __ARM_NEON ) || defined ( __ARM_NEON_FP )
 #include "kernel.h"
 #include <arm_neon.h>
 
@@ -157,5 +156,4 @@ void seismic_exec_arm_neon_##NAME##_pthread( void * v ) \
         pthread_exit( NULL ); \
 }
 
-#endif /* #if defined( __ARM_NEON ) || defined ( __ARM_NEON_FP ) */
 #endif /* #ifndef _KERNEL_ARM_NEON_H_ */

@@ -54,7 +54,7 @@ inline __attribute__((always_inline)) void kernel_sse_std( stack_t * data, __m12
 }
 
 SEISMIC_EXEC_SSE_FCT( std );
-
+SYM_KERNEL( sse_std, HAS_SSE, 4 * sizeof(float), 4 * sizeof(float) );
 
 
 inline __attribute__((always_inline)) void kernel_sse_aligned( stack_t * data, __m128 s_two, __m128 s_sixteen, __m128 s_sixty  )
@@ -116,7 +116,7 @@ inline __attribute__((always_inline)) void kernel_sse_aligned( stack_t * data, _
 }
 
 SEISMIC_EXEC_SSE_FCT( aligned );
-
+SYM_KERNEL( sse_aligned, HAS_SSE, 4 * sizeof(float), 4 * sizeof(float) );
 
 
 inline __attribute__((always_inline)) void kernel_sse_aligned_not_grouped( stack_t * data, __m128 s_two, __m128 s_sixteen, __m128 s_sixty  )
@@ -179,7 +179,7 @@ inline __attribute__((always_inline)) void kernel_sse_aligned_not_grouped( stack
 }
 
 SEISMIC_EXEC_SSE_FCT( aligned_not_grouped );
-
+SYM_KERNEL( sse_aligned_not_grouped, HAS_SSE, 4 * sizeof(float), 4 * sizeof(float) );
 
 
 inline __attribute__((always_inline)) void kernel_sse_unaligned( stack_t * data, __m128 s_two, __m128 s_sixteen, __m128 s_sixty  )
@@ -236,7 +236,7 @@ inline __attribute__((always_inline)) void kernel_sse_unaligned( stack_t * data,
 }
 
 SEISMIC_EXEC_SSE_FCT( unaligned );
-
+SYM_KERNEL( sse_unaligned, HAS_SSE, 0, 4 * sizeof(float) );
 
 
 inline __attribute__((always_inline)) void kernel_sse_partial_aligned( stack_t * data, __m128 s_two, __m128 s_sixteen, __m128 s_sixty  )
@@ -291,3 +291,4 @@ inline __attribute__((always_inline)) void kernel_sse_partial_aligned( stack_t *
 }
 
 SEISMIC_EXEC_SSE_FCT( partial_aligned );
+SYM_KERNEL( sse_partial_aligned, HAS_SSE, 4 * sizeof(float), 4 * sizeof(float) );
