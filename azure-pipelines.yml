@@ -11,5 +11,9 @@ pool:
 
 steps:
 - script: |
-    make
-  displayName: 'make'
+    make compile
+  displayName: 'compile'
+
+- script: |
+    make run
+  displayName: 'run'
