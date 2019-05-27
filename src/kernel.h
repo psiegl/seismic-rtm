@@ -8,6 +8,7 @@
 #include <pthread.h>
 #include <sys/time.h>
 #include "barrier/barrier.h"
+#include "check_hw.h"
 
 typedef struct _stack_t stack_t;
 struct _stack_t {
@@ -37,82 +38,29 @@ struct _stack_t {
   struct timeval e;
 };
 
-void seismic_exec_plain_naiiv( void * v );
-void seismic_exec_plain_naiiv_pthread( void * v );
+#define SYM_KERNEL( NAME, CAP, ALIGNMENT, VECTORWIDTH ) \
+sym_kernel_t sym_##NAME = { \
+  .name = #NAME, \
+  .cap = (CAP), \
+  .fnc_sgl = seismic_exec_##NAME, \
+  .fnc_par = seismic_exec_##NAME##_pthread, \
+  .alignment = (ALIGNMENT), \
+  .vectorwidth = (VECTORWIDTH) \
+}; \
+extern unsigned sym_kern_c; \
+extern sym_kernel_t* sym_kern[]; \
+__attribute__((constructor))  int sym_##NAME##_init(void) { \
+  sym_kern[ sym_kern_c++ ] = &sym_##NAME; \
+}
 
-void seismic_exec_plain_opt( void * v );
-void seismic_exec_plain_opt_pthread( void * v );
-
-#ifdef __x86_64__
-void seismic_exec_sse_std( void * v );
-void seismic_exec_sse_std_pthread( void * v );
-
-void seismic_exec_sse_fma_std( void * v );
-void seismic_exec_sse_fma_std_pthread( void * v );
-
-void seismic_exec_sse_unaligned( void * v );
-void seismic_exec_sse_unaligned_pthread( void * v );
-
-void seismic_exec_sse_fma_unaligned( void * v );
-void seismic_exec_sse_fma_unaligned_pthread( void * v );
-
-void seismic_exec_sse_aligned( void * v );
-void seismic_exec_sse_aligned_pthread( void * v );
-
-void seismic_exec_sse_fma_aligned( void * v );
-void seismic_exec_sse_fma_aligned_pthread( void * v );
-
-void seismic_exec_sse_partial_aligned( void * v );
-void seismic_exec_sse_partial_aligned_pthread( void * v );
-
-void seismic_exec_sse_fma_partial_aligned( void * v );
-void seismic_exec_sse_fma_partial_aligned_pthread( void * v );
-
-void seismic_exec_sse_avx_partial_aligned( void * v );
-void seismic_exec_sse_avx_partial_aligned_pthread( void * v );
-
-void seismic_exec_sse_avx_partial_aligned_opt( void * v );
-void seismic_exec_sse_avx_partial_aligned_opt_pthread( void * v );
-
-void seismic_exec_sse_avx_fma_partial_aligned( void * v );
-void seismic_exec_sse_avx_fma_partial_aligned_pthread( void * v );
-
-void seismic_exec_sse_avx_fma_partial_aligned_opt( void * v );
-void seismic_exec_sse_avx_fma_partial_aligned_opt_pthread( void * v );
-
-void seismic_exec_sse_aligned_not_grouped( void * v );
-void seismic_exec_sse_aligned_not_grouped_pthread( void * v );
-
-void seismic_exec_sse_fma_aligned_not_grouped( void * v );
-void seismic_exec_sse_fma_aligned_not_grouped_pthread( void * v );
-
-void seismic_exec_avx_unaligned( void * v );
-void seismic_exec_avx_unaligned_pthread( void * v );
-
-void seismic_exec_avx_fma_unaligned( void * v );
-void seismic_exec_avx_fma_unaligned_pthread( void * v );
-
-void seismic_exec_avx2_unaligned( void * v );
-void seismic_exec_avx2_unaligned_pthread( void * v );
-
-void seismic_exec_avx2_fma_unaligned( void * v );
-void seismic_exec_avx2_fma_unaligned_pthread( void * v );
-#endif /* #ifdef __x86_64__ */
-
-#ifdef __ALTIVEC__
-void seismic_exec_vmx_aligned( void * v );
-void seismic_exec_vmx_aligned_pthread( void * v );
-#ifdef __VSX__
-void seismic_exec_vsx_unaligned( void * v );
-void seismic_exec_vsx_unaligned_pthread( void * v );
-void seismic_exec_vsx_aligned( void * v );
-void seismic_exec_vsx_aligned_pthread( void * v );
-#endif /* #ifdef __VSX__ */
-#endif /* #ifdef __ALTIVEC__ */
-
-#if defined( __ARM_NEON ) || defined ( __ARM_NEON_FP )
-void seismic_exec_arm_neon_aligned( void * v );
-void seismic_exec_arm_neon_aligned_pthread( void * v );
-#endif /* #if defined( __ARM_NEON ) || defined ( __ARM_NEON_FP ) */
+typedef struct _sym_kernel_t sym_kernel_t;
+struct _sym_kernel_t {
+  const char *name;
+  unsigned int cap;
+  void (*fnc_sgl)( void * v );
+  void (*fnc_par)( void * v );
+  unsigned int alignment;
+  unsigned int vectorwidth;
+};
 
 #endif /* #ifndef _KERNEL_H_ */

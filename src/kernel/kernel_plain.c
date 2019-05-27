@@ -91,6 +91,8 @@ void seismic_exec_plain_naiiv_pthread( void * v )
         pthread_exit( NULL );
 }
 
+SYM_KERNEL( plain_naiiv, 0, 0, 1 * sizeof(float) );
+
 
 inline __attribute__((always_inline)) void kernel_plain_opt( stack_t * data )
 {
@@ -213,11 +215,6 @@ void seismic_exec_plain_opt( void * v )
     gettimeofday(&data->e, NULL);
 }
 
-
-
-
-
-
 // function that implements the kernel of the seismic modeling algorithm
 void seismic_exec_plain_opt_pthread( void * v )
 {
@@ -297,4 +294,4 @@ void seismic_exec_plain_opt_pthread( void * v )
         pthread_exit( NULL );
 }
 
-
+SYM_KERNEL( plain_opt, 0, 0, 1 * sizeof(float) );

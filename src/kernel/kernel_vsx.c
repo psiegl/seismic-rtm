@@ -59,6 +59,7 @@ inline __attribute__((always_inline)) void kernel_vsx_unaligned( stack_t * data,
 }
 
 SEISMIC_EXEC_PPC_FCT( vsx_unaligned );
+SYM_KERNEL( vsx_unaligned, HAS_VMX | HAS_VSX, 0, 4 * sizeof(float) );
 
 
 inline __attribute__((always_inline)) void kernel_vsx_aligned( stack_t * data, vector float s_two, vector float s_sixteen, vector float s_min_sixty, vector unsigned char mergeOneHighThreeLow, vector unsigned char mergeThreeHighOneLow, vector unsigned char mergeHighLow  )
@@ -117,3 +118,4 @@ inline __attribute__((always_inline)) void kernel_vsx_aligned( stack_t * data, v
 }
 
 SEISMIC_EXEC_PPC_FCT( vsx_aligned );
+SYM_KERNEL( vsx_aligned, HAS_VMX | HAS_VSX, 4 * sizeof(float), 4 * sizeof(float) );
