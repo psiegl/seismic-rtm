@@ -9,7 +9,7 @@ import operator
 import multiprocessing
 import re
 
-kernel = "seismic.x86_64.elf"
+kernel = "seismic-rtm.elf"
 
 def bench( kernel, iterations, variants ):
   res = {}
