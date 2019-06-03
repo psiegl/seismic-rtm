@@ -6,40 +6,16 @@ UNAME_M := $(shell uname -m)
 SDIR    := src
 BDIR    := bld.$(UNAME_M)
 
-TARGET  := seismic.$(UNAME_M).elf
+TARGET  := seismic-rtm.elf
 
-OBJS    := $(BDIR)/config.o $(BDIR)/main.o $(BDIR)/visualize.o
-CHK_HW  := $(BDIR)/check_hw.o
-PLAIN   := $(BDIR)/kernel/kernel_plain.o
-
-CC      = gcc #clang
-CFLAGS  = -ffast-math -ffp-contract=fast -Ofast -fprefetch-loop-arrays  #-ggdb -march=native
-
-ifeq ($(UNAME_M),x86_64)
- include makerules.x86
-else
- ifneq (,$(filter $(UNAME_M),armv6l armv7l aarch64))
-  include makerules.arm
- else
-  include makerules.ppc64
- endif
-endif
-ALL_OBJS = $(OBJS) $(CHK_HW) $(PLAIN) $(ADD_KERNELS)
 
 default: compile run
 
-$(BDIR):
-	mkdir -p $(BDIR)/kernel
+compile:
+	mkdir -p $(BDIR)
+	cd $(BDIR) && cmake ..
+	make -C $(BDIR)
 
-%.elf: $(ALL_OBJS)
-	$(CC) -pthread -o $@ $^ -lm
-
-#.INTERMEDIATE: $(ALL_OBJS)
-$(ALL_OBJS): $(BDIR)/%.o: $(SDIR)/%.c
-	$(CC) -I$(SDIR) $(CFLAGS) -c -o $@ $<
-
-
-compile: $(BDIR) $(TARGET)
 
 WIDTH   = 1000
 HEIGHT  = 516
@@ -52,23 +28,24 @@ TYPE    = plain_opt
 CMD     = --timesteps=$(STEPS) --width=$(WIDTH) --height=$(HEIGHT) --pulseX=$(PULSEX) --pulseY=$(PULSEY) --threads=$(THREADS) --kernel=$(TYPE)
 
 run: compile
-	./$(TARGET) $(CMD)
+	./$(BDIR)/$(TARGET) $(CMD)
 
 bench: compile
+	ln -sf $(BDIR)/$(TARGET) $(TARGET)
 	python tools/bench.py
 
 ascii: compile
-	./$(TARGET) $(CMD) --ascii=1
+	./$(BDIR)/$(TARGET) $(CMD) --ascii=1
 
 visualize: compile
-	./$(TARGET) $(CMD) --output
+	./$(BDIR)/$(TARGET) $(CMD) --output
 	./tools/ximage.$(UNAME_M).elf n1=$(HEIGHT) n2=$(WIDTH) hbox=$(HEIGHT) wbox=$(WIDTH) title=visualizer < output.bin
 
 objdump: compile
-	objdump -dS $(TARGET) | less
+	objdump -dS $(BDIR)/$(TARGET) | less
 
 clean:
-	rm $(TARGET) $(BDIR) *.bin -rf
+	rm $(BDIR) *.bin -rf
 
 distclean: clean
-	rm bld.* seismic.* -rf
+	rm seismic.* -rf
