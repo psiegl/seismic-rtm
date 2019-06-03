@@ -90,6 +90,12 @@ unsigned long round_and_get_unit( unsigned long mem, char * type ) {
 }
 
 void get_config( int argc, char * argv[], config_t * config ) {
+
+  if( ! sym_kern_c ) {
+    fprintf(stderr, "ERROR: no kernels compiled into!\n");
+    exit(EXIT_FAILURE);
+  }
+
   default_values( config );
 
 /*** Getopt ***/
