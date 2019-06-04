@@ -4,8 +4,6 @@
 [![Build Status](https://dev.azure.com/psiegl/seismic-rtm/_apis/build/status/psiegl.seismic-rtm?branchName=master)](https://dev.azure.com/psiegl/seismic-rtm/_build/latest?definitionId=1&branchName=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2db350f5b41b44d19403ab0a51350ef6)](https://www.codacy.com/app/psiegl/seismic-rtm?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=psiegl/seismic-rtm&amp;utm_campaign=Badge_Grade)
 [![Coverity Scan Build Status](https://img.shields.io/coverity/scan/18474.svg)](https://scan.coverity.com/projects/psiegl-seismic-rtm)
-[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/psiegl/seismic-rtm.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/psiegl/seismic-rtm/context:cpp)
-[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/psiegl/seismic-rtm.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/psiegl/seismic-rtm/context:python)
 [![CodeFactor](https://www.codefactor.io/repository/github/psiegl/seismic-rtm/badge/master)](https://www.codefactor.io/repository/github/psiegl/seismic-rtm/overview/master)
 [![GitHub license](https://img.shields.io/github/license/psiegl/seismic-rtm.svg)](https://raw.githubusercontent.com/psiegl/seismic-rtm/master/LICENSE)
 

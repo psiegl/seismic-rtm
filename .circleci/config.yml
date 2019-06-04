@@ -7,17 +7,11 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Installing SUDO
-          command: 'apt-get update && apt-get install -y sudo && rm -rf /var/lib/apt/lists/*'
+          name: Get recent repo
+          command: 'apt-get update'
       - run:
-          name: Installing GCC
-          command: 'apt-get update && apt-get install -y gcc'
-      - run:
-          name: Installing MAKE
-          command: 'apt-get update && apt-get install -y make'
-      - run:
-          name: Installing CMAKE
-          command: 'apt-get update && apt-get install -y cmake'
+          name: Installing essential build utils
+          command: 'apt-get update && apt-get install -y gcc g++ git make cmake'
       - run:
           name: Creating Build Files
           command: 'make compile'

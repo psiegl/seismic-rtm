@@ -55,7 +55,8 @@ inline __attribute__((always_inline)) void kernel_sse_fma_std( stack_t * data, _
 }
 
 SEISMIC_EXEC_SSE_FCT( fma_std );
-SYM_KERNEL( sse_fma_std, HAS_SSE | HAS_FMA, 4 * sizeof(float), 4 * sizeof(float) );
+#define SYM_KERNEL_CAP { .fma3 = 1 } // sse missing
+SYM_KERNEL( sse_fma_std, SYM_KERNEL_CAP, 4 * sizeof(float), 4 * sizeof(float) );
 
 
 inline __attribute__((always_inline)) void kernel_sse_fma_aligned( stack_t * data, __m128 s_two, __m128 s_sixteen, __m128 s_sixty  )
@@ -113,7 +114,8 @@ inline __attribute__((always_inline)) void kernel_sse_fma_aligned( stack_t * dat
 }
 
 SEISMIC_EXEC_SSE_FCT( fma_aligned );
-SYM_KERNEL( sse_fma_aligned, HAS_SSE | HAS_FMA, 4 * sizeof(float), 4 * sizeof(float) );
+#define SYM_KERNEL_CAP { .fma3 = 1 } // sse missing
+SYM_KERNEL( sse_fma_aligned, SYM_KERNEL_CAP, 4 * sizeof(float), 4 * sizeof(float) );
 
 
 inline __attribute__((always_inline)) void kernel_sse_fma_aligned_not_grouped( stack_t * data, __m128 s_two, __m128 s_sixteen, __m128 s_sixty  )
@@ -172,7 +174,8 @@ inline __attribute__((always_inline)) void kernel_sse_fma_aligned_not_grouped( s
 }
 
 SEISMIC_EXEC_SSE_FCT( fma_aligned_not_grouped );
-SYM_KERNEL( sse_fma_aligned_not_grouped, HAS_SSE | HAS_FMA, 4 * sizeof(float), 4 * sizeof(float) );
+#define SYM_KERNEL_CAP { .fma3 = 1 } // sse missing
+SYM_KERNEL( sse_fma_aligned_not_grouped, SYM_KERNEL_CAP, 4 * sizeof(float), 4 * sizeof(float) );
 
 
 inline __attribute__((always_inline)) void kernel_sse_fma_unaligned( stack_t * data, __m128 s_two, __m128 s_sixteen, __m128 s_sixty  )
@@ -231,7 +234,8 @@ inline __attribute__((always_inline)) void kernel_sse_fma_unaligned( stack_t * d
 }
 
 SEISMIC_EXEC_SSE_FCT( fma_unaligned );
-SYM_KERNEL( sse_fma_unaligned, HAS_SSE | HAS_FMA, 0, 4 * sizeof(float) );
+#define SYM_KERNEL_CAP { .fma3 = 1 } // sse missing
+SYM_KERNEL( sse_fma_unaligned, SYM_KERNEL_CAP, 0, 4 * sizeof(float) );
 
 
 inline __attribute__((always_inline)) void kernel_sse_fma_partial_aligned( stack_t * data, __m128 s_two, __m128 s_sixteen, __m128 s_sixty )
@@ -318,4 +322,5 @@ inline __attribute__((always_inline)) void kernel_sse_fma_partial_aligned( stack
 }
 
 SEISMIC_EXEC_SSE_FCT( fma_partial_aligned );
-SYM_KERNEL( sse_fma_partial_aligned, HAS_SSE | HAS_FMA, 4 * sizeof(float), 4 * sizeof(float) );
+#define SYM_KERNEL_CAP { .fma3 = 1 } // sse missing
+SYM_KERNEL( sse_fma_partial_aligned, SYM_KERNEL_CAP, 4 * sizeof(float), 4 * sizeof(float) );

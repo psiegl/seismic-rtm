@@ -10,10 +10,32 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED OFF)
 set(CMAKE_C_EXTENSIONS ON)
 
-EXECUTE_PROCESS( COMMAND uname -m COMMAND tr -d '\n' OUTPUT_VARIABLE ARCHITECTURE )
-message( STATUS "Detecting architecture - ${ARCHITECTURE}" )
+find_package(Threads REQUIRED)
 
-find_package( Threads REQUIRED )
+
+################## cpu_features
+configure_file(CMakeLists.txt.in cpu_features-download/CMakeLists.txt)
+execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+  RESULT_VARIABLE result
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cpu_features-download )
+if(result)
+  message(FATAL_ERROR "CMake step for cpu_features failed: ${result}")
+endif()
+execute_process(COMMAND ${CMAKE_COMMAND} --build .
+  RESULT_VARIABLE result
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cpu_features-download )
+if(result)
+  message(FATAL_ERROR "Build step for cpu_features failed: ${result}")
+endif()
+
+# Add cpu_features directly to our build.
+add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/cpu_features-src
+                 ${CMAKE_CURRENT_BINARY_DIR}/cpu_features-build
+                 EXCLUDE_FROM_ALL)
+
+message(STATUS "Detecting architecture - ${CMAKE_SYSTEM_PROCESSOR}")
+##################
+
 
 include_directories(src src/barrier src/kernel)
 
@@ -24,7 +46,7 @@ set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Ofast -ffast-math -ffp-cont
 file(GLOB SOURCES src/*.c)
 list(APPEND SOURCES src/kernel/kernel_plain.c)
 
-if( ${ARCHITECTURE} STREQUAL "x86_64" )
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64)|(AMD64)|(^i.86$)")
 
   list(APPEND SOURCES src/kernel/kernel_sse.c
                       src/kernel/kernel_sse_fma.c
@@ -41,17 +63,13 @@ if( ${ARCHITECTURE} STREQUAL "x86_64" )
   set_source_files_properties( src/kernel/kernel_avx2.c     PROPERTIES COMPILE_FLAGS "-mavx2" )
   set_source_files_properties( src/kernel/kernel_avx2_fma.c PROPERTIES COMPILE_FLAGS "-mavx2 -mfma" )
 
-elseif( ${ARCHITECTURE} STREQUAL "armv6l"
-        OR ${ARCHITECTURE} STREQUAL "armv7l"
-        OR ${ARCHITECTURE} STREQUAL "aarch64" )
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^arm"
+       OR CMAKE_SYSTEM_PROCESSOR MATCHES "^aarch64")
 
   list(APPEND SOURCES src/kernel/kernel_ARM_NEON.c)
   set_source_files_properties( src/kernel/kernel_ARM_NEON.c PROPERTIES COMPILE_FLAGS "-mfpu=neon" )
 
-elseif( ${ARCHITECTURE} STREQUAL "ppc"
-        OR ${ARCHITECTURE} STREQUAL "ppcle"
-        OR ${ARCHITECTURE} STREQUAL "ppc64"
-        OR ${ARCHITECTURE} STREQUAL "ppc64le" )
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(powerpc|ppc)")
 
   list(APPEND SOURCES src/kernel/kernel_vmx.c
                       src/kernel/kernel_vsx.c)
@@ -61,4 +79,4 @@ elseif( ${ARCHITECTURE} STREQUAL "ppc"
 endif()
 
 add_executable(seismic-rtm.elf ${SOURCES})
-target_link_libraries (seismic-rtm.elf Threads::Threads m)
+target_link_libraries (seismic-rtm.elf Threads::Threads m cpu_features)
