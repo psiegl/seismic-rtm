@@ -41,11 +41,11 @@ struct _stack_t {
 #define SYM_KERNEL( NAME, CAP, ALIGNMENT, VECTORWIDTH ) \
 sym_kernel_t sym_##NAME = { \
   .name = #NAME, \
-  .cap = (CAP), \
+  .cap.in = CAP, \
   .fnc_sgl = seismic_exec_##NAME, \
   .fnc_par = seismic_exec_##NAME##_pthread, \
-  .alignment = (ALIGNMENT), \
-  .vectorwidth = (VECTORWIDTH) \
+  .alignment = ALIGNMENT, \
+  .vectorwidth = VECTORWIDTH \
 }; \
 extern unsigned sym_kern_c; \
 extern sym_kernel_t* sym_kern[]; \
@@ -56,7 +56,7 @@ __attribute__((constructor)) void sym_##NAME##_init(void) { \
 typedef struct _sym_kernel_t sym_kernel_t;
 struct _sym_kernel_t {
   const char *name;
-  unsigned int cap;
+  archfeatures cap;
   void (*fnc_sgl)( void * v );
   void (*fnc_par)( void * v );
   unsigned int alignment;

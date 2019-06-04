@@ -54,4 +54,5 @@ inline __attribute__((always_inline)) void kernel_arm_neon_aligned( stack_t * da
 }
 
 SEISMIC_EXEC_ARM_NEON_FCT( aligned );
-SYM_KERNEL( arm_neon_aligned, HAS_NEON, 4 * sizeof(float), 4 * sizeof(float) );
+#define SYM_KERNEL_CAP { .neon = 1 } // .asimd?
+SYM_KERNEL( arm_neon_aligned, SYM_KERNEL_CAP, 4 * sizeof(float), 4 * sizeof(float) );

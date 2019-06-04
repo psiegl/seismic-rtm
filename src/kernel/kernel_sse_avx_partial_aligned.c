@@ -54,7 +54,8 @@ inline __attribute__((always_inline)) void kernel_sse_avx_partial_aligned( stack
 }
 
 SEISMIC_EXEC_SSE_FCT( avx_partial_aligned );
-SYM_KERNEL( sse_avx_partial_aligned, HAS_SSE | HAS_AVX, 4 * sizeof(float), 4 * sizeof(float) );
+#define SYM_KERNEL_CAP { .avx = 1 } // sse missing
+SYM_KERNEL( sse_avx_partial_aligned, SYM_KERNEL_CAP, 4 * sizeof(float), 4 * sizeof(float) );
 
 
 inline __attribute__((always_inline)) void kernel_sse_avx_partial_aligned_opt( stack_t * data, __m128 s_two, __m128 s_sixteen, __m128 s_sixty  )
@@ -112,4 +113,5 @@ inline __attribute__((always_inline)) void kernel_sse_avx_partial_aligned_opt( s
 }
 
 SEISMIC_EXEC_SSE_FCT( avx_partial_aligned_opt );
-SYM_KERNEL( sse_avx_partial_aligned_opt, HAS_SSE | HAS_AVX, 4 * sizeof(float), 4 * sizeof(float) );
+#define SYM_KERNEL_CAP { .avx = 1 } // sse missing
+SYM_KERNEL( sse_avx_partial_aligned_opt, SYM_KERNEL_CAP, 4 * sizeof(float), 4 * sizeof(float) );
