@@ -54,10 +54,10 @@ void print_usage( const char * argv0 ) {
          "  --kernel \t( -k )                    Default: %s\n",
           argv0, c.height, c.width, c.pulseY, c.pulseX, c.timesteps, sym_kern[0]->name );
 
-  uint32_t cap = check_hw_capabilites();
+  archfeatures cap = check_hw_capabilites();
   unsigned i;
   for( i = 0; i < sym_kern_c; i++ )
-    if( ! (sym_kern[i]->cap & ~cap) )
+    if( ! (sym_kern[i]->cap.bits & ~cap.bits) )
       printf("  \t %s\n", sym_kern[i]->name );
 
   printf("  --threads \t( -p )                    Default: %u\n"
@@ -116,7 +116,7 @@ void get_config( int argc, char * argv[], config_t * config ) {
     {NULL,          0,                  NULL,            0 }
   };
 
-  uint32_t cap = check_hw_capabilites();
+  archfeatures cap = check_hw_capabilites();
   while( 1 ) {
     int option_index = 0;
     int opt = getopt_long( argc, argv, "x:y:i:j:t:k:p:hq", long_options, &option_index );
@@ -149,7 +149,7 @@ void get_config( int argc, char * argv[], config_t * config ) {
           unsigned i, found = 0;
           for( i = 0; i < sym_kern_c; i++ ) {
             if( ! strcmp( optarg, sym_kern[i]->name )
-                && (cap & sym_kern[i]->cap) == sym_kern[i]->cap ) {
+                && (cap.bits & sym_kern[i]->cap.bits) == sym_kern[i]->cap.bits ) {
               config->variant = sym_kern[i];
               found = 1;
               break;
@@ -225,26 +225,6 @@ void get_config( int argc, char * argv[], config_t * config ) {
   config->GFLOP = (((double)(config->width - 4) * (double)(config->height - 4) * 15.0 + 1.0) * (double)config->timesteps)/1000000.0;
 }
 
-unsigned getNumCores( void ) {
-#if MACOS
-    unsigned nm[2];
-    size_t len = 4;
-    uint32_t count;
-
-    nm[0] = CTL_HW; nm[1] = HW_AVAILCPU;
-    sysctl(nm, 2, &count, &len, NULL, 0);
-
-    if(count < 1) {
-        nm[1] = HW_NCPU;
-        sysctl(nm, 2, &count, &len, NULL, 0);
-        if(count < 1) { count = 1; }
-    }
-    return count;
-#else
-    return sysconf(_SC_NPROCESSORS_ONLN);
-#endif
-}
-
 void print_config( config_t * config ) {
 
   if(!config->verbose)
@@ -281,30 +261,11 @@ void print_config( config_t * config ) {
            myuts.nodename, myuts.machine );
   }
 
-  printf( "(rank0): CORES  = %u", getNumCores() );
+  printf( "(rank0): CORES  = %u\n", get_num_cores() );
 
-  uint32_t cap = check_hw_capabilites();
-  if( cap ) {
-    printf(" inc.");
-    if( cap & HAS_SSE )
-      printf(" SSE");
-    if( cap & HAS_AVX ) {
-      printf(" AVX");
-      if( cap & HAS_AVX2 )
-        printf(" AVX2");
-    }
-    if( cap & HAS_FMA )
-      printf(" FMA");
-    if( cap & HAS_VMX ) {
-      printf(" VMX");
-      if( cap & HAS_VSX )
-        printf(" VSX");
-    }
-    if( cap & HAS_NEON )
-      printf(" NEON");
-    if( cap & HAS_ASIMD )
-      printf(" ASIMD");
-  }
+  archfeatures cap = check_hw_capabilites();
+  printf( "(rank0): FLAGS  =" );
+  print_hw_capabilites( cap );
 
   printf("\n\n");
 }

@@ -65,6 +65,7 @@ inline __attribute__((always_inline)) void kernel_avx_fma_unaligned( stack_t * d
 }
 
 SEISMIC_EXEC_AVX_FCT( fma_unaligned );
-SYM_KERNEL( avx_fma_unaligned, HAS_AVX | HAS_FMA, 0, 8 * sizeof(float) );
+#define SYM_KERNEL_CAP { .avx = 1, .fma3 = 1 }
+SYM_KERNEL( avx_fma_unaligned, SYM_KERNEL_CAP, 0, 8 * sizeof(float) );
 
 
