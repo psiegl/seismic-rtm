@@ -77,7 +77,7 @@ inline __attribute__((always_inline)) void kernel_sse_avx_fma_partial_aligned( s
 }
 
 SEISMIC_EXEC_SSE_FCT( avx_fma_partial_aligned );
-#define SYM_KERNEL_CAP { .avx = 1, .fma3 = 1 } // sse missing
+#define SYM_KERNEL_CAP { .avx = 1, .fma3 = 1, .sse = 1 }
 SYM_KERNEL( sse_avx_fma_partial_aligned,  SYM_KERNEL_CAP, 4 * sizeof(float), 4 * sizeof(float) );
 
 
@@ -159,5 +159,5 @@ inline __attribute__((always_inline)) void kernel_sse_avx_fma_partial_aligned_op
 }
 
 SEISMIC_EXEC_SSE_FCT( avx_fma_partial_aligned_opt );
-#define SYM_KERNEL_CAP { .avx = 1, .fma3 = 1 } // sse missing
+#define SYM_KERNEL_CAP { .avx = 1, .fma3 = 1, .sse = 1 }
 SYM_KERNEL( sse_avx_fma_partial_aligned_opt, SYM_KERNEL_CAP, 4 * sizeof(float), 4 * sizeof(float) );
