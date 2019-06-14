@@ -54,7 +54,7 @@ inline __attribute__((always_inline)) void kernel_sse_std( stack_t * data, __m12
 }
 
 SEISMIC_EXEC_SSE_FCT( std );
-#define SYM_KERNEL_CAP { } // sse missing
+#define SYM_KERNEL_CAP { .sse = 1 }
 SYM_KERNEL( sse_std, SYM_KERNEL_CAP, 4 * sizeof(float), 4 * sizeof(float) );
 
 
@@ -117,7 +117,7 @@ inline __attribute__((always_inline)) void kernel_sse_aligned( stack_t * data, _
 }
 
 SEISMIC_EXEC_SSE_FCT( aligned );
-#define SYM_KERNEL_CAP { } // sse missing
+#define SYM_KERNEL_CAP { .sse = 1 }
 SYM_KERNEL( sse_aligned, SYM_KERNEL_CAP, 4 * sizeof(float), 4 * sizeof(float) );
 
 
@@ -181,7 +181,7 @@ inline __attribute__((always_inline)) void kernel_sse_aligned_not_grouped( stack
 }
 
 SEISMIC_EXEC_SSE_FCT( aligned_not_grouped );
-#define SYM_KERNEL_CAP { } // sse missing
+#define SYM_KERNEL_CAP { .sse = 1 }
 SYM_KERNEL( sse_aligned_not_grouped, SYM_KERNEL_CAP, 4 * sizeof(float), 4 * sizeof(float) );
 
 
@@ -239,7 +239,7 @@ inline __attribute__((always_inline)) void kernel_sse_unaligned( stack_t * data,
 }
 
 SEISMIC_EXEC_SSE_FCT( unaligned );
-#define SYM_KERNEL_CAP { } // sse missing
+#define SYM_KERNEL_CAP { .sse = 1 }
 SYM_KERNEL( sse_unaligned, SYM_KERNEL_CAP, 0, 4 * sizeof(float) );
 
 
@@ -295,5 +295,5 @@ inline __attribute__((always_inline)) void kernel_sse_partial_aligned( stack_t *
 }
 
 SEISMIC_EXEC_SSE_FCT( partial_aligned );
-#define SYM_KERNEL_CAP { } // sse missing
+#define SYM_KERNEL_CAP { .sse = 1 }
 SYM_KERNEL( sse_partial_aligned, SYM_KERNEL_CAP, 4 * sizeof(float), 4 * sizeof(float) );
