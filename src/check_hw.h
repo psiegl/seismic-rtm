@@ -10,53 +10,40 @@
 
 #ifdef CPU_FEATURES_ARCH_X86_64
 # include "cpuinfo_x86.h"
-typedef union {
-  X86Features in;
-  uint64_t bits;
-} archfeatures;
-#endif /* #ifdef CPU_FEATURES_ARCH_X86_64 */
-
-#ifdef CPU_FEATURES_ARCH_PPC
+#elif defined(CPU_FEATURES_ARCH_PPC)
 # include "cpuinfo_ppc.h"
-typedef union {
-  PPCFeatures in;
-  uint64_t bits;
-} archfeatures;
-#endif /* #ifdef CPU_FEATURES_ARCH_PPC */
-
-#ifdef CPU_FEATURES_ARCH_ARM
+#elif defined(CPU_FEATURES_ARCH_ARM)
 # include "cpuinfo_arm.h"
-typedef union {
-  ArmFeatures in;
-  uint64_t bits;
-} archfeatures;
-#endif /* #ifdef CPU_FEATURES_ARCH_ARM */
-
-#ifdef CPU_FEATURES_ARCH_AARCH64
+#elif defined(CPU_FEATURES_ARCH_AARCH64)
 # include "cpuinfo_aarch64.h"
+#endif
+
 typedef union {
+#ifdef CPU_FEATURES_ARCH_X86_64
+  X86Features in;
+#elif defined(CPU_FEATURES_ARCH_PPC)
+  PPCFeatures in;
+#elif defined(CPU_FEATURES_ARCH_ARM)
+  ArmFeatures in;
+#elif defined(CPU_FEATURES_ARCH_AARCH64)
   Aarch64Features in;
+#endif
   uint64_t bits;
 } archfeatures;
-#endif /* #ifdef CPU_FEATURES_ARCH_AARCH64 */
 
 static archfeatures check_hw_capabilites( void )
 {
+  archfeatures cap = {
 #ifdef CPU_FEATURES_ARCH_X86_64
-  archfeatures cap = { .in = GetX86Info().features };
-#endif /* #ifdef CPU_FEATURES_ARCH_X86_64 */
-
-#ifdef CPU_FEATURES_ARCH_PPC
-  archfeatures cap = { .in = GetPPCInfo().features };
-#endif /* #ifdef CPU_FEATURES_ARCH_PPC */
-
-#ifdef CPU_FEATURES_ARCH_ARM
-  archfeatures cap = { .in = GetArmInfo().features };
-#endif /* #ifdef CPU_FEATURES_ARCH_ARM */
-
-#ifdef CPU_FEATURES_ARCH_AARCH64
-  archfeatures cap = { .in = GetAarch64Info().features };
-#endif /* #ifdef CPU_FEATURES_ARCH_AARCH64 */
+    .in = GetX86Info().features
+#elif defined(CPU_FEATURES_ARCH_PPC)
+    .in = GetPPCInfo().features
+#elif defined(CPU_FEATURES_ARCH_ARM)
+    .in = GetArmInfo().features
+#elif defined(CPU_FEATURES_ARCH_AARCH64)
+    .in = GetAarch64Info().features
+#endif
+  };
   return cap;
 }
 
@@ -72,7 +59,7 @@ static void print_hw_capabilites( archfeatures cap )
       printf(" avx2");
     if( cap.in.fma3 )
       printf(" fma");
-#endif
+#endif /* #ifdef CPU_FEATURES_ARCH_X86_64 */
 
 #ifdef CPU_FEATURES_ARCH_PPC
     if( cap.altivec )
