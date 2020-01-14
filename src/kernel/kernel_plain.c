@@ -27,8 +27,8 @@ void seismic_exec_plain_naiiv( void * v )
     gettimeofday(&data->s, NULL);
 
     // time loop
-    unsigned t;
-    for (t = 0; t < data->timesteps; t++)
+    unsigned t, p;
+    for (t = 0, p = 0; t < data->timesteps; t++)
     {
         // inserts the seismic pulse value in the desired position
         data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t];
@@ -41,8 +41,9 @@ void seismic_exec_plain_naiiv( void * v )
         data->apf = tmp;
         
         // shows one # at each 10% of the total processing time
-        if( ! (t % (data->timesteps/10)) )
+        if( ! data->id && t == p )
         {
+            p += data->timesteps / 10;
             printf("#");
             fflush(stdout);
         }
@@ -59,8 +60,8 @@ void seismic_exec_plain_naiiv_pthread( void * v )
     gettimeofday(&data->s, NULL);
 
     // time loop
-    unsigned t;
-    for (t = 0; t < data->timesteps; t++)
+    unsigned t, p;
+    for (t = 0, p = 0; t < data->timesteps; t++)
     {
         BARRIER( data->barrier, data->id );
 
@@ -78,8 +79,9 @@ void seismic_exec_plain_naiiv_pthread( void * v )
         data->apf = tmp;
         
         // shows one # at each 10% of the total processing time
-        if( ! data->id && ! (t % (data->timesteps/10)) )
+        if( ! data->id && t == p )
         {
+            p += data->timesteps / 10;
             printf("#");
             fflush(stdout);
         }
