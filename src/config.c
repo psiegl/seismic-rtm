@@ -119,7 +119,7 @@ void get_config( int argc, char * argv[], config_t * config ) {
   archfeatures cap = check_hw_capabilites();
   while( 1 ) {
     int option_index = 0;
-    int opt = getopt_long( argc, argv, "x:y:i:j:t:k:p:hq", long_options, &option_index );
+    int opt = getopt_long( argc, argv, "x:y:i:j:t:k:p:oa:hq", long_options, &option_index );
     if( opt == -1 )
       break;
 
