@@ -114,8 +114,8 @@ inline __attribute__((always_inline)) void kernel_plain_opt( stack_t * data )
   float * APF_min2 = APF_min1 - data->height;
   unsigned len_x = data->x_end - data->x_start;
   unsigned len_y = data->y_end - data->y_start;
-  coeff_middle2 *= -1;
-  coeff_outer *= -1;
+  coeff_middle2 *= -1.0f;
+  coeff_outer *= -1.0f;
 
 //  if( ! len_y || ! len_x ) // checked in main!
 //    return;
@@ -129,8 +129,6 @@ inline __attribute__((always_inline)) void kernel_plain_opt( stack_t * data )
     do
     {
       // calculates the pressure field t+1
-      //float v_IN = 0;
-      //float v_OUT = 0;
       float v_OUT = *(APF-2);
       v_OUT += *(APF+2);
       float v_IN = *(APF-1);
@@ -145,7 +143,7 @@ inline __attribute__((always_inline)) void kernel_plain_opt( stack_t * data )
       v_SUM += coeff_outer * v_OUT;
 
 //      (*NPPF) = coeff_middle * v_APF - (*NPPF) + (*VEL) * v_SUM;
-      (*NPPF) *= -1;
+      (*NPPF) *= -1.0f;
       (*NPPF) += coeff_middle * v_APF;
       (*NPPF) += (*(VEL++)) * v_SUM;
 
@@ -173,15 +171,13 @@ void seismic_exec_plain_opt( void * v )
 
     data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[0];
 
-    unsigned num_div = data->timesteps / 10;
-    unsigned num_mod = data->timesteps - (num_div * 10);
-
     gettimeofday(&data->s, NULL);
 
     // time loop
     unsigned t, r, t_tmp = 0;
+    unsigned p = data->timesteps / 10;
     for( r = 0; r < 10; r++ ) {
-        for (t = 0; t < num_div; t++, t_tmp++)
+        for (t = 0; t < p; t++, t_tmp++)
         {
             kernel_plain_opt( data );
 
@@ -201,7 +197,7 @@ void seismic_exec_plain_opt( void * v )
             fflush(stdout);
         }
     }
-    for (t = 0; t < num_mod; t++)
+    for (t = t_tmp; t < data->timesteps; t++)
     {
         kernel_plain_opt( data );
 
@@ -212,7 +208,7 @@ void seismic_exec_plain_opt( void * v )
 
         // + 1 because we add the pulse for the _next_ time step
         // inserts the seismic pulse value in the desired position
-        data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t_tmp+t+1];
+        data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t+1];
     }
 
     gettimeofday(&data->e, NULL);
@@ -226,9 +222,6 @@ void seismic_exec_plain_opt_pthread( void * v )
     if( data->set_pulse )
         data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[0];
 
-    unsigned num_div = data->timesteps / 10;
-    unsigned num_mod = data->timesteps - (num_div * 10);
-
     // start everything in parallel
     BARRIER( data->barrier, data->id );
 
@@ -239,8 +232,9 @@ void seismic_exec_plain_opt_pthread( void * v )
     if( data->set_pulse )
     {
         unsigned r, t_tmp = 0;
+        unsigned p = data->timesteps / 10;
         for( r = 0; r < 10; r++ ) {
-            for (t = 0; t < num_div; t++, t_tmp++)
+            for (t = 0; t < p; t++, t_tmp++)
             {
                 kernel_plain_opt( data );
 
@@ -262,7 +256,7 @@ void seismic_exec_plain_opt_pthread( void * v )
                 fflush(stdout);
             }
         }
-        for (t = 0; t < num_mod; t++)
+        for (t = t_tmp; t < data->timesteps; t++)
         {
             kernel_plain_opt( data );
 
@@ -273,7 +267,7 @@ void seismic_exec_plain_opt_pthread( void * v )
 
             // + 1 because we add the pulse for the _next_ time step
             // inserts the seismic pulse value in the desired position
-            data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t_tmp+t+1];
+            data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t+1];
 
             BARRIER( data->barrier, data->id );
         }
@@ -297,5 +291,4 @@ void seismic_exec_plain_opt_pthread( void * v )
         pthread_exit( NULL );
 }
 
-#define SYM_KERNEL_CAP {}
 SYM_KERNEL( plain_opt, SYM_KERNEL_CAP, 0, 1 * sizeof(float) );
