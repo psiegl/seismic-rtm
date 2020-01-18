@@ -1,5 +1,16 @@
 #
 # component tests
 #
+
+# Reference
 add_test(NAME PLAIN_NAIIV_1_Thread COMMAND ${TARGETELF} --timesteps=1000 --width=1000 --height=516 --pulseX=600 --pulseY=70 --threads=1 --kernel=plain_naiiv --output=seismic_ref.bin)
+
+# Check plain_opt
 add_test(NAME PLAIN_OPT_8_Threads COMMAND ${TARGETELF} --timesteps=1000 --width=1000 --height=516 --pulseX=600 --pulseY=70 --threads=8 --kernel=plain_opt --output=seismic_chk.bin)
+add_test(NAME PLAIN_OPT_8_Threads_BINDIFF COMMAND ${CMAKE_COMMAND} -E compare_files seismic_ref.bin seismic_chk.bin)
+
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64)|(AMD64)|(^i.86$)")
+# Check SSE
+#add_test(NAME SSE_STD_8_Threads COMMAND ${TARGETELF} --timesteps=1000 --width=1000 --height=516 --pulseX=600 --pulseY=70 --threads=8 --kernel=sse_std --output=seismic_chk.bin)
+#add_test(NAME SSE_STD_8_Threads_BINDIFF COMMAND ${CMAKE_COMMAND} -E compare_files seismic_ref.bin seismic_chk.bin)
+endif()
