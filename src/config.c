@@ -30,6 +30,7 @@ void default_values( config_t * config ) {
   config->threads   = 1;
 
   config->output    = 0;
+  config->ofile     = "output.bin";
   config->ascii     = 0; // will also be used for scale!
   config->verbose   = 1;
 }
@@ -108,7 +109,7 @@ void get_config( int argc, char * argv[], config_t * config ) {
     {"timesteps",   required_argument,  NULL,           't'},
     {"kernel",      required_argument,  NULL,           'k'},
     {"threads",     required_argument,  NULL,           'p'},
-    {"output",      no_argument,        NULL,           'o'},
+    {"output",      optional_argument,  NULL,           'o'},
     {"ascii",       required_argument,  NULL,           'a'},
     {"help",        no_argument,        NULL,           'h'},
     {"quite",       no_argument,        NULL,           'q'},
@@ -119,7 +120,7 @@ void get_config( int argc, char * argv[], config_t * config ) {
   archfeatures cap = check_hw_capabilites();
   while( 1 ) {
     int option_index = 0;
-    int opt = getopt_long( argc, argv, "x:y:i:j:t:k:p:oa:hq", long_options, &option_index );
+    int opt = getopt_long( argc, argv, "x:y:i:j:t:k:p:o::a:hq", long_options, &option_index );
     if( opt == -1 )
       break;
 
@@ -170,6 +171,8 @@ void get_config( int argc, char * argv[], config_t * config ) {
 
       case 'o':
         config->output = 1;
+        if (optarg)
+          config->ofile = optarg;
         break;
 
       case 'a':
