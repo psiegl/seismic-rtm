@@ -86,6 +86,7 @@ if(result)
 endif()
 
 # Add cpu_features directly to our build.
+set(BUILD_TESTING OFF) # disable cpu_features tests
 add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/cpu_features-src
                  ${CMAKE_CURRENT_BINARY_DIR}/cpu_features-build
                  EXCLUDE_FROM_ALL)
