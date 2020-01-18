@@ -400,7 +400,7 @@ void seismic_exec_plain_opt_pthread( void * v )
 
     // time loop
     unsigned t = 0;
-#if 0
+#if 1
     if( data->set_pulse )
     {
         unsigned r, t_tmp = 0;
