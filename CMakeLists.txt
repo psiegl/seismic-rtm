@@ -4,6 +4,7 @@
 cmake_minimum_required(VERSION 3.1)
 
 project(seismic-rtm VERSION 0.0.1 LANGUAGES C)
+set(TARGETELF seismic-rtm.elf)
 
 # This project can use C11, but will gracefully decay down to C89.
 set(CMAKE_C_STANDARD 11)
@@ -138,5 +139,5 @@ elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(powerpc|ppc)")
 
 endif()
 
-add_executable(seismic-rtm.elf ${SOURCES})
-target_link_libraries (seismic-rtm.elf Threads::Threads m cpu_features)
+add_executable(${TARGETELF} ${SOURCES})
+target_link_libraries (${TARGETELF} Threads::Threads m cpu_features)
