@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSD-2-Clause
 
 #include <stdio.h>
+#include <string.h>
 #include <pthread.h>
 #include "config.h"
 #include "kernel.h"
@@ -49,6 +50,7 @@ int main( int argc, char * argv[] ) {
     data[t_id].x_pulse = config.pulseX;
     data[t_id].y_pulse = config.pulseY;
     data[t_id].barrier = &barrier;
+    data[t_id].y_offset = 1;
 
     data[t_id].x_start = 2 + t_id * width_part;
     if( t_id + 1 == config.threads ) 
@@ -60,6 +62,18 @@ int main( int argc, char * argv[] ) {
     data[t_id].y_end = config.height - 2;
 
     data[t_id].set_pulse = (data[t_id].x_start <= data[t_id].x_pulse && data[t_id].x_pulse < data[t_id].x_end);
+    data[t_id].clopt = config.clopt;
+
+    // Cacheline optimized
+    if( config.clopt
+        && ( ! strcmp( "plain_naiiv", config.variant->name )
+             || ! strcmp( "plain_opt", config.variant->name )) ) {
+      data[t_id].x_start = 2;
+      data[t_id].x_end = config.width - 2;
+      data[t_id].y_start = 2 + t_id;
+      data[t_id].y_end = config.height - 2;
+      data[t_id].y_offset = config.threads;
+    }
   }
 
   void (* func)(void *) = config.variant->fnc_sgl;
