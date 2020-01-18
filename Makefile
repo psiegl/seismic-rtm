@@ -13,7 +13,7 @@ default: compile run
 
 compile:
 	mkdir -p $(BDIR)
-	cd $(BDIR) && cmake ..
+	cd $(BDIR) && cmake -DBUILD_TESTING=ON ..
 	make -C $(BDIR)
 
 
