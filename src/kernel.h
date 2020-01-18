@@ -27,12 +27,14 @@ struct _stack_t {
   unsigned height;
   unsigned y_start;
   unsigned y_end;
+  unsigned y_offset;
   unsigned timesteps;
 
   unsigned x_pulse;
   unsigned y_pulse;
 
   unsigned set_pulse;
+  unsigned clopt;
 
   struct timeval s;
   struct timeval e;

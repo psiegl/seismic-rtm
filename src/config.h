@@ -17,6 +17,7 @@ struct _config_t {
   sym_kernel_t* variant;
 
   unsigned threads;
+  unsigned clopt;
 
   unsigned output;
   const char *ofile;
