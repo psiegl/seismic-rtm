@@ -19,6 +19,7 @@ struct _config_t {
   unsigned threads;
 
   unsigned output;
+  const char *ofile;
   unsigned ascii;
   unsigned verbose;
 

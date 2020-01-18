@@ -12,7 +12,7 @@ void write_matrice( config_t * config, float * apf, float * nppf ) {
   else
     matrice = apf;
 
-  FILE * f1 = fopen( "output.bin", "wb" );
+  FILE * f1 = fopen( config->ofile, "wb" );
   if( f1 == NULL )
     exit(EXIT_FAILURE);
 
