@@ -13,7 +13,64 @@ set(CMAKE_C_EXTENSIONS ON)
 find_package(Threads REQUIRED)
 
 
-################## cpu_features
+##################
+
+#
+# tests
+#
+
+option(BUILD_TESTING "Enable test (depends on googletest)." OFF)
+
+include(CTest)
+if(BUILD_TESTING)
+  # Automatically incorporate googletest into the CMake Project if target not
+  # found.
+  if(NOT TARGET gtest OR NOT TARGET gmock_main)
+    # Download and unpack googletest at configure time.
+    configure_file(
+      cmake/googletest.CMakeLists.txt.in
+      googletest-download/CMakeLists.txt
+    )
+
+    execute_process(
+      COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+      RESULT_VARIABLE result
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download)
+
+    if(result)
+      message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+    endif()
+
+    execute_process(
+      COMMAND ${CMAKE_COMMAND} --build .
+      RESULT_VARIABLE result
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download)
+
+    if(result)
+      message(FATAL_ERROR "Build step for googletest failed: ${result}")
+    endif()
+
+    # Prevent overriding the parent project's compiler/linker settings on
+    # Windows.
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+    # Add googletest directly to our build. This defines the gtest and
+    # gtest_main targets.
+    add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
+                     ${CMAKE_BINARY_DIR}/googletest-build
+                     EXCLUDE_FROM_ALL)
+  endif()
+
+  add_subdirectory(test)
+endif()
+
+
+################## 
+
+#
+# cpu_features
+#
+
 configure_file(CMakeLists.txt.in cpu_features-download/CMakeLists.txt)
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
   RESULT_VARIABLE result
@@ -34,7 +91,9 @@ add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/cpu_features-src
                  EXCLUDE_FROM_ALL)
 
 message(STATUS "Detecting architecture - ${CMAKE_SYSTEM_PROCESSOR}")
-##################
+
+
+################## 
 
 
 include_directories(src src/barrier src/kernel)
