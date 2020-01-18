@@ -16,5 +16,5 @@ jobs:
           name: Creating Build Files
           command: 'make compile'
       - run:
-          name: Run
-          command: 'make run'
+          name: Execute tests
+          command: 'make test -C bld.x86_64/'

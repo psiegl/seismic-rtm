@@ -15,5 +15,5 @@ steps:
   displayName: 'compile'
 
 - script: |
-    make run
-  displayName: 'run'
+    make test -C bld.x86_64/
+  displayName: 'execute tests'
