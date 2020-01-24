@@ -7,7 +7,7 @@ inline __attribute__((always_inline)) void kernel_sse_std( stack_t * data, __m12
 {
     __m128 s_ppf_aligned, s_vel_aligned, s_actual, s_above1, s_left1, s_under1, s_right1, s_sum1;
     __m128 s_above2, s_under2, s_left2, s_right2;
-    
+
     unsigned i, j;
     // spatial loop in x
     for (i=data->x_start; i<data->x_end; i++) {
@@ -18,7 +18,7 @@ inline __attribute__((always_inline)) void kernel_sse_std( stack_t * data, __m12
             unsigned r_min2 = r - (data->height << 1);
             unsigned r_plus1 = r + data->height;
             unsigned r_plus2 = r + (data->height << 1);
-            
+
             // calculates the pressure field t+1
             s_ppf_aligned = _mm_load_ps( &(data->nppf[ r ]) ); // align it to get _load_ps
             s_vel_aligned = _mm_load_ps( &(data->vel[ r ]) );
@@ -62,7 +62,7 @@ inline __attribute__((always_inline)) void kernel_sse_aligned( stack_t * data, _
 {
     __m128 s_ppf_aligned, s_vel_aligned, s_actual, s_above1, s_left1, s_under1, s_right1, s_sum1;
     __m128 s_above2, s_under2, s_left2, s_right2;
-    
+
     unsigned i, j;
     // spatial loop in x
     for (i=data->x_start; i<data->x_end; i++) {
@@ -70,14 +70,14 @@ inline __attribute__((always_inline)) void kernel_sse_aligned( stack_t * data, _
         s_above1 = _mm_load_ps( &(data->apf[ r -4]) );
         s_actual = _mm_load_ps( &(data->apf[ r ]) );
         s_above2 = _mm_movelh_ps( _mm_movehl_ps( s_above1, s_above1), s_actual );
-        
+
         // spatial loop in y
         for (j=data->y_start; j<data->y_end; j+=4, r+=4) {
             unsigned r_min1 = r - data->height;
             unsigned r_min2 = r - (data->height << 1);
             unsigned r_plus1 = r + data->height;
             unsigned r_plus2 = r + (data->height << 1);
-            
+
             // calculates the pressure field t+1
             s_ppf_aligned = _mm_load_ps( &(data->nppf[ r ]) ); // align it to get _load_ps
             s_vel_aligned = _mm_load_ps( &(data->vel[ r ]) );
@@ -125,7 +125,7 @@ inline __attribute__((always_inline)) void kernel_sse_aligned_not_grouped( stack
 {
     __m128 s_ppf_aligned, s_vel_aligned, s_actual, s_above1, s_left1, s_under1, s_right1, s_sum1;
     __m128 s_above2, s_under2, s_left2, s_right2;
-    
+
     unsigned i, j;
     // spatial loop in x
     for (i=data->x_start; i<data->x_end; i++) {
@@ -133,14 +133,14 @@ inline __attribute__((always_inline)) void kernel_sse_aligned_not_grouped( stack
         s_above1 = _mm_load_ps( &(data->apf[ r -4]) );
         s_actual = _mm_load_ps( &(data->apf[ r ]) );
         s_above2 = _mm_movelh_ps( _mm_movehl_ps( s_above1, s_above1), s_actual );
-        
+
         // spatial loop in y
         for (j=data->y_start; j<data->y_end; j+=4, r+=4) {
             unsigned r_min1 = r - data->height;
             unsigned r_min2 = r - (data->height << 1);
             unsigned r_plus1 = r + data->height;
             unsigned r_plus2 = r + (data->height << 1);
-            
+
             // calculates the pressure field t+1
 //   _mm_prefetch( (const char*) &(data->apf[ r -4])  , _MM_HINT_T2); 
             s_under1 = _mm_load_ps( &(data->apf[ r +4]) );
@@ -189,7 +189,7 @@ inline __attribute__((always_inline)) void kernel_sse_unaligned( stack_t * data,
 {
     __m128 s_ppf_aligned, s_vel_aligned, s_actual, s_above1, s_left1, s_under1, s_right1, s_sum1;
     __m128 s_above2, s_under2, s_left2, s_right2;
-    
+
     unsigned i, j;
     // spatial loop in x
     for (i=data->x_start; i<data->x_end; i++) {
@@ -203,7 +203,7 @@ inline __attribute__((always_inline)) void kernel_sse_unaligned( stack_t * data,
             unsigned r_min2 = r - (data->height << 1);
             unsigned r_plus1 = r + data->height;
             unsigned r_plus2 = r + (data->height << 1);
-            
+
             // calculates the pressure field t+1
             s_ppf_aligned = _mm_loadu_ps( &(data->nppf[ r ]) ); // align it to get _load_ps
             s_vel_aligned= _mm_loadu_ps( &(data->vel[ r ]) );
@@ -233,7 +233,7 @@ inline __attribute__((always_inline)) void kernel_sse_unaligned( stack_t * data,
             s_sum1 = _mm_add_ps( _mm_mul_ps( s_vel_aligned, s_sum1), _mm_sub_ps(_mm_mul_ps( s_two, s_actual ), s_ppf_aligned) );
 
             s_above2 = s_under2;
-            _mm_storeu_ps( &(data->nppf[ r ]), s_sum1);            
+            _mm_storeu_ps( &(data->nppf[ r ]), s_sum1);
         }
     }
 }
@@ -261,7 +261,7 @@ inline __attribute__((always_inline)) void kernel_sse_partial_aligned( stack_t *
             unsigned r_min2 = r - (data->height << 1);
             unsigned r_plus1 = r + data->height;
             unsigned r_plus2 = r + (data->height << 1);
-            
+
             // calculates the pressure field t+1
             s_ppf_aligned = _mm_load_ps( &(data->nppf[ r ]) ); // align it to get _load_ps
             s_vel_aligned = _mm_load_ps( &(data->vel[ r ]) );

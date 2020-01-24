@@ -26,7 +26,7 @@ void default_values( config_t * config ) {
   config->timesteps = 100;
   config->pulseY    = config->height / 2;
   config->pulseX    = config->width / 2;
-  config->variant   = sym_kern[sym_kern_c];
+  config->variant   = sym_kern[0];
   config->threads   = 1;
   config->clopt     = 0;
 
