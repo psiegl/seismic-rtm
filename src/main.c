@@ -100,7 +100,7 @@ int main( int argc, char * argv[] ) {
   unsigned i;
   for( i = 0; i < config.threads - 1; i++ ) {
     CPU_ZERO(&cpuset); // first zero
-    CPU_SET(i+1, &cpuset); // set only the specific one
+    CPU_SET((i+1) % get_num_cores(), &cpuset); // set only the specific one
 
     if( pthread_create( &threads[i], NULL, (void * (*)(void *))func, (void*) &data[i + 1] ) ) {
       printf("ERROR: Couldn't create thread %u of %u threads!!\nExiting...\n", i+1, config.threads);
