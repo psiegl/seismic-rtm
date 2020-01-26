@@ -52,7 +52,7 @@ int main( int argc, char * argv[] ) {
     data[t_id].x_pulse = config.pulseX;
     data[t_id].y_pulse = config.pulseY;
     data[t_id].barrier = &barrier;
-    data[t_id].y_offset = 1;
+    data[t_id].y_offset = (!config.variant->alignment) ? 1 : (config.variant->alignment / sizeof(float));
 
     data[t_id].x_start = 2 + t_id * width_part;
     if( t_id + 1 == config.threads ) 
@@ -69,12 +69,13 @@ int main( int argc, char * argv[] ) {
     // Cacheline optimized
     if( config.clopt
         && ( ! strcmp( "plain_naiiv", config.variant->name )
-             || ! strcmp( "plain_opt", config.variant->name )) ) {
+             || ! strcmp( "plain_opt", config.variant->name )
+          /* || ! strcmp( "sse_std", config.variant->name ) */ ) ) {
       data[t_id].x_start = 2;
       data[t_id].x_end = config.width - 2;
-      data[t_id].y_start = 2 + t_id;
+      data[t_id].y_start = 2 + t_id * ( config.variant->alignment ? (config.variant->alignment / sizeof(float)) : 1 );
       data[t_id].y_end = config.height - 2;
-      data[t_id].y_offset = config.threads;
+      data[t_id].y_offset *= config.threads;
     }
   }
 
@@ -87,15 +88,15 @@ int main( int argc, char * argv[] ) {
     exit( EXIT_FAILURE );
   }
 
-  if(config.verbose)
-    printf("processing...\n");
-
   unsigned cores = get_num_cores();
   if(config.verbose
      && config.threads > cores)
-    printf("WARNING: amount of chosen threads is higher"
-           "         then cores available (%u vs %u)."
-           "         performance may suffer.", config.threads, cores);
+    printf("WARNING: amount of chosen threads is higher\n"
+           "         then cores available (%u vs %u).\n"
+           "         performance may suffer.\n", config.threads, cores);
+
+  if(config.verbose)
+    printf("processing...\n");
 
   pthread_attr_t attr;
   pthread_attr_init( &attr );
