@@ -41,9 +41,6 @@ visualize: compile
 	./$(BDIR)/$(TARGET) $(CMD) --output
 	./tools/ximage.$(UNAME_M).elf n1=$(HEIGHT) n2=$(WIDTH) hbox=$(HEIGHT) wbox=$(WIDTH) title=visualizer < output.bin
 
-objdump: compile
-	objdump -dS $(BDIR)/$(TARGET) | less
-
 clean:
 	rm $(BDIR) *.bin -rf
 

@@ -22,28 +22,23 @@ void seismic_exec_sse_##NAME( void * v ) \
     __m128 s_sixteen = _mm_loadu_ps( (const float *) &sixteen ); \
     __m128 s_sixty = _mm_loadu_ps( (const float *) &sixty ); \
  \
-    data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[0]; \
- \
-    unsigned num_div = data->timesteps / 10; \
-    unsigned num_mod = data->timesteps - (num_div * 10); \
- \
     gettimeofday(&data->s, NULL); \
  \
     /* time loop */ \
-    unsigned t, r, t_tmp = 0; \
+    unsigned r, t = 0; \
+    unsigned p = data->timesteps / 10; \
     for( r = 0; r < 10; r++ ) { \
-        for (t = 0; t < num_div; t++, t_tmp++) \
+        for ( ; t < p * r; t++ ) \
         { \
+            /* inserts the seismic pulse value in the desired position */ \
+            data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t]; \
+ \
             kernel_sse_##NAME( data, s_two, s_sixteen, s_sixty ); \
  \
             /* switch pointers instead of copying data */ \
             float * tmp = data->nppf; \
             data->nppf = data->apf; \
             data->apf = tmp; \
- \
-            /* + 1 because we add the pulse for the _next_ time step */ \
-            /* inserts the seismic pulse value in the desired position */ \
-            data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t_tmp+1]; \
         } \
  \
         /* shows one # at each 10% of the total processing time */ \
@@ -52,18 +47,17 @@ void seismic_exec_sse_##NAME( void * v ) \
             fflush(stdout); \
         } \
     } \
-    for (t = 0; t < num_mod; t++) \
+    for ( ; t < data->timesteps; t++ ) \
     { \
+        /* inserts the seismic pulse value in the desired position */ \
+        data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t]; \
+ \
         kernel_sse_##NAME( data, s_two, s_sixteen, s_sixty ); \
  \
         /* switch pointers instead of copying data */ \
         float * tmp = data->nppf; \
         data->nppf = data->apf; \
         data->apf = tmp; \
- \
-        /* + 1 because we add the pulse for the _next_ time step */ \
-        /* inserts the seismic pulse value in the desired position */ \
-        data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[t_tmp+t+1]; \
     } \
  \
     gettimeofday(&data->e, NULL); \

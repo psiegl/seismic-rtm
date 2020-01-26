@@ -87,27 +87,40 @@ int main( int argc, char * argv[] ) {
     exit( EXIT_FAILURE );
   }
 
-  pthread_attr_t attr;
-  pthread_attr_init( &attr );
-  pthread_attr_setdetachstate( &attr, PTHREAD_CREATE_JOINABLE );
-
   if(config.verbose)
     printf("processing...\n");
 
-  cpu_set_t cpuset;
-  pthread_t * threads = (pthread_t*) malloc ( sizeof(pthread_t) * (config.threads - 1) );
+  unsigned cores = get_num_cores();
+  if(config.verbose
+     && config.threads > cores)
+    printf("WARNING: amount of chosen threads is higher"
+           "         then cores available (%u vs %u)."
+           "         performance may suffer.", config.threads, cores);
 
+  pthread_attr_t attr;
+  pthread_attr_init( &attr );
+  if( pthread_attr_setdetachstate( &attr, PTHREAD_CREATE_JOINABLE ) ) {
+    printf("WARNING: could not set PTHREAD_CREATE_JOINABLE");
+  }
+
+  if( pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED) ) {
+    printf("WARNING: could not set PTHREAD_EXPLICIT_SCHED");
+  }
+
+  pthread_t * threads = (pthread_t*) malloc ( sizeof(pthread_t) * (config.threads - 1) );
+  cpu_set_t cpuset;
   unsigned i;
   for( i = 0; i < config.threads - 1; i++ ) {
     CPU_ZERO(&cpuset); // first zero
-    CPU_SET((i+1) % get_num_cores(), &cpuset); // set only the specific one
+    CPU_SET((i+1) % cores, &cpuset); // set only the specific one
 
-    if( pthread_create( &threads[i], NULL, (void * (*)(void *))func, (void*) &data[i + 1] ) ) {
+    if( pthread_create( &threads[i], &attr, (void * (*)(void *))func, (void*) &data[i + 1] ) ) {
       printf("ERROR: Couldn't create thread %u of %u threads!!\nExiting...\n", i+1, config.threads);
       exit( EXIT_FAILURE );
     }
 
-    if( pthread_setaffinity_np(threads[i], sizeof(cpu_set_t), &cpuset) ) {
+    if( pthread_setaffinity_np(threads[i], sizeof(cpu_set_t), &cpuset)
+        && config.verbose ) {
       printf("WARNING: Couldn't pin thread %u to a single core! "
              "Performance may suck...\n", i+1);
     }
@@ -116,7 +129,8 @@ int main( int argc, char * argv[] ) {
   // execute code with this thread here ...
   CPU_ZERO(&cpuset); // first zero
   CPU_SET(0, &cpuset); // set only the specific one
-  if( pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset) ) {
+  if( pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset)
+      && config.verbose ) {
     printf("WARNING: Couldn't pin thread %u to a single core! "
            "Performance may suck...\n", i+1);
   }
@@ -130,6 +144,8 @@ int main( int argc, char * argv[] ) {
   }
 
   gettimeofday(&t2, NULL);
+
+  pthread_attr_destroy( &attr );
 
   if(config.verbose) {
     printf("\nend process!\n");
