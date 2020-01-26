@@ -16,7 +16,7 @@ inline __attribute__((always_inline)) void kernel_sse_std( stack_t * data, __m12
     // spatial loop in x
     for (i=data->x_start; i<data->x_end; i++) {
         // spatial loop in y
-        for (j=data->y_start; j<data->y_end; j+=4) {
+        for (j=data->y_start; j<data->y_end; j+=data->y_offset) {
             unsigned r = i * data->height + j;
             unsigned r_min1 = r - data->height;
             unsigned r_min2 = r - (data->height << 1);
