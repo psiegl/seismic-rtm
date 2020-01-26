@@ -5,8 +5,12 @@
 
 inline __attribute__((always_inline)) void kernel_sse_std( stack_t * data, __m128 s_two, __m128 s_sixteen, __m128 s_sixty  )
 {
-    __m128 s_ppf_aligned, s_vel_aligned, s_actual, s_above1, s_left1, s_under1, s_right1, s_sum1;
+    __m128 s_ppf_aligned, s_vel_aligned, s_actual, s_above1, s_left1, s_under1, s_right1, s_sum;
     __m128 s_above2, s_under2, s_left2, s_right2;
+    
+    float min1f[4] = { -1, -1, -1, -1 };
+    __m128 min1v = _mm_loadu_ps( min1f );
+    __m128 min_sixty_v = _mm_mul_ps( s_sixty, min1v );
 
     unsigned i, j;
     // spatial loop in x
@@ -37,18 +41,23 @@ inline __attribute__((always_inline)) void kernel_sse_std( stack_t * data, __m12
             s_under2 = _mm_loadh_pi( _mm_shuffle_ps(s_actual, s_actual, _MM_SHUFFLE(0, 0, 3, 2)),
                                      (__m64 const*)&(data->apf[ r +4]));
 
-            // sum up
-            s_sum1 = _mm_add_ps( _mm_add_ps(s_left1, s_right1),
-                                 _mm_add_ps(s_under1, s_above1));
+            s_sum = _mm_add_ps( _mm_sub_ps( _mm_mul_ps( s_two,
+                                                        s_actual ),
+                                            s_ppf_aligned ),
+                                _mm_mul_ps( s_vel_aligned,
+                                            _mm_sub_ps( _mm_add_ps( _mm_mul_ps( min_sixty_v,
+                                                                                s_actual ),
+                                                                    _mm_mul_ps( s_sixteen,
+                                                                                _mm_add_ps( _mm_add_ps( _mm_add_ps( s_above1,
+                                                                                                                    s_under1 ),
+                                                                                                        s_left1 ),
+                                                                                            s_right1 ) ) ),
+                                                        _mm_add_ps( _mm_add_ps( _mm_add_ps( s_above2,
+                                                                                            s_under2 ),
+                                                                                s_left2 ),
+                                                                    s_right2 ) ) ) );
 
-            s_above2 = _mm_add_ps( _mm_add_ps( s_right2, s_left2),
-                                   _mm_add_ps( s_under2, s_above2));
-
-            s_sum1 = _mm_mul_ps( s_sixteen, s_sum1 );
-            s_sum1 = _mm_sub_ps( _mm_sub_ps( s_sum1,  s_above2), _mm_mul_ps( s_sixty, s_actual ) );
-            s_sum1 = _mm_add_ps( _mm_mul_ps( s_vel_aligned, s_sum1), _mm_sub_ps(_mm_mul_ps( s_two, s_actual ), s_ppf_aligned) );
-
-            _mm_store_ps( &(data->nppf[ r ]), s_sum1);
+            _mm_store_ps( &(data->nppf[ r ]), s_sum);
         }
     }
 }
