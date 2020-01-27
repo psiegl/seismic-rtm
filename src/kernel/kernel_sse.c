@@ -26,20 +26,27 @@ inline __attribute__((always_inline)) void kernel_sse_std( stack_t * data, __m12
             // calculates the pressure field t+1
             s_ppf_aligned = _mm_load_ps( &(data->nppf[ r ]) ); // align it to get _load_ps
             s_vel_aligned = _mm_load_ps( &(data->vel[ r ]) );
-            s_actual = _mm_load_ps( &(data->apf[ r ]) );
 
+            s_above2 = _mm_loadu_ps( &(data->apf[ r - 2]) );
+            s_under2 = _mm_loadu_ps( &(data->apf[ r + 2]) );
             s_left1 = _mm_load_ps( &(data->apf[r_min1]) );
             s_left2 = _mm_load_ps( &(data->apf[r_min2]) );
             s_right2 = _mm_load_ps( &(data->apf[r_plus2]) );
             s_right1 = _mm_load_ps( &(data->apf[r_plus1]) );
-            s_above1 = _mm_loadu_ps( &(data->apf[ r -1]) );
-            s_under1 = _mm_loadu_ps( &(data->apf[ r +1]) );
 
-            s_above2 = _mm_loadl_pi( _mm_shuffle_ps(s_actual, s_actual, _MM_SHUFFLE(1, 0, 0, 0)),
-                                     (__m64 const*)&(data->apf[ r -2]));
+//           |0 1 2 3|4 5 6 7|
+//               |2 3 4 5|
+            s_actual = _mm_shuffle_ps( s_above2, s_under2, _MM_SHUFFLE( 1, 0, 3, 2 ) );
 
-            s_under2 = _mm_loadh_pi( _mm_shuffle_ps(s_actual, s_actual, _MM_SHUFFLE(0, 0, 3, 2)),
-                                     (__m64 const*)&(data->apf[ r +4]));
+//           |0 1 2 3|4 5 6 7|
+//               |2 3 4 5|
+//             |1 2 3 4|
+            s_above1 = _mm_shuffle_ps( s_above2, s_actual, _MM_SHUFFLE( 2, 1, 2, 1 ) );
+
+//           |0 1 2 3|4 5 6 7|
+//               |2 3 4 5|
+//                 |3 4 5 6|
+            s_under1 = _mm_shuffle_ps( s_actual, s_under2, _MM_SHUFFLE( 2, 1, 2, 1 ) );
 
             s_sum = _mm_add_ps( _mm_sub_ps( _mm_mul_ps( s_two,
                                                         s_actual ),
