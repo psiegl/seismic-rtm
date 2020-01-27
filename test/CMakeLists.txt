@@ -26,4 +26,7 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86_64)|(AMD64)|(^i.86$)")
 
   add_test(NAME SSE_STD_8_Threads COMMAND ${TARGETELF} ${DEF_SEISMIC_VALS} --threads=8 --kernel=sse_std --output=seismic_chk.bin)
   add_test(NAME SSE_STD_8_Threads_BINDIFF COMMAND ${CMAKE_COMMAND} -E compare_files seismic_ref.bin seismic_chk.bin)
+
+  add_test(NAME AVX_8_Threads COMMAND ${TARGETELF} ${DEF_SEISMIC_VALS} --threads=8 --kernel=avx_unaligned --output=seismic_chk.bin)
+  add_test(NAME AVX_8_Threads_BINDIFF COMMAND ${CMAKE_COMMAND} -E compare_files seismic_ref.bin seismic_chk.bin)
 endif()
