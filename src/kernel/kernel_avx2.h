@@ -21,8 +21,7 @@
   __m256 a_l = _mm256_permutevar8x32_ps( (a), (s_shl) ); \
   __m256 b_r = _mm256_permutevar8x32_ps( (b), (s_shr) ); \
   \
-  __m256 res = _mm256_permute2f128_ps( (a_l), (b_r), 0x34 ); \
-  res; \
+  _mm256_permute2f128_ps( (a_l), (b_r), 0x34 ); \
 })
 
 static inline __attribute__((always_inline)) void init_shuffle( __m256i * s_shl, __m256i * s_shr ) {

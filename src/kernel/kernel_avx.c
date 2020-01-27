@@ -30,9 +30,25 @@ inline __attribute__((always_inline)) void kernel_avx_unaligned( stack_t * data,
             s_above1 = _mm256_loadu_ps( &(data->apf[ r -1]) );
             s_under1 = _mm256_loadu_ps( &(data->apf[ r +1]) );
 
-            s_above2 = _mm256_loadu_ps( &(data->apf[ r -2]) );
-            s_under2 = _mm256_loadu_ps( &(data->apf[ r +2]) );
 
+            s_above2 = _mm256_loadu_ps( &(data->apf[ r -2]) );
+
+#if 1
+//                                  |08 09 10 11|
+            __m128 s_under2l = _mm_loadu_ps( &(data->apf[ r + 2 + 4]) );
+
+//          |00 01 02 03 04 05 06 07|
+//                      |04 05 06 07 04 05 06 07|
+            s_under2 = _mm256_permute2f128_ps( s_above2, s_above2, 0x11);
+
+//                                  |08 09 10 11|
+//                      |04 05 06 07 04 05 06 07|
+//                      |04 05 06 07|08 09 10 11|
+            s_under2 = _mm256_insertf128_ps( s_under2, s_under2l, 1 );
+#else
+// loads 4 floats that we have already in register
+            s_under2 = _mm256_loadu_ps( &(data->apf[ r +2]) );
+#endif
 
 //          |00 01(02 03)04 05(06 07)|
 //                     |(04 05)06 07(08 09)10 11|
