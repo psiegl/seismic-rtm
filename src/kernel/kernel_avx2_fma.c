@@ -8,6 +8,8 @@ inline __attribute__((always_inline)) void kernel_avx2_fma_unaligned( stack_t * 
     __m256 s_ppf_aligned, s_vel_aligned, s_actual, s_above1, s_left1, s_under1, s_right1, s_sum1;
     __m256 s_above2, s_under2, s_left2, s_right2;
 
+// debrecated: obtains s_min_sixty
+
     unsigned i, j;
     // spatial loop in x
     for (i=data->x_start; i<data->x_end; i++) {
@@ -32,8 +34,8 @@ inline __attribute__((always_inline)) void kernel_avx2_fma_unaligned( stack_t * 
             // calculates the pressure field t+1
             s_right2 = _mm256_loadu_ps( &(data->apf[ r_plus2 ]) );
 
-            s_above1 = avx2_combine( s_above2, s_actual, s_shl, s_shr );
-            s_under1 = avx2_combine( s_actual, s_under2, s_shl, s_shr );
+            s_above1 = AVX2_CENTER( s_above2, s_actual, s_shl, s_shr );
+            s_under1 = AVX2_CENTER( s_actual, s_under2, s_shl, s_shr );
 
             // sum up
             s_left1 = _mm256_add_ps( s_left1, s_right1);

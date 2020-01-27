@@ -16,11 +16,11 @@ void seismic_exec_avx_##NAME( void * v ) \
     /* preload register with const. values. */ \
     float two = 2.0f; \
     float sixteen = 16.0f; \
-    float sixty = 60.0f; \
+    float min_sixty = -60.0f; \
  \
     __m256 s_two = _mm256_broadcast_ss( (const float*) &two ); \
     __m256 s_sixteen = _mm256_broadcast_ss( (const float*) &sixteen ); \
-    __m256 s_sixty = _mm256_broadcast_ss( (const float*) &sixty ); \
+    __m256 s_min_sixty = _mm256_broadcast_ss( (const float*) &min_sixty ); \
  \
     data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[0]; \
  \
@@ -34,7 +34,7 @@ void seismic_exec_avx_##NAME( void * v ) \
     for( r = 0; r < 10; r++ ) { \
         for (t = 0; t < num_div; t++, t_tmp++) \
         { \
-            kernel_avx_##NAME( data, s_two, s_sixteen, s_sixty ); \
+            kernel_avx_##NAME( data, s_two, s_sixteen, s_min_sixty ); \
  \
             /* switch pointers instead of copying data */ \
             float * tmp = data->nppf; \
@@ -54,7 +54,7 @@ void seismic_exec_avx_##NAME( void * v ) \
     } \
     for (t = 0; t < num_mod; t++) \
     { \
-        kernel_avx_##NAME( data, s_two, s_sixteen, s_sixty ); \
+        kernel_avx_##NAME( data, s_two, s_sixteen, s_min_sixty ); \
  \
         /* switch pointers instead of copying data */ \
         float * tmp = data->nppf; \
@@ -77,11 +77,11 @@ void seismic_exec_avx_##NAME##_pthread(void * v ) \
     /* preload register with const. values. */ \
     float two = 2.0f; \
     float sixteen = 16.0f; \
-    float sixty = 60.0f; \
+    float min_sixty = -60.0f; \
  \
     __m256 s_two = _mm256_broadcast_ss( (const float*) &two ); \
     __m256 s_sixteen = _mm256_broadcast_ss( (const float*) &sixteen ); \
-    __m256 s_sixty = _mm256_broadcast_ss( (const float*) &sixty ); \
+    __m256 s_min_sixty = _mm256_broadcast_ss( (const float*) &min_sixty ); \
  \
     if( data->set_pulse ) \
         data->apf[data->x_pulse * data->height + data->y_pulse] += data->pulsevector[0]; \
@@ -102,7 +102,7 @@ void seismic_exec_avx_##NAME##_pthread(void * v ) \
         for( r = 0; r < 10; r++ ) { \
             for (t = 0; t < num_div; t++, t_tmp++) \
             { \
-                kernel_avx_##NAME( data, s_two, s_sixteen, s_sixty ); \
+                kernel_avx_##NAME( data, s_two, s_sixteen, s_min_sixty ); \
  \
                 /* switch pointers instead of copying data */ \
                 float * tmp = data->nppf; \
@@ -124,7 +124,7 @@ void seismic_exec_avx_##NAME##_pthread(void * v ) \
         } \
         for (t = 0; t < num_mod; t++) \
         { \
-            kernel_avx_##NAME( data, s_two, s_sixteen, s_sixty ); \
+            kernel_avx_##NAME( data, s_two, s_sixteen, s_min_sixty ); \
  \
             /* switch pointers instead of copying data */ \
             float * tmp = data->nppf; \
@@ -141,7 +141,7 @@ void seismic_exec_avx_##NAME##_pthread(void * v ) \
     else \
         for (t = 0; t < data->timesteps; t++) \
         { \
-            kernel_avx_##NAME( data, s_two, s_sixteen, s_sixty ); \
+            kernel_avx_##NAME( data, s_two, s_sixteen, s_min_sixty ); \
  \
             /* switch pointers instead of copying data */ \
             float * tmp = data->nppf; \
