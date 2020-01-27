@@ -26,7 +26,6 @@ inline __attribute__((always_inline)) void kernel_avx_unaligned( stack_t * data,
             // calculates the pressure field t+1
             s_ppf_aligned = _mm256_loadu_ps( &(data->nppf[ r ]) ); // align it to get _load_ps
             s_vel_aligned= _mm256_loadu_ps( &(data->vel[ r ]) );
-            s_actual = _mm256_loadu_ps( &(data->apf[ r ]) );
 
             s_left1 = _mm256_loadu_ps( &(data->apf[ r_min1 ]) );
             s_left2 = _mm256_loadu_ps( &(data->apf[ r_min2 ]) );
@@ -37,6 +36,13 @@ inline __attribute__((always_inline)) void kernel_avx_unaligned( stack_t * data,
 
             s_above2 = _mm256_loadu_ps( &(data->apf[ r -2]) );
             s_under2 = _mm256_loadu_ps( &(data->apf[ r +2]) );
+
+
+//          |00 01(02 03)04 05(06 07)|
+//                     |(04 05)06 07(08 09)10 11|
+//                |02 03 04 05 06 07 08 09|
+            s_actual = _mm256_shuffle_ps( s_above2, s_under2, _MM_SHUFFLE( 1, 0, 3, 2 ) );
+
 
             s_sum = _mm256_add_ps( _mm256_sub_ps( _mm256_mul_ps( s_two,
                                                                  s_actual ),
