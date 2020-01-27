@@ -8,6 +8,8 @@ inline __attribute__((always_inline)) void kernel_avx_fma_unaligned( stack_t * d
     __m256 s_ppf_aligned, s_vel_aligned, s_actual, s_above1, s_left1, s_under1, s_right1, s_sum1;
     __m256 s_above2, s_under2, s_left2, s_right2;
 
+// debrecated: obtains s_min_sixty
+
     unsigned i, j;
     // spatial loop in x
     for (i=data->x_start; i<data->x_end; i++) {
