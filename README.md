@@ -11,7 +11,7 @@ SPDX-FileCopyrightText: 2017 Dr.-Ing. Patrick Siegl <patrick@siegl.it>
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2db350f5b41b44d19403ab0a51350ef6)](https://www.codacy.com/app/psiegl/seismic-rtm?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=psiegl/seismic-rtm&amp;utm_campaign=Badge_Grade)
 [![Coverity Scan Build Status](https://img.shields.io/coverity/scan/18474.svg)](https://scan.coverity.com/projects/psiegl-seismic-rtm)
 [![CodeFactor](https://www.codefactor.io/repository/github/psiegl/seismic-rtm/badge/master)](https://www.codefactor.io/repository/github/psiegl/seismic-rtm/overview/master)
-[![GitHub license](https://img.shields.io/github/license/psiegl/seismic-rtm.svg)](https://raw.githubusercontent.com/psiegl/seismic-rtm/master/LICENSE)
+[![GitHub license](https://img.shields.io/github/license/psiegl/seismic-rtm.svg)](https://raw.githubusercontent.com/psiegl/seismic-rtm/master/LICENSES/BSD-2-Clause.txt)
 
 Code models a 2-dimensional, forward-propagated Reverse Time Migration (RTM) by utilising an acoustic, homogeneous wave equation.
 The 2-dimensional nine point stencil builds upon a fourth order [FDM with second derivative](https://en.wikipedia.org/wiki/Five-point_stencil#Higher_derivatives), whereas the synthethic initial wavelet leverages the seismic Ricker wavelet.
