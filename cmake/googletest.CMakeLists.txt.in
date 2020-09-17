@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: BSD-2-Clause
+# SPDX-FileCopyrightText: 2017 Dr.-Ing. Patrick Siegl <patrick@siegl.it>
+
 cmake_minimum_required(VERSION 2.8.2)
 
 project(googletest-download NONE)

@@ -1,5 +1,5 @@
-// Copyright 2017 - , Dr.-Ing. Patrick Siegl
 // SPDX-License-Identifier: BSD-2-Clause
+// SPDX-FileCopyrightText: 2017 Dr.-Ing. Patrick Siegl <patrick@siegl.it>
 
 #ifndef _SEISMIC_H_
 #define _SEISMIC_H_
